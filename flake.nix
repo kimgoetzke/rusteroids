@@ -48,6 +48,7 @@
             pkgs.xorg.libXi
             pkgs.xorg.libXrandr
             pkgs.glibc.dev
+            pkgs.libGL
           ];
         };
 
