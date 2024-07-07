@@ -34,8 +34,6 @@ in
 
     RUSTC_VERSION = overrides.toolchain.channel;
 
-    RUST_SRC_PATH="${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-
     RUSTFLAGS = builtins.map (a: ''-L ${a}/lib'') [
       # Add libraries here (e.g. pkgs.libvmi)
     ];

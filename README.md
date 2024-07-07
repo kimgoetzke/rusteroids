@@ -3,6 +3,10 @@
 This is a simple asteroids mini-game written in Rust, using Bevy engine. The purpose of this project is to learn Rust
 and Bevy. This is why the code is written in the most horrible Rust you'll ever see. I'm sorry.
 
+## Inspiration
+
+https://github.com/justinmimbs/rs-asteroids/tree/master
+
 ## How to run
 
 Ideally, run this project using the provided `direnv` + Nix Flake i.e. after entering the directory, type `direnv allow`
