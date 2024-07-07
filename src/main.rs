@@ -1,6 +1,9 @@
 use bevy::prelude::*;
+use bevy::render::camera::ScalingMode;
 
-const BOUNDS: Vec2 = Vec2::new(640.0, 480.0);
+const BOUNDS_X: f32 = 640.0;
+const BOUNDS_Y: f32 = 480.0;
+const BOUNDS: Vec2 = Vec2::new(BOUNDS_X, BOUNDS_Y);
 
 fn main() {
     App::new()
@@ -10,7 +13,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Rusty Asteroids".into(),
-                        resolution: (640.0, 480.0).into(),
+                        resolution: (BOUNDS_X, BOUNDS_Y).into(),
                         resizable: false,
                         ..default()
                     }),
@@ -32,7 +35,12 @@ struct Player {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scaling_mode = ScalingMode::AutoMin {
+        min_width: BOUNDS_X,
+        min_height: BOUNDS_Y,
+    };
+    commands.spawn(camera);
 
     let player_handle = asset_server.load("player_base.png");
 
@@ -84,10 +92,20 @@ fn player_movement_system(
     let movement_distance = movement_factor * ship.movement_speed * time.delta_seconds();
     // create the change in translation using the new movement direction and distance
     let translation_delta = movement_direction * movement_distance;
-    // update the ship translation with our new translation delta
+
     transform.translation += translation_delta;
 
-    // bound the ship within the invisible level bounds
+    // Wrap the ship's position to the opposite side if it exits the screen bounds
     let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-    transform.translation = transform.translation.min(extents).max(-extents);
+    if transform.translation.x > extents.x {
+        transform.translation.x = -extents.x;
+    } else if transform.translation.x < -extents.x {
+        transform.translation.x = extents.x;
+    }
+
+    if transform.translation.y > extents.y {
+        transform.translation.y = -extents.y;
+    } else if transform.translation.y < -extents.y {
+        transform.translation.y = extents.y;
+    }
 }
