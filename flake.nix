@@ -47,6 +47,7 @@
             pkgs.xorg.libXcursor
             pkgs.xorg.libXi
             pkgs.xorg.libXrandr
+            pkgs.glibc.dev
           ];
         };
 
@@ -104,7 +105,6 @@
               pkgs.mkShell {
                 name = rustInfo.name;
                 RUST_SRC_PATH = rustInfo.path;
-                LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath rustInfo.drvs;
                 buildInputs = rustInfo.drvs;
               }
           )
@@ -120,6 +120,7 @@
               pkgs.mkShell {
                 name = rustInfo.name;
                 RUST_SRC_PATH = rustInfo.path;
+                LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath rustInfo.drvs;
                 buildInputs = rustInfo.drvs;
                 shellHook = ''
                   export CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true
