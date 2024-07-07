@@ -1,7 +1,7 @@
 # Rusty Asteroids
 
 This is a simple asteroids mini-game written in Rust, using Bevy engine. The purpose of this project is to learn Rust
-and Bevy.
+and Bevy. This is why the code is written in the most horrible Rust you'll ever see. I'm sorry.
 
 ## How to run
 
