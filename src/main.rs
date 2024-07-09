@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::camera::ScalingMode;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 const BOUNDS_X: f32 = 1024.0;
 const BOUNDS_Y: f32 = 768.0;
