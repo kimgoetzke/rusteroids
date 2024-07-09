@@ -1,4 +1,4 @@
-use crate::{BOUNDS, SHOOTING_COOLDOWN};
+use crate::{BOUNDS, PIXEL_PERFECT_LAYERS, SHOOTING_COOLDOWN};
 use bevy::prelude::*;
 
 use super::components::Player;
@@ -6,14 +6,10 @@ use super::components::Player;
 pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     let player_handle = asset_server.load("player_base.png");
     commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(50.0, 50.0)),
-                ..default()
-            },
+        .spawn((SpriteBundle {
             texture: player_handle,
             ..default()
-        })
+        }, PIXEL_PERFECT_LAYERS))
         .insert(Player {
             movement_speed: 500.0,
             rotation_speed: f32::to_radians(360.0),
