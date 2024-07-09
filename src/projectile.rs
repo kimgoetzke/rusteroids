@@ -1,6 +1,4 @@
-use crate::player::components::Player;
-use crate::projectile::components::Projectile;
-use crate::SHOOTING_COOLDOWN;
+use crate::player::{Player, SHOOTING_COOLDOWN};
 use bevy::color::Color;
 use bevy::input::ButtonInput;
 use bevy::math::{Vec2, Vec3};
@@ -8,6 +6,23 @@ use bevy::prelude::*;
 
 const TRAVEL_DISTANCE: f32 = 250.0;
 const PROJECTILE_SPEED: f32 = 750.0;
+
+pub struct ProjectilePlugin;
+
+impl Plugin for ProjectilePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            FixedUpdate,
+            (projectile_shooting_system, projectile_movement_system),
+        );
+    }
+}
+
+#[derive(Component)]
+pub(crate) struct Projectile {
+    pub(crate) velocity: Vec3,
+    pub(crate) traveled_distance: f32,
+}
 
 pub(crate) fn projectile_shooting_system(
     mut commands: Commands,

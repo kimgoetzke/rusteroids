@@ -1,15 +1,35 @@
-use crate::{BOUNDS, PIXEL_PERFECT_LAYERS, SHOOTING_COOLDOWN};
+use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
 use bevy::prelude::*;
 
-use super::components::Player;
+pub const SHOOTING_COOLDOWN: f32 = 0.1;
+
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, spawn_player)
+            .add_systems(Update, player_movement_system);
+    }
+}
+
+#[derive(Component)]
+pub struct Player {
+    pub movement_speed: f32,
+    pub rotation_speed: f32,
+    pub velocity: Vec3,
+    pub shooting_cooldown: f32,
+}
 
 pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     let player_handle = asset_server.load("player_base.png");
     commands
-        .spawn((SpriteBundle {
-            texture: player_handle,
-            ..default()
-        }, PIXEL_PERFECT_LAYERS))
+        .spawn((
+            SpriteBundle {
+                texture: player_handle,
+                ..default()
+            },
+            PIXEL_PERFECT_LAYERS,
+        ))
         .insert(Player {
             movement_speed: 500.0,
             rotation_speed: f32::to_radians(360.0),
