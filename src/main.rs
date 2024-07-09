@@ -25,9 +25,15 @@ fn main() {
         .insert_resource(Time::<Fixed>::from_hz(60.0))
         .insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
         .add_systems(Startup, setup)
-        .add_systems(FixedUpdate, (player_movement_system,))
-        .add_systems(FixedUpdate, projectile_shooting_system)
-        .add_systems(FixedUpdate, projectile_movement_system)
+        .add_systems(
+            FixedUpdate,
+            (
+                player_movement_system,
+                projectile_shooting_system,
+                projectile_movement_system,
+            ),
+        )
+        .add_plugins(WorldInspectorPlugin::new())
         .run();
 }
 
@@ -35,7 +41,7 @@ fn main() {
 struct Player {
     movement_speed: f32,
     rotation_speed: f32,
-    speed: f32,
+    velocity: Vec3,
     shooting_cooldown: f32,
 }
 
@@ -67,7 +73,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(Player {
             movement_speed: 500.0,
             rotation_speed: f32::to_radians(360.0),
-            speed: 10.0,
+            velocity: Default::default(),
             shooting_cooldown: SHOOTING_COOLDOWN,
         });
 }
@@ -77,47 +83,46 @@ fn player_movement_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Player, &mut Transform)>,
 ) {
-    let (mut ship, mut transform) = query.single_mut();
-    let mut rotation_factor = 0.0;
+    for (mut player, mut transform) in query.iter_mut() {
+        // Update rotation
+        let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) {
+            1.0
+        } else if keyboard_input.pressed(KeyCode::KeyD) {
+            -1.0
+        } else {
+            0.0
+        };
+        transform.rotate_z(rotation_factor * player.rotation_speed * time.delta_seconds());
 
-    if keyboard_input.pressed(KeyCode::KeyA) {
-        rotation_factor += 1.0;
-    }
-    if keyboard_input.pressed(KeyCode::KeyD) {
-        rotation_factor -= 1.0;
-    }
-    if keyboard_input.pressed(KeyCode::KeyW) {
-        ship.speed = (ship.speed + ship.movement_speed * time.delta_seconds()).min(1000.0);
-    } else if keyboard_input.pressed(KeyCode::KeyS) {
-        ship.speed = (ship.speed - ship.movement_speed * time.delta_seconds() * 1.5).max(0.0);
-    } else {
-        ship.speed = (ship.speed * 0.995).max(0.0);
-    }
+        // Set acceleration
+        if keyboard_input.pressed(KeyCode::KeyW) {
+            let acceleration = transform.rotation * Vec3::Y * player.movement_speed;
+            player.velocity += acceleration * time.delta_seconds();
+        }
 
-    transform.rotate_z(rotation_factor * ship.rotation_speed * time.delta_seconds());
+        // Apply friction
+        player.velocity *= 0.995;
 
-    let movement_direction = transform.rotation * Vec3::Y;
-    let movement_distance = ship.speed * time.delta_seconds();
-    let translation_delta = movement_direction * movement_distance;
+        // Update player position
+        transform.translation += player.velocity * time.delta_seconds();
 
-    transform.translation += translation_delta;
+        // Wrap around the screen
+        let extents = Vec3::from((BOUNDS / 2.0, 0.0));
+        if transform.translation.x > extents.x {
+            transform.translation.x = -extents.x;
+        } else if transform.translation.x < -extents.x {
+            transform.translation.x = extents.x;
+        }
+        if transform.translation.y > extents.y {
+            transform.translation.y = -extents.y;
+        } else if transform.translation.y < -extents.y {
+            transform.translation.y = extents.y;
+        }
 
-    // Wrap the ship's position to the opposite side if it exits the screen bounds
-    let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-    if transform.translation.x > extents.x {
-        transform.translation.x = -extents.x;
-    } else if transform.translation.x < -extents.x {
-        transform.translation.x = extents.x;
-    }
-    if transform.translation.y > extents.y {
-        transform.translation.y = -extents.y;
-    } else if transform.translation.y < -extents.y {
-        transform.translation.y = extents.y;
-    }
-
-    // Decrement shooting cooldown
-    if ship.shooting_cooldown > 0.0 {
-        ship.shooting_cooldown -= time.delta_seconds();
+        // Update shooting cooldown
+        if player.shooting_cooldown > 0.0 {
+            player.shooting_cooldown -= time.delta_seconds();
+        }
     }
 }
 
@@ -128,11 +133,10 @@ fn projectile_shooting_system(
 ) {
     if let Ok((mut player, player_transform)) = query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0.0 {
-            // Calculate the direction the player is facing
             let player_forward = player_transform.rotation * Vec3::Y;
-            // Position the projectile in front of the player
             let projectile_position = player_transform.translation + player_forward * 25.0;
 
+            // Draw the projectile
             commands
                 .spawn(SpriteBundle {
                     sprite: Sprite {
@@ -152,7 +156,7 @@ fn projectile_shooting_system(
                     traveled_distance: 0.0,
                 });
 
-            // Reset shooting cooldown
+            // Reset the shooting cooldown
             player.shooting_cooldown = SHOOTING_COOLDOWN;
         }
     }
