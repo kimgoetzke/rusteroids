@@ -15,7 +15,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Rusty Asteroids".into(),
+                        title: "Rusteroids".into(),
                         resolution: (1280.0, 720.0).into(),
                         resizable: false,
                         ..default()
