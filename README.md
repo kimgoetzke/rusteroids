@@ -1,24 +1,31 @@
-# Rusty Asteroids
+# Rusteroids
 
-This is a simple asteroids mini-game written in Rust, using Bevy engine. The purpose of this project is to learn Rust
-and Bevy. This is why the code is written in the most horrible Rust you'll ever see. I'm sorry.
+This is a crappy asteroids mini-game written in Rust, using Bevy engine. The purpose of this project was to learn
+Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy) and I'm sure
+there are many things that could be done better.
 
 ## Inspiration
 
-https://github.com/justinmimbs/rs-asteroids/tree/master
+- Beautiful, written in Rust but not using Bevy: https://github.com/justinmimbs/rs-asteroids/tree/master
+- In Rust with Bevy but very basic: https://github.com/reu/bevyroids
 
-## How to run
+## How to develop
 
-Ideally, run this project using the provided `direnv` + Nix Flake i.e. after entering the directory, type `direnv allow`
-which will automatically create the development environment with all required dependencies for you. Without `direnv`,
-you can use the Nix Flake by running `nix develop` in the project directory.
+### Using Nix Flakes, JetBrains RustRover & Direnv
 
-If you're using a JetBrains IDE, you mau also have to update your Run configuration by doing the below:
+You can run this project in any way you like, but I have set things up to make it easy to develop using JetBrains
+RustRover. For this, you'll need:
 
-```shell
-# Get the content of LD_LIBRARY_PATH from your shell environment
-echo $LD_LIBRARY_PATH
+- `direnv`
+- Any Direnv integration plugin e.g. https://plugins.jetbrains.com/plugin/15285-direnv-integration
+- `nix`
 
-# Add the below PLUS the output of the above as an environment variable
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:
-```
+This way, you'll just need to `direnv allow` in the project directory after which all prerequisites (incl. Rust, Cargo,
+all Bevy dependencies, etc.) will be available to you. The JetBrains plugin will ensure that the environment is
+available to your IDE and you can run the project from there (vs `cargo build` and `cargo run` in the terminal).
+
+### Using Nix Flakes
+
+Without `direnv`, you can use the Nix Flake by running `nix develop` in the project directory. If you want to use an IDE
+such as JetBrains RustRover, you'll have to set up the environment manually. You'll most likely have to make
+`LD_LIBRARY_PATH` available to your IDE.
