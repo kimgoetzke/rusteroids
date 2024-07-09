@@ -4,6 +4,9 @@ This is a crappy asteroids mini-game written in Rust, using Bevy engine. The pur
 Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy) and I'm sure
 there are many things that could be done better.
 
+> [!IMPORTANT]
+> I'm still working on this, so the info below will be incomplete.
+
 ## Inspiration
 
 - Beautiful, written in Rust but not using Bevy: https://github.com/justinmimbs/rs-asteroids/tree/master
