@@ -13,7 +13,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(Player {
             movement_speed: 500.0,
             rotation_speed: f32::to_radians(360.0),
-            velocity: Default::default(),
+            velocity: Vec3::Y * 50.0,
             shooting_cooldown: SHOOTING_COOLDOWN,
         });
 }

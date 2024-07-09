@@ -43,27 +43,22 @@ fn main() {
         .run();
 }
 
-/// Low-resolution texture that contains the pixel-perfect world.
-/// Canvas itself is rendered to the high-resolution world.
 #[derive(Component)]
 struct Canvas;
 
-/// Camera that renders the pixel-perfect world to the [`Canvas`].
 #[derive(Component)]
-struct InGameCamera;
+struct InGameCamera; // Camera rendering `PIXEL_PERFECT_LAYERS`
 
-/// Camera that renders the [`Canvas`] (and other graphics on [`HIGH_RES_LAYERS`]) to the screen.
 #[derive(Component)]
-struct OuterCamera;
+struct OuterCamera; // Camera rendering `HIGH_RES_LAYERS`
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+    // Image serving as a canvas representing the low-resolution game screen
     let canvas_size = Extent3d {
         width: RES_WIDTH,
         height: RES_HEIGHT,
         ..default()
     };
-
-    // Image serving as a canvas representing the low-resolution game screen
     let mut canvas = Image {
         texture_descriptor: TextureDescriptor {
             label: None,
@@ -79,10 +74,7 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
         },
         ..default()
     };
-
-    // fill image.data with zeroes
     canvas.resize(canvas_size);
-
     let image_handle = images.add(canvas);
 
     // Camera rendering `PIXEL_PERFECT_LAYERS`
