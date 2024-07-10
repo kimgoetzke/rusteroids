@@ -1,12 +1,16 @@
 use crate::camera::PixelPerfectCameraPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
+use crate::asteroids::AsteroidPlugin;
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod camera;
 mod player;
 mod projectile;
+mod asteroids;
+
+const WINDOW_WIDTH: f32 = 640.0;
+const WINDOW_HEIGHT: f32 = 360.0;
 
 fn main() {
     App::new()
@@ -16,7 +20,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Rusteroids".into(),
-                        resolution: (1280.0, 720.0).into(),
+                        resolution: (WINDOW_WIDTH, WINDOW_HEIGHT).into(),
                         resizable: false,
                         ..default()
                     }),
@@ -24,8 +28,8 @@ fn main() {
                 })
                 .build(),
         )
-        .add_plugins(WorldInspectorPlugin::new())
-        .add_plugins((PixelPerfectCameraPlugin, PlayerPlugin, ProjectilePlugin))
+        // .add_plugins(WorldInspectorPlugin::new())
+        .add_plugins((PixelPerfectCameraPlugin, PlayerPlugin, ProjectilePlugin, AsteroidPlugin))
         .insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::srgb(0.0, 0.0, 0.0)))
         .run();
