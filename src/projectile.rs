@@ -6,6 +6,7 @@ use bevy::prelude::*;
 
 const TRAVEL_DISTANCE: f32 = 250.0;
 const PROJECTILE_SPEED: f32 = 750.0;
+const PROJECTILE_COLOUR: Color = Color::hsl(0.59, 0.32, 0.52);
 
 pub struct ProjectilePlugin;
 
@@ -38,8 +39,8 @@ pub(crate) fn projectile_shooting_system(
             commands
                 .spawn(SpriteBundle {
                     sprite: Sprite {
-                        color: Color::srgb(0.1, 0.8, 0.7),
-                        custom_size: Some(Vec2::new(5.0, 5.0)),
+                        color: PROJECTILE_COLOUR,
+                        custom_size: Some(Vec2::new(1.0, 5.0)),
                         ..default()
                     },
                     transform: Transform {
