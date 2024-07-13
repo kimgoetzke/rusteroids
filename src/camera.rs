@@ -13,10 +13,10 @@ use bevy::render::view::RenderLayers;
 use bevy::window::WindowResized;
 
 pub const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
+pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
 pub const BOUNDS: Vec2 = Vec2::new(RES_WIDTH as f32, RES_HEIGHT as f32);
 const RES_WIDTH: u32 = 640;
 const RES_HEIGHT: u32 = 360;
-const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
 
 pub struct PixelPerfectCameraPlugin;
 

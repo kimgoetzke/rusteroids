@@ -38,7 +38,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-pub(crate) fn player_movement_system(
+fn player_movement_system(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Player, &mut Transform)>,
