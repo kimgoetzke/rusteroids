@@ -4,6 +4,7 @@ use crate::projectile::ProjectilePlugin;
 use crate::asteroids::AsteroidPlugin;
 use bevy::prelude::*;
 use bevy_prototype_lyon::plugin::ShapePlugin;
+use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
 mod camera;
 mod player;
@@ -30,6 +31,8 @@ fn main() {
         .build(),
     )
     .add_plugins(ShapePlugin)
+    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+    .add_plugins(RapierDebugRenderPlugin::default())
     // .add_plugins(WorldInspectorPlugin::new())
     .add_plugins((PixelPerfectCameraPlugin, PlayerPlugin, ProjectilePlugin, AsteroidPlugin))
     .insert_resource(Msaa::Off)

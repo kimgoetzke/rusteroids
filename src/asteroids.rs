@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use bevy::{color::palettes::css::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::shapes::Polygon;
+use bevy_rapier2d::geometry::Collider;
+use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
 use rand::{random};
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
@@ -18,16 +20,12 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(Startup, asteroid_spawning_system)
-      .add_systems(FixedUpdate, (asteroid_movement_system, asteroid_wraparound_system));
+      .add_systems(FixedUpdate, asteroid_wraparound_system);
   }
 }
 
 #[derive(Component)]
-struct Asteroid {
-  direction: f32,
-  speed: f32,
-  rotational_speed: f32,
-}
+struct Asteroid;
 
 fn asteroid_spawning_system(
   mut commands: Commands) {
@@ -48,7 +46,6 @@ fn asteroid_spawning_system(
         closed: true,
       }
     };
-    let movement_direction = if random::<bool>() { 1.0 } else { -1.0 };
     let random_x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
     let random_y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
     commands
@@ -67,11 +64,15 @@ fn asteroid_spawning_system(
         PIXEL_PERFECT_LAYERS,
         Stroke::new(WHITE, 1.0),
       ))
-      .insert(Asteroid {
-        direction: if random::<bool>() { 1.0 } else { -1.0 },
-        speed: random::<f32>() * MAX_SPEED * movement_direction,
-        rotational_speed: random::<f32>() * MAX_ROTATIONAL_SPEED,
-      });
+      .insert(Asteroid)
+      .insert(RigidBody::Dynamic)
+      .insert(Collider::ball(20.0))
+      .insert(GravityScale(0.0))
+      .insert(Velocity {
+        linvel: Vec2::new(get_random_range(-MAX_SPEED, MAX_SPEED), get_random_range(-MAX_SPEED, MAX_SPEED)),
+        angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
+      })
+      .insert(Ccd::enabled());
   }
 }
 
@@ -79,26 +80,18 @@ fn get_random_range(min: f32, max: f32) -> f32 {
   (random::<f32>() * (max - min)) + min
 }
 
-fn asteroid_movement_system(time: Res<Time>,
-                            mut asteroids: Query<(&mut Asteroid, &mut Transform)>) {
-  for (asteroid, mut transform) in asteroids.iter_mut() {
-    transform.translation += asteroid.speed * time.delta_seconds();
-    transform.rotate_z(asteroid.direction * asteroid.rotational_speed * time.delta_seconds());
-  }
-}
-
-fn asteroid_wraparound_system(mut asteroids: Query<(&mut Asteroid, &mut Transform)>) {
-  for (_asteroid, mut transform) in asteroids.iter_mut() {
-    let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-    if transform.translation.x > (extents.x + MARGIN) {
-      transform.translation.x = -extents.x - MARGIN;
-    } else if transform.translation.x < (-extents.x - MARGIN) {
-      transform.translation.x = extents.x + MARGIN;
+fn asteroid_wraparound_system(mut positions: Query<&mut Transform, With<RigidBody>>) {
+  let extents = Vec3::from((BOUNDS / 2.0, 0.0));
+  for mut position in positions.iter_mut() {
+    if position.translation.x > (extents.x + MARGIN) {
+      position.translation.x = -extents.x - MARGIN;
+    } else if position.translation.x < (-extents.x - MARGIN) {
+      position.translation.x = extents.x + MARGIN;
     }
-    if transform.translation.y > (extents.y + MARGIN) {
-      transform.translation.y = -extents.y - MARGIN;
-    } else if transform.translation.y < (-extents.y - MARGIN) {
-      transform.translation.y = extents.y + MARGIN;
+    if position.translation.y > (extents.y + MARGIN) {
+      position.translation.y = -extents.y - MARGIN;
+    } else if position.translation.y < (-extents.y - MARGIN) {
+      position.translation.y = extents.y + MARGIN;
     }
   }
 }
