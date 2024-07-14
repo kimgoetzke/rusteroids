@@ -121,18 +121,18 @@ fn get_random_range(min: f32, max: f32) -> f32 {
   (random::<f32>() * (max - min)) + min
 }
 
-fn asteroid_wraparound_system(mut positions: Query<&mut Transform, With<RigidBody>>) {
+fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {
   let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-  for mut position in positions.iter_mut() {
-    if position.translation.x > (extents.x + MARGIN) {
-      position.translation.x = -extents.x - MARGIN;
-    } else if position.translation.x < (-extents.x - MARGIN) {
-      position.translation.x = extents.x + MARGIN;
+  for mut transform in asteroids.iter_mut() {
+    if transform.translation.x > (extents.x + MARGIN) {
+      transform.translation.x = -extents.x - MARGIN;
+    } else if transform.translation.x < (-extents.x - MARGIN) {
+      transform.translation.x = extents.x + MARGIN;
     }
-    if position.translation.y > (extents.y + MARGIN) {
-      position.translation.y = -extents.y - MARGIN;
-    } else if position.translation.y < (-extents.y - MARGIN) {
-      position.translation.y = extents.y + MARGIN;
+    if transform.translation.y > (extents.y + MARGIN) {
+      transform.translation.y = -extents.y - MARGIN;
+    } else if transform.translation.y < (-extents.y - MARGIN) {
+      transform.translation.y = extents.y + MARGIN;
     }
   }
 }

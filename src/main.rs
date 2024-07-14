@@ -31,8 +31,8 @@ fn main() {
         .build(),
     )
     .add_plugins(ShapePlugin)
-    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-    .add_plugins(RapierDebugRenderPlugin::default())
+    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.0))
+    // .add_plugins(RapierDebugRenderPlugin::default())
     // .add_plugins(WorldInspectorPlugin::new())
     .add_plugins((PixelPerfectCameraPlugin, PlayerPlugin, ProjectilePlugin, AsteroidPlugin))
     .insert_resource(Msaa::Off)
