@@ -10,7 +10,11 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(Startup, spawn_player)
-      .add_systems(Update, (player_movement_system, player_wraparound_system));
+      .add_systems(Update, (
+        player_movement_system,
+        player_wraparound_system,
+        player_shooting_cooldown_system
+      ));
   }
 }
 
@@ -21,7 +25,7 @@ pub struct Player {
   pub shooting_cooldown: f32,
 }
 
-pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
   let player_handle = asset_server.load("player_base.png");
   commands
     .spawn((
@@ -32,7 +36,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
       PIXEL_PERFECT_LAYERS,
     ))
     .insert(Player {
-      movement_speed: 100.0,
+      movement_speed: 125.0,
       rotation_speed: f32::to_radians(360.0),
       shooting_cooldown: SHOOTING_COOLDOWN,
     })
@@ -43,7 +47,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
       linvel: Vec2::new(0.0, 50.0),
       angvel: 0.0,
     })
-    .insert(AdditionalMassProperties::Mass(10.0))
+    .insert(AdditionalMassProperties::Mass(2.0))
     .insert(Ccd::enabled());
 }
 
@@ -52,7 +56,7 @@ fn player_movement_system(
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut query: Query<(&mut Player, &Transform, &mut Velocity)>,
 ) {
-  for (mut player, transform, mut velocity) in query.iter_mut() {
+  for (player, transform, mut velocity) in query.iter_mut() {
     // Update rotation
     let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) {
       1.0
@@ -73,27 +77,29 @@ fn player_movement_system(
     // Clamp velocity and apply friction
     velocity.linvel = velocity.linvel.clamp_length_max(player.movement_speed * 2.0);
     velocity.linvel *= 0.995;
+  }
+}
 
-    // Update shooting cooldown
+fn player_shooting_cooldown_system(time: Res<Time>, mut query: Query<&mut Player>) {
+  for mut player in query.iter_mut() {
     if player.shooting_cooldown > 0.0 {
       player.shooting_cooldown -= time.delta_seconds();
     }
   }
 }
 
-fn player_wraparound_system(mut positions: Query<&mut Transform, With<RigidBody>>) {
-  // Wrap around the screen
+fn player_wraparound_system(mut query: Query<&mut Transform, (With<RigidBody>, With<Player>)>) {
   let extents = Vec3::from((BOUNDS / 2.0, 0.0));
-  for mut position in positions.iter_mut() {
-    if position.translation.x > extents.x {
-      position.translation.x = -extents.x;
-    } else if position.translation.x < -extents.x {
-      position.translation.x = extents.x;
+  for mut transform in query.iter_mut() {
+    if transform.translation.x > extents.x {
+      transform.translation.x = -extents.x;
+    } else if transform.translation.x < -extents.x {
+      transform.translation.x = extents.x;
     }
-    if position.translation.y > extents.y {
-      position.translation.y = -extents.y;
-    } else if position.translation.y < -extents.y {
-      position.translation.y = extents.y;
+    if transform.translation.y > extents.y {
+      transform.translation.y = -extents.y;
+    } else if transform.translation.y < -extents.y {
+      transform.translation.y = extents.y;
     }
   }
 }
