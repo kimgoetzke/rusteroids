@@ -4,8 +4,7 @@ use bevy_rapier2d::pipeline::CollisionEvent;
 
 use crate::asteroids::{Asteroid, AsteroidSpawnEvent};
 use crate::explosion::ExplosionEvent;
-use crate::in_game_ui::UiEvent;
-use crate::in_game_ui::UiEventType::{GameOver, Score};
+use crate::in_game_ui::ScoreEvent;
 use crate::player::Player;
 use crate::projectile::Projectile;
 use crate::shared::Category;
@@ -26,7 +25,7 @@ fn collision_system(
   projectile_query: Query<(Entity, &Transform), With<Projectile>>,
   mut asteroid_spawn_event: EventWriter<AsteroidSpawnEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
-  mut ui_event: EventWriter<UiEvent>,
+  mut score_event: EventWriter<ScoreEvent>,
 ) {
   for collision_event in collision_events.read() {
     if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
@@ -38,7 +37,7 @@ fn collision_system(
             asteroid,
             &mut explosion_event,
             &mut asteroid_spawn_event,
-            &mut ui_event,
+            &mut score_event,
             transform.translation,
           );
         } else if let Ok((player_entity, transform)) = player_query.get(**entity) {
@@ -47,7 +46,7 @@ fn collision_system(
             player_entity,
             transform,
             &mut explosion_event,
-            &mut ui_event,
+            &mut score_event,
           );
         } else if let Ok((projectile_entity, transform)) = projectile_query.get(**entity) {
           handle_projectile_collision(
@@ -68,7 +67,7 @@ fn handle_asteroid_collision(
   asteroid: &Asteroid,
   explosion_event: &mut EventWriter<ExplosionEvent>,
   asteroid_spawn_event: &mut EventWriter<AsteroidSpawnEvent>,
-  ui_event: &mut EventWriter<UiEvent>,
+  ui_event: &mut EventWriter<ScoreEvent>,
   position: Vec3,
 ) {
   match asteroid.category {
@@ -91,10 +90,7 @@ fn handle_asteroid_collision(
     origin: position,
     category: asteroid.category,
   });
-  ui_event.send(UiEvent {
-    event_type: Score,
-    score: asteroid.score,
-  });
+  ui_event.send(ScoreEvent { score: asteroid.score });
 }
 
 fn handle_player_collision(
@@ -102,17 +98,14 @@ fn handle_player_collision(
   player_entity: Entity,
   player_transform: &Transform,
   explosion_event: &mut EventWriter<ExplosionEvent>,
-  ui_event: &mut EventWriter<UiEvent>,
+  ui_event: &mut EventWriter<ScoreEvent>,
 ) {
   commands.entity(player_entity).despawn();
   explosion_event.send(ExplosionEvent {
     origin: player_transform.translation,
     category: Category::XL,
   });
-  ui_event.send(UiEvent {
-    event_type: GameOver,
-    score: 0,
-  });
+  ui_event.send(ScoreEvent { score: 0 });
 }
 
 fn handle_projectile_collision(

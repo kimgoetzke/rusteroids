@@ -1,8 +1,8 @@
+use crate::player::Player;
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
+use bevy::prelude::KeyCode;
 use bevy::prelude::*;
-
-use crate::player::Player;
 
 pub struct GameStatePlugin;
 
@@ -29,9 +29,17 @@ pub enum GameState {
 fn transition_from_start_to_play(
   current_game_state: Res<State<GameState>>,
   mut next_game_state: ResMut<NextState<GameState>>,
-  mut keyboard_input: ResMut<ButtonInput<KeyCode>>,
+  keyboard_input: ResMut<ButtonInput<KeyCode>>,
 ) {
-  if keyboard_input.clear_just_pressed(KeyCode::Space) {
+  if keyboard_input.any_pressed([
+    KeyCode::Space,
+    KeyCode::Enter,
+    KeyCode::Escape,
+    KeyCode::KeyA,
+    KeyCode::KeyW,
+    KeyCode::KeyS,
+    KeyCode::KeyD,
+  ]) {
     match current_game_state.get() {
       GameState::Start => next_game_state.set(GameState::Play),
       _ => {}

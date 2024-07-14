@@ -21,6 +21,8 @@ const MARGIN: f32 = BOUNDS.x * 0.1;
 
 pub struct AsteroidPlugin;
 
+// TODO: Make use of game states to spawn asteroids
+// TODO: Add basic game loop e.g. increasing difficulty/more asteroids, waves, etc.
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app

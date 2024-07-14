@@ -1,5 +1,5 @@
 use crate::game_state::GameState;
-use bevy::app::{App, Plugin, Startup, Update};
+use bevy::app::{App, Plugin, Update};
 use bevy::prelude::*;
 
 pub struct InGameUiPlugin;
@@ -9,36 +9,23 @@ impl Plugin for InGameUiPlugin {
     app
       .insert_resource(Score(0))
       .register_type::<Score>()
-      .add_event::<UiEvent>()
-      .add_systems(Startup, show_static_ui_system)
+      .add_event::<ScoreEvent>()
       .add_systems(
         OnEnter(GameState::Start),
-        (show_static_ui_system, hide_game_over_ui_system),
+        (show_static_ui_system, hide_game_over_ui_system, reset_score_system),
       )
       .add_systems(
         OnEnter(GameState::GameOver),
         (hide_static_ui_system, show_game_over_ui_system),
       )
-      .add_systems(Update, process_ui_event);
+      .add_systems(Update, process_score_event);
   }
 }
 
 #[derive(Event)]
-pub(crate) struct UiEvent {
-  pub(crate) event_type: UiEventType,
+pub(crate) struct ScoreEvent {
   pub(crate) score: u16,
 }
-
-pub(crate) enum UiEventType {
-  Score,
-  GameOver,
-}
-
-#[derive(Component)]
-struct StaticUi;
-
-#[derive(Component)]
-struct GameOverUi;
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
@@ -46,6 +33,12 @@ pub struct Score(pub u16);
 
 #[derive(Component)]
 struct ScoreComponent;
+
+#[derive(Component)]
+struct StaticUi;
+
+#[derive(Component)]
+struct GameOverUi;
 
 fn show_static_ui_system(mut commands: Commands) {
   commands
@@ -85,24 +78,22 @@ fn hide_static_ui_system(mut commands: Commands, query: Query<Entity, With<Stati
   }
 }
 
-fn process_ui_event(
-  mut ui_event: EventReader<UiEvent>,
+fn process_score_event(
+  mut ui_event: EventReader<ScoreEvent>,
   mut texts: Query<&mut Text, With<ScoreComponent>>,
   mut score: ResMut<Score>,
 ) {
   for event in ui_event.read() {
-    match event.event_type {
-      UiEventType::Score => {
-        update_score(event.score, &mut texts, &mut score);
-      }
-      _ => {}
+    for mut text in texts.iter_mut() {
+      score.0 += event.score;
+      text.sections[0].value = format!("Score: {}", score.0);
     }
   }
 }
 
-fn update_score(score_change: u16, texts: &mut Query<&mut Text, With<ScoreComponent>>, score: &mut ResMut<Score>) {
+fn reset_score_system(mut texts: Query<&mut Text, With<ScoreComponent>>, mut score: ResMut<Score>) {
   for mut text in texts.iter_mut() {
-    score.0 += score_change;
+    score.0 = 0;
     text.sections[0].value = format!("Score: {}", score.0);
   }
 }
@@ -143,7 +134,7 @@ fn show_game_over_ui_system(mut commands: Commands, score: ResMut<Score>) {
         },
       ));
       builder.spawn(TextBundle::from_section(
-        "Press space to try again",
+        "Press Space to try again",
         TextStyle {
           font_size: 32.0,
           ..Default::default()
