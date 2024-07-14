@@ -7,6 +7,11 @@ there are many things that could be done better.
 > [!IMPORTANT]
 > I'm still working on this, so the info below will be incomplete.
 
+## Screenshots
+
+![Screenshot 1](./assets/screenshots/screenshot_in_game.png)
+![Screenshot 2](./assets/screenshots/screenshot_game_over.png)
+
 ## Inspiration
 
 - Beautiful, written in Rust but not using Bevy: https://github.com/justinmimbs/rs-asteroids/tree/master
