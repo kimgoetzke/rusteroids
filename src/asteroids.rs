@@ -24,6 +24,7 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_event::<AsteroidSpawnEvent>()
       .add_systems(Startup, asteroid_initialisation_system)
       .add_systems(FixedUpdate, asteroid_wraparound_system)
       .add_systems(Update, spawn_asteroid_event);
@@ -43,6 +44,7 @@ pub(crate) struct Asteroid {
   sides: Range<f32>,
   collider: Collider,
   additional_mass: f32,
+  pub(crate) score: u16,
 }
 
 impl Asteroid {
@@ -53,6 +55,7 @@ impl Asteroid {
       sides: 5.0..14.0,
       collider: Collider::ball(20.0),
       additional_mass: 30.0,
+      score: 5,
     }
   }
 
@@ -63,6 +66,7 @@ impl Asteroid {
       sides: 5.0..14.0,
       collider: Collider::ball(10.0),
       additional_mass: 17.5,
+      score: 6,
     }
   }
 
@@ -73,6 +77,7 @@ impl Asteroid {
       sides: 5.0..14.0,
       collider: Collider::ball(5.0),
       additional_mass: 8.0,
+      score: 7,
     }
   }
 
@@ -97,11 +102,22 @@ fn asteroid_initialisation_system(mut commands: Commands) {
     let category = Category::L;
     let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
     let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
-    asteroid_spawning_system(&mut commands, category, x, y);
+    spawn_asteroid(&mut commands, category, x, y);
   }
 }
 
-fn asteroid_spawning_system(commands: &mut Commands, category: Category, x: f32, y: f32) {
+fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
+  for event in asteroid_event.read() {
+    let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
+    for _ in 0..spawn_count {
+      let x = event.origin.x + (random::<f32>() * 20.0);
+      let y = event.origin.y + (random::<f32>() * 20.0);
+      spawn_asteroid(&mut commands, event.category, x, y);
+    }
+  }
+}
+
+fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
   let asteroid = match category {
     Category::XL => Asteroid::large(),
     Category::L => Asteroid::large(),
@@ -137,20 +153,6 @@ fn asteroid_spawning_system(commands: &mut Commands, category: Category, x: f32,
     })
     .insert(Ccd::enabled())
     .insert(asteroid);
-}
-
-fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
-  for event in asteroid_event.read() {
-    let spawn_count = random_u16_range(
-      ASTEROID_SPAWN_EVENT_RANGE.start as u16,
-      ASTEROID_SPAWN_EVENT_RANGE.end as u16,
-    );
-    for _ in 0..spawn_count {
-      let x = event.origin.x + (random::<f32>() * 20.0);
-      let y = event.origin.y + (random::<f32>() * 20.0);
-      asteroid_spawning_system(&mut commands, event.category, x, y);
-    }
-  }
 }
 
 fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {

@@ -7,7 +7,9 @@ pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, spawn_explosion_event);
+    app
+      .add_event::<ExplosionEvent>()
+      .add_systems(Update, spawn_explosion_event);
   }
 }
 #[derive(Event)]
@@ -25,7 +27,6 @@ fn spawn_explosion_event(
   asset_server: Res<AssetServer>,
 ) {
   for explosion in explosion_event.read() {
-    println!("Spawning explosion event");
     let effect = match explosion.category {
       Category::XL => asset_server.load("particles/explosion_xl.ron"),
       Category::L => asset_server.load("particles/explosion_l.ron"),
