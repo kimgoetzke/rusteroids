@@ -9,12 +9,14 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, spawn_player)
-      .add_systems(Update, (
+    app.add_systems(Startup, spawn_player).add_systems(
+      Update,
+      (
         player_movement_system,
         player_wraparound_system,
-        player_shooting_cooldown_system
-      ));
+        player_shooting_cooldown_system,
+      ),
+    );
   }
 }
 

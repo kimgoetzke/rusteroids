@@ -1,16 +1,16 @@
-use std::f32::consts::PI;
-use std::ops::Range;
+use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
+use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use bevy::color::palettes::css::*;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
-use bevy::{color::palettes::css::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::shapes::Polygon;
 use bevy_rapier2d::dynamics::AdditionalMassProperties;
 use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
-use rand::{random};
-use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
-use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
+use rand::random;
+use std::f32::consts::PI;
+use std::ops::Range;
 
 const MAX_COUNT: u8 = 5;
 const MAX_SPEED: f32 = 50.0;
@@ -21,7 +21,8 @@ pub struct AsteroidPlugin;
 
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, asteroid_spawning_system)
+    app
+      .add_systems(Startup, asteroid_spawning_system)
       .add_systems(FixedUpdate, asteroid_wraparound_system);
   }
 }
@@ -73,12 +74,7 @@ impl Asteroid {
       let y = radius * angle.sin();
       points.push(Vec2::new(x, y));
     }
-    let shape = {
-      Polygon {
-        points,
-        closed: true,
-      }
-    };
+    let shape = { Polygon { points, closed: true } };
     shape
   }
 }
@@ -109,7 +105,10 @@ fn asteroid_spawning_system(mut commands: Commands) {
       .insert(GravityScale(0.0))
       .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
       .insert(Velocity {
-        linvel: Vec2::new(get_random_range(-MAX_SPEED, MAX_SPEED), get_random_range(-MAX_SPEED, MAX_SPEED)),
+        linvel: Vec2::new(
+          get_random_range(-MAX_SPEED, MAX_SPEED),
+          get_random_range(-MAX_SPEED, MAX_SPEED),
+        ),
         angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
       })
       .insert(Ccd::enabled())

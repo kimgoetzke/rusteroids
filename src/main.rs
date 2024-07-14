@@ -1,15 +1,15 @@
+use crate::asteroids::AsteroidPlugin;
 use crate::camera::PixelPerfectCameraPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
-use crate::asteroids::AsteroidPlugin;
 use bevy::prelude::*;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
+mod asteroids;
 mod camera;
 mod player;
 mod projectile;
-mod asteroids;
 
 const WINDOW_WIDTH: f32 = 640.0;
 const WINDOW_HEIGHT: f32 = 360.0;

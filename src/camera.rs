@@ -2,13 +2,11 @@ use bevy::app::{App, Plugin, Startup, Update};
 use bevy::asset::Assets;
 use bevy::math::Vec2;
 use bevy::prelude::{
-  default, Camera, Camera2dBundle, Commands, Component, EventReader, Image,
-  OrthographicProjection, Query, ResMut, SpriteBundle, With,
+  default, Camera, Camera2dBundle, Commands, Component, EventReader, Image, OrthographicProjection, Query, ResMut,
+  SpriteBundle, With,
 };
 use bevy::render::camera::RenderTarget;
-use bevy::render::render_resource::{
-  Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-};
+use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
 use bevy::render::view::RenderLayers;
 use bevy::window::WindowResized;
 
@@ -22,8 +20,7 @@ pub struct PixelPerfectCameraPlugin;
 
 impl Plugin for PixelPerfectCameraPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, setup_camera)
-      .add_systems(Update, fit_canvas);
+    app.add_systems(Startup, setup_camera).add_systems(Update, fit_canvas);
   }
 }
 
@@ -51,9 +48,7 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
       format: TextureFormat::Bgra8UnormSrgb,
       mip_level_count: 1,
       sample_count: 1,
-      usage: TextureUsages::TEXTURE_BINDING
-        | TextureUsages::COPY_DST
-        | TextureUsages::RENDER_ATTACHMENT,
+      usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT,
       view_formats: &[],
     },
     ..default()
