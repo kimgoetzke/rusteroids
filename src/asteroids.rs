@@ -27,8 +27,16 @@ impl Plugin for AsteroidPlugin {
   }
 }
 
+#[derive(Resource, Clone)]
+pub(crate) enum Category {
+  Large,
+  Medium,
+  Small,
+}
+
 #[derive(Component, Clone)]
-struct Asteroid {
+pub(crate) struct Asteroid {
+  category: Category,
   size: Range<f32>,
   sides: Range<f32>,
   collider: Collider,
@@ -38,6 +46,7 @@ struct Asteroid {
 impl Asteroid {
   fn large() -> Self {
     Self {
+      category: Category::Large,
       size: 20.0..40.0,
       sides: 5.0..14.0,
       collider: Collider::ball(20.0),
@@ -47,6 +56,7 @@ impl Asteroid {
 
   fn medium() -> Self {
     Self {
+      category: Category::Medium,
       size: 10.0..20.0,
       sides: 5.0..14.0,
       collider: Collider::ball(10.0),
@@ -56,6 +66,7 @@ impl Asteroid {
 
   fn small() -> Self {
     Self {
+      category: Category::Small,
       size: 5.0..10.0,
       sides: 5.0..14.0,
       collider: Collider::ball(5.0),
@@ -81,39 +92,48 @@ impl Asteroid {
 
 fn asteroid_spawning_system(mut commands: Commands) {
   for _ in 0..MAX_COUNT {
-    let asteroid = Asteroid::large();
-    let random_x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
-    let random_y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
-    commands
-      .spawn((
-        ShapeBundle {
-          path: GeometryBuilder::build_as(&asteroid.shape()),
-          spatial: SpatialBundle {
-            transform: Transform {
-              translation: Vec3::new(random_x, random_y, 0.0),
-              ..default()
-            },
+    let category = Category::Large;
+    asteroid_spawning(&mut commands, category);
+  }
+}
+
+pub(crate) fn asteroid_spawning(commands: &mut Commands, category: Category) {
+  let asteroid = match category {
+    Category::Large => Asteroid::large(),
+    Category::Medium => Asteroid::medium(),
+    Category::Small => Asteroid::small(),
+  };
+  let random_x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
+  let random_y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
+  commands
+    .spawn((
+      ShapeBundle {
+        path: GeometryBuilder::build_as(&asteroid.shape()),
+        spatial: SpatialBundle {
+          transform: Transform {
+            translation: Vec3::new(random_x, random_y, 0.0),
             ..default()
           },
-          ..Default::default()
+          ..default()
         },
-        PIXEL_PERFECT_LAYERS,
-        Stroke::new(WHITE, 1.0),
-      ))
-      .insert(RigidBody::Dynamic)
-      .insert(asteroid.collider.clone())
-      .insert(GravityScale(0.0))
-      .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
-      .insert(Velocity {
-        linvel: Vec2::new(
-          get_random_range(-MAX_SPEED, MAX_SPEED),
-          get_random_range(-MAX_SPEED, MAX_SPEED),
-        ),
-        angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
-      })
-      .insert(Ccd::enabled())
-      .insert(asteroid);
-  }
+        ..Default::default()
+      },
+      PIXEL_PERFECT_LAYERS,
+      Stroke::new(WHITE, 1.0),
+    ))
+    .insert(RigidBody::Dynamic)
+    .insert(asteroid.collider.clone())
+    .insert(GravityScale(0.0))
+    .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
+    .insert(Velocity {
+      linvel: Vec2::new(
+        get_random_range(-MAX_SPEED, MAX_SPEED),
+        get_random_range(-MAX_SPEED, MAX_SPEED),
+      ),
+      angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
+    })
+    .insert(Ccd::enabled())
+    .insert(asteroid);
 }
 
 fn get_random_range(min: f32, max: f32) -> f32 {

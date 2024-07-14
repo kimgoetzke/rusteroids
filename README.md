@@ -11,6 +11,7 @@ there are many things that could be done better.
 
 - Beautiful, written in Rust but not using Bevy: https://github.com/justinmimbs/rs-asteroids/tree/master
 - In Rust with Bevy but very basic: https://github.com/reu/bevyroids
+- In Rust with Bevy and Rapier: https://github.com/brooks-builds/bevy_asteroids
 
 ## How to develop
 

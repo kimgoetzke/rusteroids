@@ -43,7 +43,7 @@ fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
       shooting_cooldown: SHOOTING_COOLDOWN,
     })
     .insert(RigidBody::Dynamic)
-    .insert(Collider::ball(10.0))
+    .insert(Collider::ball(9.0))
     .insert(GravityScale(0.0))
     .insert(Velocity {
       linvel: Vec2::new(0.0, 50.0),
