@@ -3,7 +3,7 @@ use bevy::color::Color;
 use bevy::input::ButtonInput;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
-use bevy_rapier2d::dynamics::{GravityScale, RigidBody, Velocity};
+use bevy_rapier2d::dynamics::{AdditionalMassProperties, GravityScale, RigidBody, Velocity};
 use bevy_rapier2d::prelude::Collider;
 
 const MAX_LIFE_TIME: f32 = 0.4;
@@ -55,6 +55,7 @@ pub(crate) fn projectile_shooting_system(
         .insert(Collider::ball(1.0))
         .insert(RigidBody::Dynamic)
         .insert(GravityScale(0.0))
+        .insert(AdditionalMassProperties::Mass(100.0))
         .insert(Velocity {
           linvel: Vec2::new(player_forward.x, player_forward.y) * PROJECTILE_SPEED,
           angvel: 0.0,
@@ -66,7 +67,7 @@ pub(crate) fn projectile_shooting_system(
   }
 }
 
-pub(crate) fn projectile_life_time_system(
+fn projectile_life_time_system(
   mut commands: Commands,
   time: Res<Time>,
   mut query: Query<(Entity, &mut Projectile)>,

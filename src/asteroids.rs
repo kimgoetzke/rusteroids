@@ -40,7 +40,7 @@ impl Asteroid {
       size: 20.0..40.0,
       sides: 5.0..14.0,
       collider: Collider::ball(20.0),
-      additional_mass: 10.0,
+      additional_mass: 30.0,
     }
   }
 
@@ -49,7 +49,7 @@ impl Asteroid {
       size: 10.0..20.0,
       sides: 5.0..14.0,
       collider: Collider::ball(10.0),
-      additional_mass: 5.0,
+      additional_mass: 17.5,
     }
   }
 
@@ -58,7 +58,7 @@ impl Asteroid {
       size: 5.0..10.0,
       sides: 5.0..14.0,
       collider: Collider::ball(5.0),
-      additional_mass: 2.5,
+      additional_mass: 8.0,
     }
   }
 
