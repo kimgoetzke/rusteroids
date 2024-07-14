@@ -61,15 +61,15 @@ fn handle_asteroid_collision(
   position: Vec3,
 ) {
   match asteroid.category {
-    Category::Large => {
+    Category::L => {
       asteroid_spawn_event.send(AsteroidSpawnEvent {
-        category: Category::Medium,
+        category: Category::M,
         origin: position,
       });
     }
-    Category::Medium => {
+    Category::M => {
       asteroid_spawn_event.send(AsteroidSpawnEvent {
-        category: Category::Small,
+        category: Category::S,
         origin: position,
       });
     }
@@ -91,7 +91,7 @@ fn handle_player_collision(
   commands.entity(player_entity).despawn();
   explosion_event.send(ExplosionEvent {
     origin: player_transform.translation,
-    category: Category::Large,
+    category: Category::XL,
   });
 }
 
@@ -104,6 +104,6 @@ fn handle_projectile_collision(
   commands.entity(projectile_entity).despawn();
   explosion_event.send(ExplosionEvent {
     origin: position,
-    category: Category::Small,
+    category: Category::S,
   });
 }

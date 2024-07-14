@@ -635,6 +635,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_enoki"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a93aebc194bff4526727f7f17e834ecbb04f92d8791db85141a582c53031b7d"
+dependencies = [
+ "bevy",
+ "interpolation",
+ "rand",
+ "ron",
+ "serde",
+]
+
+[[package]]
 name = "bevy_gilrs"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2402,6 +2415,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "interpolation"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9c13ae9d91148fcb4aab6654c4c2a7d02a15395ea9e23f65170f175f8b269ce"
+
+[[package]]
 name = "io-kit-sys"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3691,6 +3710,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_enoki",
  "bevy_prototype_lyon",
  "bevy_rapier2d",
  "rand",

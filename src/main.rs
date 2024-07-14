@@ -5,6 +5,7 @@ use crate::explosion::{ExplosionEvent, ExplosionPlugin};
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
 use bevy::prelude::*;
+use bevy_enoki::EnokiPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
@@ -37,6 +38,7 @@ fn main() {
         })
         .build(),
     )
+    .add_plugins(EnokiPlugin)
     .add_plugins(ShapePlugin)
     .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.0))
     // .add_plugins(RapierDebugRenderPlugin::default())

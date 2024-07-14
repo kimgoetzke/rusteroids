@@ -48,7 +48,7 @@ pub(crate) struct Asteroid {
 impl Asteroid {
   fn large() -> Self {
     Self {
-      category: Category::Large,
+      category: Category::L,
       size: 20.0..40.0,
       sides: 5.0..14.0,
       collider: Collider::ball(20.0),
@@ -58,7 +58,7 @@ impl Asteroid {
 
   fn medium() -> Self {
     Self {
-      category: Category::Medium,
+      category: Category::M,
       size: 10.0..20.0,
       sides: 5.0..14.0,
       collider: Collider::ball(10.0),
@@ -68,7 +68,7 @@ impl Asteroid {
 
   fn small() -> Self {
     Self {
-      category: Category::Small,
+      category: Category::S,
       size: 5.0..10.0,
       sides: 5.0..14.0,
       collider: Collider::ball(5.0),
@@ -94,7 +94,7 @@ impl Asteroid {
 
 fn asteroid_initialisation_system(mut commands: Commands) {
   for _ in 0..STARTUP_COUNT {
-    let category = Category::Large;
+    let category = Category::L;
     let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
     let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
     asteroid_spawning_system(&mut commands, category, x, y);
@@ -103,9 +103,10 @@ fn asteroid_initialisation_system(mut commands: Commands) {
 
 fn asteroid_spawning_system(commands: &mut Commands, category: Category, x: f32, y: f32) {
   let asteroid = match category {
-    Category::Large => Asteroid::large(),
-    Category::Medium => Asteroid::medium(),
-    Category::Small => Asteroid::small(),
+    Category::XL => Asteroid::large(),
+    Category::L => Asteroid::large(),
+    Category::M => Asteroid::medium(),
+    Category::S => Asteroid::small(),
   };
   commands
     .spawn((

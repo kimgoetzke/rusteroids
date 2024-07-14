@@ -3,9 +3,10 @@ use rand::random;
 
 #[derive(Component, Clone, Copy, Debug)]
 pub(crate) enum Category {
-  Large,
-  Medium,
-  Small,
+  XL,
+  L,
+  M,
+  S,
 }
 
 pub(crate) fn random_f32_range(min: f32, max: f32) -> f32 {
