@@ -1,4 +1,4 @@
-use crate::asteroids::AsteroidPlugin;
+use crate::asteroids::{AsteroidPlugin, AsteroidSpawnEvent};
 use crate::camera::PixelPerfectCameraPlugin;
 use crate::collision::CollisionPlugin;
 use crate::explosion::{ExplosionEvent, ExplosionPlugin};
@@ -22,6 +22,7 @@ const WINDOW_HEIGHT: f32 = 360.0;
 fn main() {
   App::new()
     .add_event::<ExplosionEvent>()
+    .add_event::<AsteroidSpawnEvent>()
     .add_plugins(
       DefaultPlugins
         .set(ImagePlugin::default_nearest())

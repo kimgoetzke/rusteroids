@@ -1,4 +1,5 @@
 use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
+use crate::shared::*;
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use bevy::color::palettes::css::*;
 use bevy::math::{Vec2, Vec3};
@@ -12,7 +13,8 @@ use rand::random;
 use std::f32::consts::PI;
 use std::ops::Range;
 
-const MAX_COUNT: u8 = 5;
+const STARTUP_COUNT: u8 = 5;
+const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
 const MAX_SPEED: f32 = 50.0;
 const MAX_ROTATIONAL_SPEED: f32 = 2.5;
 const MARGIN: f32 = BOUNDS.x * 0.1;
@@ -22,21 +24,21 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Startup, asteroid_spawning_system)
-      .add_systems(FixedUpdate, asteroid_wraparound_system);
+      .add_systems(Startup, asteroid_initialisation_system)
+      .add_systems(FixedUpdate, asteroid_wraparound_system)
+      .add_systems(Update, spawn_asteroid_event);
   }
 }
 
-#[derive(Resource, Clone)]
-pub(crate) enum Category {
-  Large,
-  Medium,
-  Small,
+#[derive(Event)]
+pub(crate) struct AsteroidSpawnEvent {
+  pub(crate) category: Category,
+  pub(crate) origin: Vec3,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub(crate) struct Asteroid {
-  category: Category,
+  pub category: Category,
   size: Range<f32>,
   sides: Range<f32>,
   collider: Collider,
@@ -75,12 +77,12 @@ impl Asteroid {
   }
 
   fn shape(&self) -> Polygon {
-    let sides = get_random_range(self.sides.start, self.sides.end) as usize;
+    let sides = random_f32_range(self.sides.start, self.sides.end) as usize;
     let mut points = Vec::with_capacity(sides);
     let step = 2.0 * PI / (sides as f32);
     for i in 0..sides {
       let angle = step * i as f32;
-      let radius = get_random_range(self.size.start, self.size.end);
+      let radius = random_f32_range(self.size.start, self.size.end);
       let x = radius * angle.cos();
       let y = radius * angle.sin();
       points.push(Vec2::new(x, y));
@@ -90,28 +92,28 @@ impl Asteroid {
   }
 }
 
-fn asteroid_spawning_system(mut commands: Commands) {
-  for _ in 0..MAX_COUNT {
+fn asteroid_initialisation_system(mut commands: Commands) {
+  for _ in 0..STARTUP_COUNT {
     let category = Category::Large;
-    asteroid_spawning(&mut commands, category);
+    let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
+    let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
+    asteroid_spawning_system(&mut commands, category, x, y);
   }
 }
 
-pub(crate) fn asteroid_spawning(commands: &mut Commands, category: Category) {
+fn asteroid_spawning_system(commands: &mut Commands, category: Category, x: f32, y: f32) {
   let asteroid = match category {
     Category::Large => Asteroid::large(),
     Category::Medium => Asteroid::medium(),
     Category::Small => Asteroid::small(),
   };
-  let random_x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
-  let random_y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
   commands
     .spawn((
       ShapeBundle {
         path: GeometryBuilder::build_as(&asteroid.shape()),
         spatial: SpatialBundle {
           transform: Transform {
-            translation: Vec3::new(random_x, random_y, 0.0),
+            translation: Vec3::new(x, y, 0.0),
             ..default()
           },
           ..default()
@@ -127,17 +129,27 @@ pub(crate) fn asteroid_spawning(commands: &mut Commands, category: Category) {
     .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
     .insert(Velocity {
       linvel: Vec2::new(
-        get_random_range(-MAX_SPEED, MAX_SPEED),
-        get_random_range(-MAX_SPEED, MAX_SPEED),
+        random_f32_range(-MAX_SPEED, MAX_SPEED),
+        random_f32_range(-MAX_SPEED, MAX_SPEED),
       ),
-      angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
+      angvel: random_f32_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
     })
     .insert(Ccd::enabled())
     .insert(asteroid);
 }
 
-fn get_random_range(min: f32, max: f32) -> f32 {
-  (random::<f32>() * (max - min)) + min
+fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
+  for event in asteroid_event.read() {
+    let spawn_count = random_u16_range(
+      ASTEROID_SPAWN_EVENT_RANGE.start as u16,
+      ASTEROID_SPAWN_EVENT_RANGE.end as u16,
+    );
+    for _ in 0..spawn_count {
+      let x = event.origin.x + (random::<f32>() * 20.0);
+      let y = event.origin.y + (random::<f32>() * 20.0);
+      asteroid_spawning_system(&mut commands, event.category, x, y);
+    }
+  }
 }
 
 fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {

@@ -61,8 +61,8 @@ fn projectile_shooting_system(
           },
           ..default()
         })
-        .insert(projectile.collider.clone())
         .insert(RigidBody::Dynamic)
+        .insert(projectile.collider.clone())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(GravityScale(0.0))
         .insert(AdditionalMassProperties::Mass(100.0))

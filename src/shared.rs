@@ -1,11 +1,17 @@
-use bevy::math::Vec3;
-use bevy::prelude::{Component, Deref, DerefMut};
+use bevy::prelude::Component;
+use rand::random;
 
-#[derive(Component, Clone, Debug, Deref, DerefMut, Copy, Default)]
-pub struct Position(pub Vec3);
+#[derive(Component, Clone, Copy, Debug)]
+pub(crate) enum Category {
+  Large,
+  Medium,
+  Small,
+}
 
-impl Position {
-  pub fn new(Vec3 { x, y, z }: Vec3) -> Self {
-    Self(Vec3::new(x, y, z))
-  }
+pub(crate) fn random_f32_range(min: f32, max: f32) -> f32 {
+  (random::<f32>() * (max - min)) + min
+}
+
+pub(crate) fn random_u16_range(min: u16, max: u16) -> u16 {
+  random::<u16>() % (max - min) + min
 }

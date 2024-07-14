@@ -44,6 +44,7 @@ fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     })
     .insert(RigidBody::Dynamic)
     .insert(Collider::ball(9.0))
+    .insert(ActiveEvents::COLLISION_EVENTS)
     .insert(GravityScale(0.0))
     .insert(Velocity {
       linvel: Vec2::new(0.0, 50.0),

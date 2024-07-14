@@ -1,3 +1,4 @@
+use crate::shared::Category;
 use bevy::prelude::*;
 use bevy_prototype_lyon::{draw::Stroke, entity::ShapeBundle, geometry::GeometryBuilder, shapes};
 
@@ -15,14 +16,20 @@ impl Plugin for ExplosionPlugin {
 struct Explosion;
 
 #[derive(Event)]
-pub struct ExplosionEvent {
-  pub origin: Vec3,
+pub(crate) struct ExplosionEvent {
+  pub(crate) origin: Vec3,
+  pub(crate) category: Category,
 }
 
 fn spawn_explosion_event(mut explosion_event: EventReader<ExplosionEvent>, mut commands: Commands) {
   for explosion in explosion_event.read() {
+    let size = match explosion.category {
+      Category::Large => 25.0,
+      Category::Medium => 10.0,
+      Category::Small => 5.0,
+    };
     let shape = shapes::Circle {
-      radius: 10.0,
+      radius: size,
       center: Vec2::new(explosion.origin.x, explosion.origin.y),
     };
 
