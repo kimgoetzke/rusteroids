@@ -1,9 +1,11 @@
 use std::f32::consts::PI;
+use std::ops::Range;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 use bevy::{color::palettes::css::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::shapes::Polygon;
+use bevy_rapier2d::dynamics::AdditionalMassProperties;
 use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
 use rand::{random};
@@ -24,18 +26,49 @@ impl Plugin for AsteroidPlugin {
   }
 }
 
-#[derive(Component)]
-struct Asteroid;
+#[derive(Component, Clone)]
+struct Asteroid {
+  size: Range<f32>,
+  sides: Range<f32>,
+  collider: Collider,
+  additional_mass: f32,
+}
 
-fn asteroid_spawning_system(
-  mut commands: Commands) {
-  for _ in 0..MAX_COUNT {
-    let sides = get_random_range(5.0, 14.0) as usize;
+impl Asteroid {
+  fn large() -> Self {
+    Self {
+      size: 20.0..40.0,
+      sides: 5.0..14.0,
+      collider: Collider::ball(20.0),
+      additional_mass: 10.0,
+    }
+  }
+
+  fn medium() -> Self {
+    Self {
+      size: 10.0..20.0,
+      sides: 5.0..14.0,
+      collider: Collider::ball(10.0),
+      additional_mass: 5.0,
+    }
+  }
+
+  fn small() -> Self {
+    Self {
+      size: 5.0..10.0,
+      sides: 5.0..14.0,
+      collider: Collider::ball(5.0),
+      additional_mass: 2.5,
+    }
+  }
+
+  fn shape(&self) -> Polygon {
+    let sides = get_random_range(self.sides.start, self.sides.end) as usize;
     let mut points = Vec::with_capacity(sides);
     let step = 2.0 * PI / (sides as f32);
     for i in 0..sides {
       let angle = step * i as f32;
-      let radius = get_random_range(20.0, 40.0);
+      let radius = get_random_range(self.size.start, self.size.end);
       let x = radius * angle.cos();
       let y = radius * angle.sin();
       points.push(Vec2::new(x, y));
@@ -46,12 +79,19 @@ fn asteroid_spawning_system(
         closed: true,
       }
     };
+    shape
+  }
+}
+
+fn asteroid_spawning_system(mut commands: Commands) {
+  for _ in 0..MAX_COUNT {
+    let asteroid = Asteroid::large();
     let random_x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
     let random_y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
     commands
       .spawn((
         ShapeBundle {
-          path: GeometryBuilder::build_as(&shape),
+          path: GeometryBuilder::build_as(&asteroid.shape()),
           spatial: SpatialBundle {
             transform: Transform {
               translation: Vec3::new(random_x, random_y, 0.0),
@@ -64,15 +104,16 @@ fn asteroid_spawning_system(
         PIXEL_PERFECT_LAYERS,
         Stroke::new(WHITE, 1.0),
       ))
-      .insert(Asteroid)
       .insert(RigidBody::Dynamic)
-      .insert(Collider::ball(20.0))
+      .insert(asteroid.collider.clone())
       .insert(GravityScale(0.0))
+      .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
       .insert(Velocity {
         linvel: Vec2::new(get_random_range(-MAX_SPEED, MAX_SPEED), get_random_range(-MAX_SPEED, MAX_SPEED)),
         angvel: get_random_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
       })
-      .insert(Ccd::enabled());
+      .insert(Ccd::enabled())
+      .insert(asteroid);
   }
 }
 
