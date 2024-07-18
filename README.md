@@ -7,10 +7,9 @@ there are many things that could be done better.
 > [!IMPORTANT]
 > I'm still working on this, so the info below will be incomplete.
 
-## Screenshots
+## Demo
 
-![Screenshot 1](./assets/screenshots/screenshot_in_game.png)
-![Screenshot 2](./assets/screenshots/screenshot_game_over.png)
+![Demo GIF](./assets/demo.gif)
 
 ## Inspiration
 

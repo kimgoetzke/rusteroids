@@ -132,8 +132,7 @@
                   export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
                   export PATH=$PATH:''${RUSTUP_HOME:-~/.rustup}/toolchains/$RUSTC_VERSION-x86_64-unknown-linux-gnu/bin/
                   echo ""
-                  echo "Welcome to your Rust-Bevy development environment!" | ${pkgs.lolcat}/bin/lolcat
-                  echo "Start your IDE with: nohup jetbrains-toolbox &"
+                  echo "Welcome to your (Bevy-ready) Rust development environment!" | ${pkgs.lolcat}/bin/lolcat
                   echo ""
                 '';
                 #BINDGEN_EXTRA_CLANG_ARGS =
