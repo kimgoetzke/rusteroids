@@ -92,8 +92,8 @@ fn process_score_event(
 }
 
 fn reset_score_system(mut texts: Query<&mut Text, With<ScoreComponent>>, mut score: ResMut<Score>) {
+  score.0 = 0;
   for mut text in texts.iter_mut() {
-    score.0 = 0;
     text.sections[0].value = format!("Score: {}", score.0);
   }
 }
