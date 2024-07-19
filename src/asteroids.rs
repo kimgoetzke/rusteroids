@@ -1,4 +1,5 @@
 use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
+use crate::game_state::GameState;
 use crate::shared::*;
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use bevy::color::palettes::css::*;
@@ -21,13 +22,14 @@ const MARGIN: f32 = BOUNDS.x * 0.1;
 
 pub struct AsteroidPlugin;
 
-// TODO: Make use of game states to spawn asteroids
-// TODO: Add basic game loop e.g. increasing difficulty/more asteroids, waves, etc.
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_event::<AsteroidSpawnEvent>()
-      .add_systems(Startup, asteroid_initialisation_system)
+      .add_systems(
+        OnEnter(GameState::Start),
+        (reset_asteroids_system, asteroid_initialisation_system).chain(),
+      )
       .add_systems(FixedUpdate, asteroid_wraparound_system)
       .add_systems(Update, spawn_asteroid_event);
   }
@@ -118,6 +120,13 @@ fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut
   }
 }
 
+fn reset_asteroids_system(mut commands: Commands, asteroid_query: Query<Entity, With<Asteroid>>) {
+  for entity in asteroid_query.iter() {
+    commands.entity(entity).despawn_recursive();
+  }
+}
+
+// TODO: Improve collider to support shapes more accurately
 fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
   let asteroid = match category {
     Category::XL => Asteroid::large(),

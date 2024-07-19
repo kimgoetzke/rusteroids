@@ -28,6 +28,14 @@ mod shared;
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
 
+// TODO: Add basic wave system e.g. increasing difficulty/more asteroids, etc.
+// TODO: Add sound effects
+// TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
+// TODO: Consider adding multiplayer
+// TODO: Make camera follow player instead of static camera
+// TODO: Add background grid system and make area larger
+// TODO: Add UFOs or other enemies
+
 fn main() {
   App::new()
     .add_plugins(
