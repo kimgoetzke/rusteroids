@@ -1,6 +1,6 @@
 {
   # Thank you, https://github.com/loophp/rust-shell! Most of this is a copy of it.
-  description = "Rust-Bevy development shells";
+  description = "A Rust development shells that's also Bevy-ready";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
@@ -125,7 +125,6 @@
                 name = rustInfo.name;
                 RUST_SRC_PATH = rustInfo.path;
                 LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath rustInfo.drvs;
-                #LIBCLANG_PATH = pkgs.lib.makeLibraryPath [pkgs.llvmPackages_latest.libclang.lib];
                 buildInputs = rustInfo.drvs;
                 shellHook = ''
                   export CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true
@@ -135,18 +134,6 @@
                   echo "Welcome to your (Bevy-ready) Rust development environment!" | ${pkgs.lolcat}/bin/lolcat
                   echo ""
                 '';
-                #BINDGEN_EXTRA_CLANG_ARGS =
-                #  # Includes normal include path
-                #  (buil#tins.map (a: ''-I"${a}/include"'') [
-                #    # Add dev libraries here (e.g. pkgs.libvmi.dev)
-                #    pkgs.glibc.dev
-                #  ])
-                #  # Includes with special directory paths
-                #  ++ [
-                #    ''-I"${pkgs.llvmPackages_latest.libclang.lib}/lib/clang/${pkgs.llvmPackages_latest.libclang.version}/include"''
-                #    ''-I"${pkgs.glib.dev}/include/glib-2.0"''
-                #    ''-I${pkgs.glib.out}/lib/glib-2.0/include/''
-                #  ];
               };
           };
       };
