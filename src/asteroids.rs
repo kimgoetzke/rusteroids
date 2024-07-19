@@ -42,8 +42,8 @@ pub(crate) struct AsteroidSpawnEvent {
 #[derive(Component, Clone, Debug)]
 pub(crate) struct Asteroid {
   pub category: Category,
-  size: Range<f32>,
-  sides: Range<f32>,
+  size_range: Range<f32>,
+  sides: f32,
   collider: Collider,
   additional_mass: f32,
   pub(crate) score: u16,
@@ -53,8 +53,8 @@ impl Asteroid {
   fn large() -> Self {
     Self {
       category: Category::L,
-      size: 20.0..40.0,
-      sides: 5.0..14.0,
+      size_range: 20.0..40.0,
+      sides: random_f32_range(12.0, 19.0),
       collider: Collider::ball(20.0),
       additional_mass: 30.0,
       score: 5,
@@ -64,8 +64,8 @@ impl Asteroid {
   fn medium() -> Self {
     Self {
       category: Category::M,
-      size: 10.0..20.0,
-      sides: 5.0..14.0,
+      size_range: 10.0..20.0,
+      sides: random_f32_range(7.0, 14.0),
       collider: Collider::ball(10.0),
       additional_mass: 17.5,
       score: 6,
@@ -75,8 +75,8 @@ impl Asteroid {
   fn small() -> Self {
     Self {
       category: Category::S,
-      size: 5.0..10.0,
-      sides: 5.0..14.0,
+      size_range: 5.0..10.0,
+      sides: random_f32_range(5.0, 9.0),
       collider: Collider::ball(5.0),
       additional_mass: 8.0,
       score: 7,
@@ -84,12 +84,11 @@ impl Asteroid {
   }
 
   fn shape(&self) -> Polygon {
-    let sides = random_f32_range(self.sides.start, self.sides.end) as usize;
-    let mut points = Vec::with_capacity(sides);
-    let step = 2.0 * PI / (sides as f32);
-    for i in 0..sides {
+    let mut points = Vec::with_capacity(self.sides as usize);
+    let step = 2.0 * PI / (self.sides);
+    for i in 0..self.sides as usize {
       let angle = step * i as f32;
-      let radius = random_f32_range(self.size.start, self.size.end);
+      let radius = random_f32_range(self.size_range.start, self.size_range.end);
       let x = radius * angle.cos();
       let y = radius * angle.sin();
       points.push(Vec2::new(x, y));
