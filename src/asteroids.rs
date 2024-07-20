@@ -14,11 +14,10 @@ use rand::random;
 use std::f32::consts::PI;
 use std::ops::Range;
 
-const STARTUP_COUNT: u8 = 5;
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
 const MAX_SPEED: f32 = 50.0;
 const MAX_ROTATIONAL_SPEED: f32 = 2.5;
-const MARGIN: f32 = BOUNDS.x * 0.1;
+const MARGIN: f32 = BOUNDS.x * 0.01;
 
 pub struct AsteroidPlugin;
 
@@ -26,12 +25,13 @@ impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_event::<AsteroidSpawnEvent>()
+      .add_event::<ResetAsteroidEvent>()
+      .add_systems(OnEnter(GameState::Start), reset_asteroids_system)
       .add_systems(
-        OnEnter(GameState::Start),
-        (reset_asteroids_system, asteroid_initialisation_system).chain(),
+        Update,
+        (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Play)),
       )
-      .add_systems(FixedUpdate, asteroid_wraparound_system)
-      .add_systems(Update, spawn_asteroid_event);
+      .add_systems(FixedUpdate, asteroid_wraparound_system);
   }
 }
 
@@ -40,6 +40,9 @@ pub(crate) struct AsteroidSpawnEvent {
   pub(crate) category: Category,
   pub(crate) origin: Vec3,
 }
+
+#[derive(Event)]
+pub(crate) struct ResetAsteroidEvent {}
 
 #[derive(Component, Clone, Debug)]
 pub(crate) struct Asteroid {
@@ -100,8 +103,8 @@ impl Asteroid {
   }
 }
 
-fn asteroid_initialisation_system(mut commands: Commands) {
-  for _ in 0..STARTUP_COUNT {
+pub fn spawn_asteroid_wave(count: u16, mut commands: Commands) {
+  for _ in 0..count {
     let category = Category::L;
     let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
     let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
@@ -109,7 +112,7 @@ fn asteroid_initialisation_system(mut commands: Commands) {
   }
 }
 
-fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
+fn spawn_smaller_asteroids_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
   for event in asteroid_event.read() {
     let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
     for _ in 0..spawn_count {
@@ -122,7 +125,18 @@ fn spawn_asteroid_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut
 
 fn reset_asteroids_system(mut commands: Commands, asteroid_query: Query<Entity, With<Asteroid>>) {
   for entity in asteroid_query.iter() {
-    commands.entity(entity).despawn_recursive();
+    commands.entity(entity).despawn();
+  }
+}
+
+fn reset_asteroid_event(
+  mut reset_events: EventReader<ResetAsteroidEvent>,
+  commands: Commands,
+  asteroid_query: Query<Entity, With<Asteroid>>,
+) {
+  for _ in reset_events.read() {
+    reset_asteroids_system(commands, asteroid_query);
+    return;
   }
 }
 
@@ -152,6 +166,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
     ))
     .insert(RigidBody::Dynamic)
     .insert(asteroid.collider.clone())
+    // .insert(ActiveEvents::COLLISION_EVENTS) // Only makes sense if we handle collisions based on the combination of both entities
     .insert(GravityScale(0.0))
     .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
     .insert(Velocity {

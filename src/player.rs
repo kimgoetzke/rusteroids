@@ -1,3 +1,4 @@
+use crate::asteroids::ResetAsteroidEvent;
 use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
 use crate::game_state::GameState;
 use bevy::prelude::*;
@@ -16,6 +17,7 @@ impl Plugin for PlayerPlugin {
         Update,
         (
           player_movement_system,
+          other_controls_system,
           player_wraparound_system,
           player_shooting_cooldown_system,
         ),
@@ -83,6 +85,16 @@ fn player_movement_system(
     // Clamp velocity and apply friction
     velocity.linvel = velocity.linvel.clamp_length_max(player.movement_speed * 2.0);
     velocity.linvel *= 0.995;
+  }
+}
+
+fn other_controls_system(
+  keyboard_input: Res<ButtonInput<KeyCode>>,
+  mut reset_asteroid_event: EventWriter<ResetAsteroidEvent>,
+) {
+  if keyboard_input.just_pressed(KeyCode::F2) {
+    println!("F2: Despawning asteroids of current wave");
+    reset_asteroid_event.send(ResetAsteroidEvent {});
   }
 }
 
