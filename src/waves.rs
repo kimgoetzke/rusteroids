@@ -1,4 +1,5 @@
 use bevy::app::{App, Plugin};
+use bevy::audio::Volume;
 use bevy::prelude::*;
 
 use crate::asteroids::Asteroid;
@@ -31,10 +32,11 @@ pub(crate) struct WaveEvent {
 pub struct Wave(pub u16);
 
 fn transition_to_next_wave(
-  commands: Commands,
+  mut commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
   mut wave: ResMut<Wave>,
   mut wave_event: EventWriter<WaveEvent>,
+  asset_server: Res<AssetServer>,
 ) {
   if !asteroid_query.is_empty() {
     return;
@@ -45,6 +47,15 @@ fn transition_to_next_wave(
     asteroid_count: wave.0 * ASTEROID_START_COUNT,
   };
   println!("Transitioning to wave {}: {:?}", wave.0, event);
+  commands.spawn(AudioBundle {
+    source: asset_server.load("audio/wave_complete.ogg"),
+    settings: PlaybackSettings {
+      mode: bevy::audio::PlaybackMode::Remove,
+      volume: Volume::new(0.5),
+      ..Default::default()
+    },
+    ..Default::default()
+  });
   crate::asteroids::spawn_asteroid_wave(event.asteroid_count, commands);
   wave_event.send(event);
 }

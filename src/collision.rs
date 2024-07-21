@@ -27,6 +27,7 @@ fn collision_system(
   mut asteroid_spawn_event: EventWriter<AsteroidSpawnEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
   mut score_event: EventWriter<ScoreEvent>,
+  asset_server: Res<AssetServer>,
 ) {
   for collision_event in collision_events.read() {
     if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
@@ -48,6 +49,7 @@ fn collision_system(
             transform,
             &mut explosion_event,
             &mut score_event,
+            &asset_server,
           );
         } else if let Ok((projectile_entity, transform)) = projectile_query.get(**entity) {
           handle_projectile_collision(
@@ -100,8 +102,17 @@ fn handle_player_collision(
   player_transform: &Transform,
   explosion_event: &mut EventWriter<ExplosionEvent>,
   ui_event: &mut EventWriter<ScoreEvent>,
+  asset_server: &Res<AssetServer>,
 ) {
   commands.entity(player_entity).despawn();
+  commands.spawn(AudioBundle {
+    source: asset_server.load("audio/player_death.ogg"),
+    settings: PlaybackSettings {
+      mode: bevy::audio::PlaybackMode::Remove,
+      ..Default::default()
+    },
+    ..Default::default()
+  });
   explosion_event.send(ExplosionEvent {
     origin: player_transform.translation,
     category: Category::XL,
