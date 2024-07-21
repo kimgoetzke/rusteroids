@@ -12,15 +12,23 @@ impl Plugin for InGameUiPlugin {
       .register_type::<Score>()
       .add_event::<ScoreEvent>()
       .add_systems(
-        OnEnter(GameState::Start),
+        OnEnter(GameState::Starting),
         (show_static_ui_system, hide_game_over_ui_system, reset_score_system),
       )
-      .add_systems(Update, current_wave_event)
       .add_systems(
-        OnEnter(GameState::GameOver),
+        OnEnter(GameState::Dead),
         (hide_static_ui_system, hide_message_ui_system, show_game_over_ui_system),
       )
-      .add_systems(Update, (process_score_event, change_visibility_with_delay_system));
+      .add_systems(
+        Update,
+        (
+          current_wave_event,
+          process_score_event,
+          change_visibility_with_delay_system,
+        ),
+      )
+      .add_systems(OnEnter(GameState::Playing), toggle_pause_menu_event)
+      .add_systems(OnEnter(GameState::Paused), toggle_pause_menu_event);
   }
 }
 
@@ -41,12 +49,17 @@ trait UiComponent {}
 #[derive(Component)] // UI at the top of the screen
 struct StaticUi;
 
-#[derive(Component)] // Overlay message which is used with a timer
+#[derive(Component, Deref, DerefMut)] // Overlay message which is used with a timer
 struct MessageUi {
   timer: Timer,
 }
 
 impl UiComponent for MessageUi {}
+
+#[derive(Component)] // Pause menu UI
+struct PauseMenuUi;
+
+impl UiComponent for PauseMenuUi {}
 
 #[derive(Component)] // Static overlay message
 struct GameOverUi;
@@ -111,8 +124,15 @@ fn reset_score_system(mut texts: Query<&mut Text, With<ScoreComponent>>, mut sco
   }
 }
 
-fn current_wave_event(mut wave_events: EventReader<WaveEvent>, mut commands: Commands) {
+fn current_wave_event(
+  mut wave_events: EventReader<WaveEvent>,
+  mut commands: Commands,
+  message_ui_entities: Query<Entity, With<MessageUi>>,
+) {
   for event in wave_events.read() {
+    for entity in message_ui_entities.iter() {
+      commands.entity(entity).despawn_recursive();
+    }
     commands
       .spawn(centered_overlay_base_ui(MessageUi {
         timer: Timer::from_seconds(2.0, TimerMode::Once),
@@ -186,20 +206,50 @@ fn hide_game_over_ui_system(mut commands: Commands, query: Query<Entity, With<Ga
 // TODO: Move or change size of message over time
 fn change_visibility_with_delay_system(
   mut commands: Commands,
-  mut cooldowns: Query<(Entity, &mut MessageUi), With<MessageUi>>,
+  mut message_ui_query: Query<(Entity, &mut MessageUi), With<MessageUi>>,
   time: Res<Time>,
 ) {
-  for (entity, mut delay) in &mut cooldowns {
-    delay.timer.tick(time.delta());
+  for (entity, mut message_ui) in message_ui_query.iter_mut() {
+    message_ui.timer.tick(time.delta());
 
-    if delay.timer.finished() {
+    if message_ui.timer.finished() {
       commands.entity(entity).despawn_recursive();
     }
   }
 }
 
-fn hide_message_ui_system(mut commands: Commands, query: Query<Entity, With<MessageUi>>) {
-  for entity in query.iter() {
-    commands.entity(entity).despawn();
+fn hide_message_ui_system(mut commands: Commands, message_ui_entities: Query<Entity, With<MessageUi>>) {
+  info!("Hiding message UI");
+  for entity in message_ui_entities.iter() {
+    commands.entity(entity).despawn_recursive();
+  }
+}
+
+// TODO: Implement pause menu
+fn toggle_pause_menu_event(
+  mut commands: Commands,
+  current_game_state: Res<State<GameState>>,
+  pause_menu_ui: Query<Entity, With<PauseMenuUi>>,
+) {
+  match current_game_state.get() {
+    GameState::Paused => {
+      commands
+        .spawn(centered_overlay_base_ui(PauseMenuUi))
+        .with_children(|builder| {
+          builder.spawn(TextBundle::from_section(
+            "- Pause -",
+            TextStyle {
+              font_size: 72.0,
+              ..Default::default()
+            },
+          ));
+        });
+    }
+    GameState::Playing => {
+      for entity in pause_menu_ui.iter() {
+        commands.entity(entity).despawn_recursive();
+      }
+    }
+    _ => {}
   }
 }

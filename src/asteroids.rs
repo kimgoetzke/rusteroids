@@ -26,10 +26,10 @@ impl Plugin for AsteroidPlugin {
     app
       .add_event::<AsteroidSpawnEvent>()
       .add_event::<ResetAsteroidEvent>()
-      .add_systems(OnEnter(GameState::Start), reset_asteroids_system)
+      .add_systems(OnEnter(GameState::Starting), reset_asteroids_system)
       .add_systems(
         Update,
-        (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Play)),
+        (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Playing)),
       )
       .add_systems(FixedUpdate, asteroid_wraparound_system);
   }

@@ -4,6 +4,7 @@ use bevy_rapier2d::pipeline::CollisionEvent;
 
 use crate::asteroids::{Asteroid, AsteroidSpawnEvent};
 use crate::explosion::ExplosionEvent;
+use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
 use crate::player::Player;
 use crate::projectile::Projectile;
@@ -13,7 +14,7 @@ pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(FixedUpdate, collision_system);
+    app.add_systems(FixedUpdate, collision_system.run_if(in_state(GameState::Playing)));
   }
 }
 

@@ -72,7 +72,7 @@ fn main() {
     ))
     .add_plugins((CollisionPlugin, ExplosionPlugin))
     .add_plugins(InGameUiPlugin)
-    .insert_state(GameState::Start)
+    .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
     .insert_resource(ClearColor(Color::srgb(0.18, 0.204, 0.251)))
     .run();

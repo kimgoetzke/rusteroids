@@ -12,7 +12,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(OnEnter(GameState::Start), spawn_player_system)
+      .add_systems(OnEnter(GameState::Starting), spawn_player_system)
       .add_systems(
         Update,
         (
@@ -44,7 +44,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     ))
     .insert(Player {
       movement_speed: 125.0,
-      rotation_speed: f32::to_radians(360.0),
+      rotation_speed: 5.0,
       shooting_cooldown: SHOOTING_COOLDOWN,
     })
     .insert(RigidBody::Dynamic)
@@ -52,7 +52,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     .insert(ActiveEvents::COLLISION_EVENTS)
     .insert(GravityScale(0.0))
     .insert(Velocity {
-      linvel: Vec2::new(0.0, 50.0),
+      linvel: Vec2::new(0.0, 25.0),
       angvel: 0.0,
     })
     .insert(AdditionalMassProperties::Mass(2.0))
@@ -92,8 +92,8 @@ fn other_controls_system(
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut reset_asteroid_event: EventWriter<ResetAsteroidEvent>,
 ) {
-  if keyboard_input.just_pressed(KeyCode::F2) {
-    println!("F2: Despawning asteroids of current wave");
+  if keyboard_input.just_pressed(KeyCode::F9) {
+    info!("[F9] Despawning asteroids of current wave");
     reset_asteroid_event.send(ResetAsteroidEvent {});
   }
 }

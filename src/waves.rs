@@ -13,8 +13,11 @@ impl Plugin for WavesPlugin {
     app
       .add_event::<WaveEvent>()
       .insert_resource(Wave(0))
-      .add_systems(OnEnter(GameState::Start), reset_waves_system)
-      .add_systems(FixedUpdate, transition_to_next_wave.run_if(in_state(GameState::Play)));
+      .add_systems(OnEnter(GameState::Starting), reset_waves_system)
+      .add_systems(
+        FixedUpdate,
+        transition_to_next_wave.run_if(in_state(GameState::Playing)),
+      );
   }
 }
 
