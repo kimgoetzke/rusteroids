@@ -1,5 +1,10 @@
+use bevy::color::Color;
 use bevy::prelude::Component;
 use rand::random;
+
+pub const PURPLE: Color = Color::srgb(0.706, 0.557, 0.678);
+pub const YELLOW: Color = Color::srgb(0.922, 0.796, 0.545);
+pub const BLUE: Color = Color::srgb(0.533, 0.753, 0.816);
 
 #[derive(Component, Clone, Copy, Debug)]
 pub(crate) enum Category {
