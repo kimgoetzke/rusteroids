@@ -1,4 +1,5 @@
 use bevy::input::common_conditions::input_toggle_active;
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_enoki::EnokiPlugin;
@@ -53,13 +54,14 @@ fn main() {
           }),
           ..default()
         })
+        .set(LogPlugin::default())
         .build(),
     )
     .add_plugins(EnokiPlugin)
     .add_plugins(ShapePlugin)
     .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.0))
     // .add_plugins(RapierDebugRenderPlugin::default())
-    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Escape)))
+    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)))
     .add_plugins((
       PixelPerfectCameraPlugin,
       PlayerPlugin,
