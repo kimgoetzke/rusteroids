@@ -4,18 +4,18 @@ use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 
 pub(crate) const WORLD_SIZE: f32 = 1000.0;
-const TILES: f32 = 200.0; // When dividing by WORLD_SIZE, must be a whole number
+const TILES: f32 = 5.0; // Must result in a whole number when dividing by WORLD_SIZE
 const MARGIN: f32 = 2.0; // Must be divisible by 2
 
 pub struct GameWorldPlugin;
 
 impl Plugin for GameWorldPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, create_game_world_system);
+    app.add_systems(Startup, create_world_system);
   }
 }
 
-fn create_game_world_system(
+fn create_world_system(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<ColorMaterial>>,
@@ -58,4 +58,5 @@ fn create_game_world_system(
       ));
     }
   }
+  info!("Create game world: DONE");
 }
