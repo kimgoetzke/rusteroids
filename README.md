@@ -1,8 +1,8 @@
 # Rusteroids
 
-This is a crappy asteroids mini-game written in Rust, using Bevy engine. The purpose of this project was to learn
-Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy) and I'm sure
-there are many things that could be done better.
+This is a crappy asteroids-like game written in Rust, using Bevy engine and Rapier2d. The purpose of this project was to
+learn Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy), so there
+will be millions of things that could have been done in a better and more idiomatic way.
 
 > [!IMPORTANT]
 > I'm still working on this, so the info below will be incomplete.
@@ -11,11 +11,13 @@ there are many things that could be done better.
 
 ![Demo GIF](./assets/demo.gif)
 
-## Inspiration
+## Features
 
-- Beautiful, written in Rust but not using Bevy: https://github.com/justinmimbs/rs-asteroids/tree/master
-- In Rust with Bevy but very basic: https://github.com/reu/bevyroids
-- In Rust with Bevy and Rapier: https://github.com/brooks-builds/bevy_asteroids
+- Infinite wave system with increasing difficulty
+- Single-button menu to exit the game
+- Audio
+- Collision system powered by `bevy_rapier2d`
+- Particles powered by `bevy_enoki`
 
 ## How to develop
 
