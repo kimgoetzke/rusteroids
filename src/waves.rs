@@ -15,10 +15,7 @@ impl Plugin for WavesPlugin {
       .add_event::<WaveEvent>()
       .insert_resource(Wave(0))
       .add_systems(OnEnter(GameState::Starting), reset_waves_system)
-      .add_systems(
-        FixedUpdate,
-        transition_to_next_wave.run_if(in_state(GameState::Playing)),
-      );
+      .add_systems(FixedUpdate, start_next_wave.run_if(in_state(GameState::Playing)));
   }
 }
 
@@ -31,7 +28,7 @@ pub(crate) struct WaveEvent {
 #[derive(Resource, Default)]
 pub struct Wave(pub u16);
 
-fn transition_to_next_wave(
+fn start_next_wave(
   mut commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
   mut wave: ResMut<Wave>,
@@ -46,7 +43,7 @@ fn transition_to_next_wave(
     wave: wave.0,
     asteroid_count: wave.0 * ASTEROID_START_COUNT,
   };
-  println!("Transitioning to wave {}: {:?}", wave.0, event);
+  info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
     source: asset_server.load("audio/wave_complete.ogg"),
     settings: PlaybackSettings {

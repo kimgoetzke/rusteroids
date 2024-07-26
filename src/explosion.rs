@@ -1,3 +1,4 @@
+use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 
@@ -34,6 +35,20 @@ fn spawn_explosion_event(
       Category::S => asset_server.load("particles/explosion_s.ron"),
     };
 
+    let audio_volume = match explosion.category {
+      Category::XL => Volume::new(0.9),
+      Category::L => Volume::new(0.7),
+      Category::M => Volume::new(0.4),
+      Category::S => Volume::new(0.2),
+    };
+
+    let audio_speed = match explosion.category {
+      Category::XL => 0.7,
+      Category::L => 0.7,
+      Category::M => 1.0,
+      Category::S => 1.5,
+    };
+
     commands.spawn((
       ParticleSpawnerBundle {
         effect,
@@ -43,6 +58,16 @@ fn spawn_explosion_event(
       },
       OneShot::Despawn,
       Explosion,
+      AudioBundle {
+        source: asset_server.load("audio/explosion_rock_default.ogg"),
+        settings: PlaybackSettings {
+          mode: bevy::audio::PlaybackMode::Remove,
+          speed: audio_speed,
+          volume: audio_volume,
+          ..Default::default()
+        },
+        ..Default::default()
+      },
     ));
   }
 }

@@ -1,4 +1,5 @@
 use crate::player::Player;
+use bevy::audio::Volume;
 use bevy::color::Color;
 use bevy::input::ButtonInput;
 use bevy::math::{Vec2, Vec3};
@@ -29,6 +30,7 @@ fn projectile_shooting_system(
   mut commands: Commands,
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut query: Query<(&mut Player, &Transform)>,
+  asset_server: Res<AssetServer>,
 ) {
   if let Ok((mut player, player_transform)) = query.get_single_mut() {
     if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0.0 {
@@ -70,7 +72,16 @@ fn projectile_shooting_system(
           linvel: Vec2::new(player_forward.x, player_forward.y) * projectile.speed,
           angvel: 0.0,
         })
-        .insert(projectile);
+        .insert(projectile)
+        .insert(AudioBundle {
+          source: asset_server.load("audio/shoot_laser_default.ogg"),
+          settings: PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Remove,
+            volume: Volume::new(0.5),
+            ..Default::default()
+          },
+          ..Default::default()
+        });
     }
   }
 }
