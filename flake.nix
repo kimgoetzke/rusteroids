@@ -49,9 +49,7 @@
             pkgs.xorg.libXrandr
             pkgs.glibc.dev
             pkgs.libGL
-            #pkgs.gcc
-            #pkgs.llvmPackages.bintools
-            #pkgs.clang
+            pkgs.audacity
           ];
         };
 
