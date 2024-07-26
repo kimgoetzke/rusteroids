@@ -1,6 +1,7 @@
 use crate::asteroids::ResetAsteroidEvent;
-use crate::camera::{BOUNDS, PIXEL_PERFECT_LAYERS};
+use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
+use crate::game_world::WORLD_SIZE;
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_rapier2d::dynamics::RigidBody;
@@ -71,7 +72,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
       },
     })
-    .insert((SpatialListener::new(100.0), SpatialBundle::default()));
+    .insert((SpatialListener::new(10.0), SpatialBundle::default()));
 }
 
 fn player_movement_system(
@@ -130,7 +131,7 @@ fn player_shooting_cooldown_system(time: Res<Time>, mut query: Query<&mut Player
 }
 
 fn player_wraparound_system(mut query: Query<&mut Transform, (With<RigidBody>, With<Player>)>) {
-  let extents = Vec3::from((BOUNDS / 2.0, 0.0));
+  let extents = Vec3::new(WORLD_SIZE / 2.0, WORLD_SIZE / 2.0, 0.0);
   for mut transform in query.iter_mut() {
     if transform.translation.x > extents.x {
       transform.translation.x = -extents.x;

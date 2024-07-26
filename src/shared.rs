@@ -5,6 +5,8 @@ use rand::random;
 pub const PURPLE: Color = Color::srgb(0.706, 0.557, 0.678);
 pub const YELLOW: Color = Color::srgb(0.922, 0.796, 0.545);
 pub const BLUE: Color = Color::srgb(0.533, 0.753, 0.816);
+pub const DARK_GRAY: Color = Color::srgb(0.18, 0.204, 0.251);
+pub const BLACK: Color = Color::srgb(0.118, 0.129, 0.161);
 
 #[derive(Component, Clone, Copy, Debug)]
 pub(crate) enum Category {

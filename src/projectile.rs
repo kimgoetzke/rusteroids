@@ -1,3 +1,4 @@
+use crate::game_state::GameState;
 use crate::player::Player;
 use bevy::audio::Volume;
 use bevy::color::Color;
@@ -11,7 +12,10 @@ pub struct ProjectilePlugin;
 impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(FixedUpdate, projectile_shooting_system)
+      .add_systems(
+        FixedUpdate,
+        projectile_shooting_system.run_if(in_state(GameState::Playing)),
+      )
       .add_systems(Update, projectile_life_time_system);
   }
 }

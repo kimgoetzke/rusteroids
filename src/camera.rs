@@ -1,10 +1,8 @@
+use crate::game_state::GameState;
+use crate::player::Player;
 use bevy::app::{App, Plugin, Startup, Update};
 use bevy::asset::Assets;
-use bevy::math::Vec2;
-use bevy::prelude::{
-  default, Camera, Camera2dBundle, Commands, Component, EventReader, Image, OrthographicProjection, Query, ResMut,
-  SpriteBundle, With,
-};
+use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
 use bevy::render::render_resource::{Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages};
 use bevy::render::view::RenderLayers;
@@ -12,15 +10,18 @@ use bevy::window::WindowResized;
 
 pub const PIXEL_PERFECT_LAYERS: RenderLayers = RenderLayers::layer(0);
 pub const HIGH_RES_LAYERS: RenderLayers = RenderLayers::layer(1);
-pub const BOUNDS: Vec2 = Vec2::new(RES_WIDTH as f32, RES_HEIGHT as f32);
 const RES_WIDTH: u32 = 640;
 const RES_HEIGHT: u32 = 360;
+const CAM_LERP_FACTOR: f32 = 2.;
 
 pub struct PixelPerfectCameraPlugin;
 
 impl Plugin for PixelPerfectCameraPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, setup_camera).add_systems(Update, fit_canvas);
+    app
+      .add_systems(Startup, setup_camera_system)
+      .add_systems(Update, fit_canvas_system)
+      .add_systems(Update, follow_player_system.run_if(in_state(GameState::Playing)));
   }
 }
 
@@ -33,7 +34,7 @@ struct InGameCamera; // Camera rendering `PIXEL_PERFECT_LAYERS`
 #[derive(Component)]
 struct OuterCamera; // Camera rendering `HIGH_RES_LAYERS`
 
-fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+fn setup_camera_system(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
   // Image serving as a canvas representing the low-resolution game screen
   let canvas_size = Extent3d {
     width: RES_WIDTH,
@@ -85,7 +86,7 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
 }
 
 // Scales camera projection to fit the window (integer multiples only for pixel-perfect rendering)
-fn fit_canvas(
+fn fit_canvas_system(
   mut resize_events: EventReader<WindowResized>,
   mut projections: Query<&mut OrthographicProjection, With<OuterCamera>>,
 ) {
@@ -95,4 +96,27 @@ fn fit_canvas(
     let mut projection = projections.single_mut();
     projection.scale = 1. / h_scale.min(v_scale).round();
   }
+}
+
+fn follow_player_system(
+  mut camera: Query<&mut Transform, With<InGameCamera>>,
+  player: Query<&Transform, (With<Player>, Without<InGameCamera>)>,
+  time: Res<Time>,
+) {
+  let Ok(mut camera) = camera.get_single_mut() else {
+    error_once!("No camera found to follow player");
+    return;
+  };
+
+  let Ok(player) = player.get_single() else {
+    error_once!("No player found to follow");
+    return;
+  };
+
+  let Vec3 { x, y, .. } = player.translation;
+  let direction = Vec3::new(x, y, camera.translation.z);
+
+  camera.translation = camera
+    .translation
+    .lerp(direction, time.delta_seconds() * CAM_LERP_FACTOR);
 }

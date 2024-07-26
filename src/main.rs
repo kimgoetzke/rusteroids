@@ -12,9 +12,11 @@ use crate::camera::PixelPerfectCameraPlugin;
 use crate::collision::CollisionPlugin;
 use crate::explosion::ExplosionPlugin;
 use crate::game_state::{GameState, GameStatePlugin};
+use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
+use crate::shared::DARK_GRAY;
 use crate::waves::WavesPlugin;
 
 mod asteroids;
@@ -22,6 +24,7 @@ mod camera;
 mod collision;
 mod explosion;
 mod game_state;
+mod game_world;
 mod in_game_ui;
 mod player;
 mod projectile;
@@ -62,6 +65,7 @@ fn main() {
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)))
     .add_plugins((
       PixelPerfectCameraPlugin,
+      GameWorldPlugin,
       PlayerPlugin,
       ProjectilePlugin,
       AsteroidPlugin,
@@ -72,6 +76,6 @@ fn main() {
     .add_plugins(InGameUiPlugin)
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
-    .insert_resource(ClearColor(Color::srgb(0.18, 0.204, 0.251)))
+    .insert_resource(ClearColor(DARK_GRAY))
     .run();
 }
