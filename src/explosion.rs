@@ -66,7 +66,6 @@ fn spawn_explosion_event(
           volume: audio_volume,
           ..Default::default()
         },
-        ..Default::default()
       },
     ));
   }

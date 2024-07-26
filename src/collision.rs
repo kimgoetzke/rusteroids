@@ -18,6 +18,7 @@ impl Plugin for CollisionPlugin {
   }
 }
 
+// TODO: Refactor collision system to detect collision type/pair e.g. asteroid-player vs asteroid-asteroid, etc.
 fn collision_system(
   mut commands: Commands,
   mut collision_events: EventReader<CollisionEvent>,

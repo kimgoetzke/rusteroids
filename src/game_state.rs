@@ -43,9 +43,8 @@ fn transition_from_start_to_play(
     KeyCode::KeyS,
     KeyCode::KeyD,
   ]) {
-    match current_game_state.get() {
-      GameState::Starting => next_game_state.set(GameState::Playing),
-      _ => {}
+    if let GameState::Starting = current_game_state.get() {
+      next_game_state.set(GameState::Playing);
     }
   }
 }
@@ -56,9 +55,8 @@ fn transition_from_game_over_to_start(
   mut keyboard_input: ResMut<ButtonInput<KeyCode>>,
 ) {
   if keyboard_input.clear_just_pressed(KeyCode::Space) {
-    match current_game_state.get() {
-      GameState::Dead => next_game_state.set(GameState::Starting),
-      _ => {}
+    if let GameState::Dead = current_game_state.get() {
+      next_game_state.set(GameState::Starting);
     }
   }
 }
