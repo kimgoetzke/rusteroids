@@ -66,7 +66,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
       source: audio_handle,
       settings: PlaybackSettings {
         mode: bevy::audio::PlaybackMode::Loop,
-        volume: Volume::new(0.5),
+        volume: Volume::new(1.6),
         speed: 0.3,
         ..Default::default()
       },
@@ -80,7 +80,7 @@ fn player_movement_system(
   mut query: Query<(&mut Player, &Transform, &mut Velocity, &AudioSink)>,
 ) {
   for (player, transform, mut velocity, audio_sink) in query.iter_mut() {
-    let mut target_volume = 0.0;
+    let mut play_audio = false;
 
     // Update rotation
     let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) {
@@ -92,19 +92,17 @@ fn player_movement_system(
     };
     velocity.angvel = rotation_factor * player.rotation_speed;
 
-    // Set acceleration
+    // Set acceleration and turn on audio
     if keyboard_input.pressed(KeyCode::KeyW) {
       let direction = transform.rotation * Vec3::Y;
       let acceleration = Vec2::new(direction.x, direction.y) * player.movement_speed;
       velocity.linvel += acceleration * time.delta_seconds();
-
-      // Turn volume up if moving
-      target_volume = 1.0;
+      play_audio = true;
     }
 
     // Update volume if it has changed
-    if audio_sink.volume() != target_volume {
-      audio_sink.set_volume(target_volume);
+    if play_audio == audio_sink.is_paused() {
+      audio_sink.toggle();
     }
 
     // Clamp velocity and apply friction

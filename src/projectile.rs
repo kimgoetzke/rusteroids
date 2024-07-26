@@ -77,10 +77,9 @@ fn projectile_shooting_system(
           source: asset_server.load("audio/shoot_laser_default.ogg"),
           settings: PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Remove,
-            volume: Volume::new(0.5),
+            volume: Volume::new(0.4),
             ..Default::default()
           },
-          ..Default::default()
         });
     }
   }
