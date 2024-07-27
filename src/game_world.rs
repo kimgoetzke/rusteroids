@@ -30,32 +30,35 @@ fn create_world_system(
       let x = (i as f32 * tile_size) - half_world + (tile_size / 2.0);
       let y = (j as f32 * tile_size) - half_world + (tile_size / 2.0);
 
-      commands.spawn((
-        MaterialMesh2dBundle {
-          mesh: Mesh2dHandle(meshes.add(Rectangle::new(adjusted_tile_size, adjusted_tile_size))),
-          transform: Transform::from_xyz(x + half_margin, y + half_margin, -999.0),
-          material: materials.add(BLACK),
-          ..default()
-        },
-        PIXEL_PERFECT_LAYERS,
-      ));
-
-      commands.spawn((
-        Text2dBundle {
-          text: Text::from_section(
-            format!("{}|{}", i, j),
-            TextStyle {
-              font_size: 20.0,
-              color: DARK_GRAY,
+      commands
+        .spawn((
+          MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(meshes.add(Rectangle::new(adjusted_tile_size, adjusted_tile_size))),
+            transform: Transform::from_xyz(x + half_margin, y + half_margin, -999.0),
+            material: materials.add(BLACK),
+            ..default()
+          },
+          PIXEL_PERFECT_LAYERS,
+          Name::new("Tile ".to_owned() + i.to_string().as_str() + "|" + j.to_string().as_str()),
+        ))
+        .with_children(|builder| {
+          builder.spawn((
+            Text2dBundle {
+              text: Text::from_section(
+                format!("{}|{}", i, j),
+                TextStyle {
+                  font_size: 20.0,
+                  color: DARK_GRAY,
+                  ..default()
+                },
+              )
+              .with_justify(JustifyText::Center),
+              transform: Transform::from_xyz(0., 0., 1.0),
               ..default()
             },
-          )
-          .with_justify(JustifyText::Center),
-          transform: Transform::from_xyz(x, y, -998.0),
-          ..default()
-        },
-        PIXEL_PERFECT_LAYERS,
-      ));
+            PIXEL_PERFECT_LAYERS,
+          ));
+        });
     }
   }
   info!("Create game world: DONE");

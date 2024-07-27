@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::fmt::Debug;
 use std::ops::Range;
 
 use bevy::color::palettes::css::*;
@@ -151,36 +152,36 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
     Category::M => Asteroid::medium(),
     Category::S => Asteroid::small(),
   };
-  commands
-    .spawn((
-      ShapeBundle {
-        path: GeometryBuilder::build_as(&asteroid.shape()),
-        spatial: SpatialBundle {
-          transform: Transform {
-            translation: Vec3::new(x, y, 0.0),
-            ..default()
-          },
+  commands.spawn((
+    ShapeBundle {
+      path: GeometryBuilder::build_as(&asteroid.shape()),
+      spatial: SpatialBundle {
+        transform: Transform {
+          translation: Vec3::new(x, y, 0.0),
           ..default()
         },
-        ..Default::default()
+        ..default()
       },
-      PIXEL_PERFECT_LAYERS,
-      Stroke::new(WHITE, 1.0),
-    ))
-    .insert(RigidBody::Dynamic)
-    .insert(asteroid.collider.clone())
-    // .insert(ActiveEvents::COLLISION_EVENTS) // Only makes sense if we handle collisions based on the combination of both entities
-    .insert(GravityScale(0.0))
-    .insert(AdditionalMassProperties::Mass(asteroid.additional_mass.clone()))
-    .insert(Velocity {
+      ..Default::default()
+    },
+    PIXEL_PERFECT_LAYERS,
+    Stroke::new(WHITE, 1.0),
+    Name::new(format!("Asteroid {}", category.to_string().to_uppercase())),
+    RigidBody::Dynamic,
+    asteroid.collider.clone(),
+    GravityScale(0.0),
+    AdditionalMassProperties::Mass(asteroid.additional_mass.clone()),
+    Velocity {
       linvel: Vec2::new(
         random_f32_range(-MAX_SPEED, MAX_SPEED),
         random_f32_range(-MAX_SPEED, MAX_SPEED),
       ),
       angvel: random_f32_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
-    })
-    .insert(Ccd::enabled())
-    .insert(asteroid);
+    },
+    Ccd::enabled(),
+    asteroid,
+    // ActiveEvents::COLLISION_EVENTS // Only makes sense if we handle collisions based on the combination of both entities
+  ));
 }
 
 fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {

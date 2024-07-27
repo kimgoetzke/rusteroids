@@ -69,6 +69,7 @@ fn setup_camera_system(mut commands: Commands, mut images: ResMut<Assets<Image>>
     },
     InGameCamera,
     PIXEL_PERFECT_LAYERS,
+    Name::new("Camera: Pixel Perfect"),
   ));
 
   // Spawn the canvas
@@ -79,10 +80,16 @@ fn setup_camera_system(mut commands: Commands, mut images: ResMut<Assets<Image>>
     },
     Canvas,
     HIGH_RES_LAYERS,
+    Name::new("Canvas: High Res"),
   ));
 
   // Camera rendering `HIGH_RES_LAYERS`
-  commands.spawn((Camera2dBundle::default(), OuterCamera, HIGH_RES_LAYERS));
+  commands.spawn((
+    Camera2dBundle::default(),
+    OuterCamera,
+    HIGH_RES_LAYERS,
+    Name::new("Camera: High Res"),
+  ));
 }
 
 // Scales camera projection to fit the window (integer multiples only for pixel-perfect rendering)

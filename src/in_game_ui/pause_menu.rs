@@ -33,7 +33,10 @@ fn toggle_pause_menu_event(
   match current_game_state.get() {
     GameState::Paused => {
       commands
-        .spawn(crate::in_game_ui::centered_overlay_base_ui(PauseMenuUi))
+        .spawn((
+          crate::in_game_ui::centered_overlay_base_ui(PauseMenuUi),
+          Name::new("Pause Menu"),
+        ))
         .with_children(|builder| {
           builder.spawn(TextBundle::from_section(
             "- Paused -",

@@ -59,6 +59,7 @@ fn show_static_ui_system(mut commands: Commands) {
         ..default()
       },
       StaticUi,
+      Name::new("Static UI"),
     ))
     .with_children(|commands| {
       commands.spawn((
@@ -113,9 +114,12 @@ fn current_wave_event(
       commands.entity(entity).despawn_recursive();
     }
     commands
-      .spawn(crate::in_game_ui::centered_overlay_base_ui(MessageUi {
-        timer: Timer::from_seconds(2.0, TimerMode::Once),
-      }))
+      .spawn((
+        crate::in_game_ui::centered_overlay_base_ui(MessageUi {
+          timer: Timer::from_seconds(2.0, TimerMode::Once),
+        }),
+        Name::new("Message Overlay UI"),
+      ))
       .with_children(|builder| {
         builder.spawn(TextBundle::from_section(
           "Wave ".to_string() + event.wave.to_string().as_str(),

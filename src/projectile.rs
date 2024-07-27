@@ -53,8 +53,8 @@ fn projectile_shooting_system(
       player.shooting_cooldown = projectile.cooldown;
 
       // Spawn the projectile
-      commands
-        .spawn(SpriteBundle {
+      commands.spawn((
+        SpriteBundle {
           sprite: Sprite {
             color: projectile.color,
             custom_size: Some(Vec2::new(1.0, 5.0)),
@@ -66,25 +66,27 @@ fn projectile_shooting_system(
             ..default()
           },
           ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(projectile.collider.clone())
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(GravityScale(0.0))
-        .insert(AdditionalMassProperties::Mass(100.0))
-        .insert(Velocity {
+        },
+        Name::new("Projectile"),
+        RigidBody::Dynamic,
+        projectile.collider.clone(),
+        ActiveEvents::COLLISION_EVENTS,
+        GravityScale(0.0),
+        AdditionalMassProperties::Mass(100.0),
+        Velocity {
           linvel: Vec2::new(player_forward.x, player_forward.y) * projectile.speed,
           angvel: 0.0,
-        })
-        .insert(projectile)
-        .insert(AudioBundle {
+        },
+        projectile,
+        AudioBundle {
           source: asset_server.load("audio/shoot_laser_default.ogg"),
           settings: PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Remove,
             volume: Volume::new(0.4),
             ..Default::default()
           },
-        });
+        },
+      ));
     }
   }
 }

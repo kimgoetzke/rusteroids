@@ -58,6 +58,7 @@ fn spawn_explosion_event(
       },
       OneShot::Despawn,
       Explosion,
+      Name::new("Explosion"),
       AudioBundle {
         source: asset_server.load("audio/explosion_rock_default.ogg"),
         settings: PlaybackSettings {

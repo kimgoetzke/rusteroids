@@ -20,7 +20,10 @@ impl UiComponent for GameOverUi {}
 
 fn show_game_over_ui_system(mut commands: Commands, score: ResMut<Score>) {
   commands
-    .spawn(crate::in_game_ui::centered_overlay_base_ui(GameOverUi))
+    .spawn((
+      crate::in_game_ui::centered_overlay_base_ui(GameOverUi),
+      Name::new("Game Over Menu"),
+    ))
     .with_children(|builder| {
       builder.spawn(TextBundle::from_section(
         "Game Over!",
