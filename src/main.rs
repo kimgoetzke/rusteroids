@@ -34,12 +34,11 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.0;
 const WINDOW_HEIGHT: f32 = 720.0;
 
-// TODO: Make camera follow player instead of static camera
-// TODO: Add background grid system and make area larger
 // TODO: Add UFOs or other enemies
 // TODO: Make game web-compatible
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
+// TODO: Consider parallex scrolling background with stars
 
 fn main() {
   App::new()

@@ -636,9 +636,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_enoki"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a93aebc194bff4526727f7f17e834ecbb04f92d8791db85141a582c53031b7d"
+checksum = "67ab2fd33e9db281ba54fd548a4d6a2234d5db07f7ca9f8da961880631e798d9"
 dependencies = [
  "bevy",
  "interpolation",

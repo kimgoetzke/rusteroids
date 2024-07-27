@@ -9,4 +9,4 @@ bevy-inspector-egui = "0.25.0"
 rand = { version = "0.8.5", features = ["small_rng"] }
 bevy_prototype_lyon = "0.12.0"
 bevy_rapier2d = "0.27.0"
-bevy_enoki = "0.2.1"
+bevy_enoki = "0.2.2"
