@@ -1,6 +1,8 @@
 use bevy::app::{App, Plugin, Update};
 use bevy::log::info;
-use bevy::prelude::{in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, Query, With};
+use bevy::prelude::{
+  in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With,
+};
 
 use crate::enemies::ufo::UfoPlugin;
 use crate::game_state::GameState;
@@ -14,6 +16,7 @@ impl Plugin for EnemyPlugin {
     app
       .add_event::<EnemyDamageEvent>()
       .add_plugins(UfoPlugin)
+      .add_systems(OnEnter(GameState::Starting), reset_enemies_system)
       .add_systems(Update, enemy_damage_system.run_if(in_state(GameState::Playing)));
   }
 }
@@ -47,5 +50,11 @@ fn enemy_damage_system(
         commands.entity(entity).despawn();
       }
     }
+  }
+}
+
+fn reset_enemies_system(mut commands: Commands, query: Query<Entity, With<Enemy>>) {
+  for entity in query.iter() {
+    commands.entity(entity).despawn();
   }
 }
