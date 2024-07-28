@@ -37,12 +37,12 @@ fn projectile_shooting_system(
   asset_server: Res<AssetServer>,
 ) {
   if let Ok((mut player, player_transform)) = query.get_single_mut() {
-    if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0.0 {
+    if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
       let player_forward = player_transform.rotation * Vec3::Y;
-      let projectile_position = player_transform.translation + player_forward * 15.0;
+      let projectile_position = player_transform.translation + player_forward * 15.;
       let projectile = Projectile {
-        speed: 750.0,
-        life_time: 0.0,
+        speed: 750.,
+        life_time: 0.,
         max_life_time: 0.4,
         cooldown: 0.1,
         collider: Collider::cuboid(0.5, 2.5),
@@ -72,10 +72,10 @@ fn projectile_shooting_system(
         projectile.collider.clone(),
         ActiveEvents::COLLISION_EVENTS,
         GravityScale(0.0),
-        AdditionalMassProperties::Mass(100.0),
+        AdditionalMassProperties::Mass(100.),
         Velocity {
           linvel: Vec2::new(player_forward.x, player_forward.y) * projectile.speed,
-          angvel: 0.0,
+          angvel: 0.,
         },
         projectile,
         AudioBundle {

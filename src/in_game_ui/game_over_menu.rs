@@ -28,21 +28,21 @@ fn show_game_over_ui_system(mut commands: Commands, score: ResMut<Score>) {
       builder.spawn(TextBundle::from_section(
         "Game Over!",
         TextStyle {
-          font_size: 72.0,
+          font_size: 72.,
           ..Default::default()
         },
       ));
       builder.spawn(TextBundle::from_section(
         format!("Final score: {}", score.0),
         TextStyle {
-          font_size: 32.0,
+          font_size: 32.,
           ..Default::default()
         },
       ));
       builder.spawn(TextBundle::from_section(
         "Press Space to try again",
         TextStyle {
-          font_size: 32.0,
+          font_size: 32.,
           ..Default::default()
         },
       ));

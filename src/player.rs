@@ -9,6 +9,7 @@ use bevy_rapier2d::dynamics::RigidBody;
 use bevy_rapier2d::prelude::*;
 
 pub const SHOOTING_COOLDOWN: f32 = 0.1;
+const MOVEMENT_SPEED: f32 = 125.;
 
 pub struct PlayerPlugin;
 
@@ -38,8 +39,6 @@ pub struct Player {
 #[derive(Component)]
 pub struct ExhaustParticles;
 
-const MOVEMENT_SPEED: f32 = 125.0;
-
 fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
   let player_handle = asset_server.load("player_base.png");
   let audio_handle = asset_server.load("audio/spaceship_loop_default.ogg");
@@ -52,19 +51,19 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     PIXEL_PERFECT_LAYERS,
     Player {
       movement_speed: MOVEMENT_SPEED,
-      rotation_speed: 5.0,
+      rotation_speed: 5.,
       shooting_cooldown: SHOOTING_COOLDOWN,
     },
     Name::new("Player"),
     RigidBody::Dynamic,
-    Collider::ball(9.0),
+    Collider::ball(9.),
     ActiveEvents::COLLISION_EVENTS,
-    GravityScale(0.0),
+    GravityScale(0.),
     Velocity {
-      linvel: Vec2::new(0.0, 25.0),
-      angvel: 0.0,
+      linvel: Vec2::new(0., 25.),
+      angvel: 0.,
     },
-    AdditionalMassProperties::Mass(2.0),
+    AdditionalMassProperties::Mass(2.),
     Ccd::enabled(),
     AudioBundle {
       source: audio_handle,
@@ -75,7 +74,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
       },
     },
-    SpatialListener::new(10.0),
+    SpatialListener::new(10.),
   ));
 }
 
@@ -91,11 +90,11 @@ fn player_movement_system(
 
     // Update rotation
     let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) {
-      1.0
+      1.
     } else if keyboard_input.pressed(KeyCode::KeyD) {
-      -1.0
+      -1.
     } else {
-      0.0
+      0.
     };
     velocity.angvel = rotation_factor * player.rotation_speed;
 
@@ -111,7 +110,7 @@ fn player_movement_system(
             effect: asset_server.load("particles/spaceship_exhaust.ron"),
             material: DEFAULT_MATERIAL,
             transform: Transform {
-              translation: Vec3::new(0.0, 0.0, -50.0),
+              translation: Vec3::new(0., 0., -50.),
               scale: Vec3::splat(0.3),
               ..default()
             },
@@ -129,7 +128,7 @@ fn player_movement_system(
     }
 
     // Clamp velocity and apply friction
-    velocity.linvel = velocity.linvel.clamp_length_max(player.movement_speed * 2.0);
+    velocity.linvel = velocity.linvel.clamp_length_max(player.movement_speed * 2.);
     velocity.linvel *= 0.995;
   }
 }
@@ -146,14 +145,14 @@ fn other_controls_system(
 
 fn player_shooting_cooldown_system(time: Res<Time>, mut query: Query<&mut Player>) {
   for mut player in query.iter_mut() {
-    if player.shooting_cooldown > 0.0 {
+    if player.shooting_cooldown > 0. {
       player.shooting_cooldown -= time.delta_seconds();
     }
   }
 }
 
 fn player_wraparound_system(mut query: Query<&mut Transform, (With<RigidBody>, With<Player>)>) {
-  let extents = Vec3::new(WORLD_SIZE / 2.0, WORLD_SIZE / 2.0, 0.0);
+  let extents = Vec3::new(WORLD_SIZE / 2., WORLD_SIZE / 2., 0.);
   for mut transform in query.iter_mut() {
     if transform.translation.x > extents.x {
       transform.translation.x = -extents.x;

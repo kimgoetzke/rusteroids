@@ -50,10 +50,10 @@ fn show_static_ui_system(mut commands: Commands) {
     .spawn((
       NodeBundle {
         style: Style {
-          width: Val::Percent(100.0),
-          height: Val::Percent(10.0),
+          width: Val::Percent(100.),
+          height: Val::Percent(10.),
           align_items: AlignItems::FlexStart,
-          padding: UiRect::all(Val::Px(15.0)),
+          padding: UiRect::all(Val::Px(15.)),
           ..default()
         },
         ..default()
@@ -67,7 +67,7 @@ fn show_static_ui_system(mut commands: Commands) {
           text: Text::from_section(
             "Score: 0",
             TextStyle {
-              font_size: 32.0,
+              font_size: 32.,
               ..default()
             },
           ),
@@ -116,7 +116,7 @@ fn current_wave_event(
     commands
       .spawn((
         crate::in_game_ui::centered_overlay_base_ui(MessageUi {
-          timer: Timer::from_seconds(2.0, TimerMode::Once),
+          timer: Timer::from_seconds(2., TimerMode::Once),
         }),
         Name::new("Message Overlay UI"),
       ))
@@ -124,7 +124,7 @@ fn current_wave_event(
         builder.spawn(TextBundle::from_section(
           "Wave ".to_string() + event.wave.to_string().as_str(),
           TextStyle {
-            font_size: 72.0,
+            font_size: 72.,
             ..Default::default()
           },
         ));

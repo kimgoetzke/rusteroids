@@ -19,7 +19,7 @@ use crate::shared::*;
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
-const MAX_SPEED: f32 = 50.0;
+const MAX_SPEED: f32 = 50.;
 const MAX_ROTATIONAL_SPEED: f32 = 2.5;
 const MARGIN: f32 = 25.;
 
@@ -62,10 +62,10 @@ impl Asteroid {
   fn large() -> Self {
     Self {
       category: Category::L,
-      size_range: 20.0..40.0,
-      sides: random_f32_range(12.0, 19.0),
-      collider: Collider::ball(20.0),
-      additional_mass: 30.0,
+      size_range: 20.0..40.,
+      sides: random_f32_range(12., 19.),
+      collider: Collider::ball(20.),
+      additional_mass: 30.,
       score: 5,
     }
   }
@@ -73,9 +73,9 @@ impl Asteroid {
   fn medium() -> Self {
     Self {
       category: Category::M,
-      size_range: 10.0..20.0,
-      sides: random_f32_range(7.0, 14.0),
-      collider: Collider::ball(10.0),
+      size_range: 10.0..20.,
+      sides: random_f32_range(7., 14.),
+      collider: Collider::ball(10.),
       additional_mass: 17.5,
       score: 6,
     }
@@ -84,17 +84,17 @@ impl Asteroid {
   fn small() -> Self {
     Self {
       category: Category::S,
-      size_range: 5.0..10.0,
-      sides: random_f32_range(5.0, 9.0),
-      collider: Collider::ball(5.0),
-      additional_mass: 8.0,
+      size_range: 5.0..10.,
+      sides: random_f32_range(5., 9.),
+      collider: Collider::ball(5.),
+      additional_mass: 8.,
       score: 7,
     }
   }
 
   fn shape(&self) -> Polygon {
     let mut points = Vec::with_capacity(self.sides as usize);
-    let step = 2.0 * PI / (self.sides);
+    let step = 2. * PI / (self.sides);
     for i in 0..self.sides as usize {
       let angle = step * i as f32;
       let radius = random_f32_range(self.size_range.start, self.size_range.end);
@@ -110,8 +110,8 @@ impl Asteroid {
 pub fn spawn_asteroid_wave(count: u16, mut commands: Commands) {
   for _ in 0..count {
     let category = Category::L;
-    let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.0;
-    let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.0;
+    let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.;
+    let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.;
     spawn_asteroid(&mut commands, category, x, y);
   }
 }
@@ -120,8 +120,8 @@ fn spawn_smaller_asteroids_event(mut asteroid_event: EventReader<AsteroidSpawnEv
   for event in asteroid_event.read() {
     let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
     for _ in 0..spawn_count {
-      let x = event.origin.x + (random::<f32>() * 20.0);
-      let y = event.origin.y + (random::<f32>() * 20.0);
+      let x = event.origin.x + (random::<f32>() * 20.);
+      let y = event.origin.y + (random::<f32>() * 20.);
       spawn_asteroid(&mut commands, event.category, x, y);
     }
   }
@@ -157,7 +157,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
       path: GeometryBuilder::build_as(&asteroid.shape()),
       spatial: SpatialBundle {
         transform: Transform {
-          translation: Vec3::new(x, y, 0.0),
+          translation: Vec3::new(x, y, 0.),
           ..default()
         },
         ..default()
@@ -165,11 +165,11 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
       ..Default::default()
     },
     PIXEL_PERFECT_LAYERS,
-    Stroke::new(WHITE, 1.0),
+    Stroke::new(WHITE, 1.),
     Name::new(format!("Asteroid {}", category.to_string().to_uppercase())),
     RigidBody::Dynamic,
     asteroid.collider.clone(),
-    GravityScale(0.0),
+    GravityScale(0.),
     AdditionalMassProperties::Mass(asteroid.additional_mass.clone()),
     Velocity {
       linvel: Vec2::new(
@@ -185,7 +185,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
 }
 
 fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {
-  let extents = Vec3::new(WORLD_SIZE / 2.0, WORLD_SIZE / 2.0, 0.0);
+  let extents = Vec3::new(WORLD_SIZE / 2., WORLD_SIZE / 2., 0.);
   for mut transform in asteroids.iter_mut() {
     if transform.translation.x > (extents.x + MARGIN) {
       transform.translation.x = -extents.x - MARGIN;

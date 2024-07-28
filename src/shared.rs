@@ -9,6 +9,8 @@ pub const BLUE: Color = Color::srgb(0.533, 0.753, 0.816);
 pub const DARK_GRAY: Color = Color::srgb(0.18, 0.204, 0.251);
 pub const BLACK: Color = Color::srgb(0.118, 0.129, 0.161);
 
+pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
+
 #[derive(Component, Clone, Copy, Debug)]
 pub(crate) enum Category {
   XL,
