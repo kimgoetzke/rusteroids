@@ -49,14 +49,14 @@ fn toggle_pause_menu_event(
             .spawn((
               ButtonBundle {
                 style: Style {
-                  margin: UiRect::all(Val::Px(10.0)),
-                  padding: UiRect::all(Val::Px(10.0)),
+                  margin: UiRect::all(Val::Px(10.)),
+                  padding: UiRect::all(Val::Px(10.)),
                   justify_content: JustifyContent::Center,
                   align_items: AlignItems::Center,
                   ..Style::DEFAULT
                 },
                 background_color: BackgroundColor::from(BACKGROUND_COLOR),
-                border_radius: BorderRadius::all(Val::Px(15.0)),
+                border_radius: BorderRadius::all(Val::Px(15.)),
                 ..default()
               },
               QuitButton {},
@@ -104,8 +104,8 @@ pub fn interact_with_quit_button(
 
 pub fn get_button_text_style() -> TextStyle {
   TextStyle {
-    font_size: 32.0,
-    color: Color::srgb(1.0, 1.0, 1.0),
+    font_size: 32.,
+    color: Color::srgb(1., 1., 1.),
     ..default()
   }
 }

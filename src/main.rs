@@ -31,8 +31,8 @@ mod projectile;
 mod shared;
 mod waves;
 
-const WINDOW_WIDTH: f32 = 1280.0;
-const WINDOW_HEIGHT: f32 = 720.0;
+const WINDOW_WIDTH: f32 = 1280.;
+const WINDOW_HEIGHT: f32 = 720.;
 
 // TODO: Add UFOs or other enemies
 // TODO: Make game web-compatible
@@ -59,7 +59,7 @@ fn main() {
     )
     .add_plugins(EnokiPlugin)
     .add_plugins(ShapePlugin)
-    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.0))
+    .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.))
     // .add_plugins(RapierDebugRenderPlugin::default())
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)))
     .add_plugins((

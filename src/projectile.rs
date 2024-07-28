@@ -57,7 +57,7 @@ fn projectile_shooting_system(
         SpriteBundle {
           sprite: Sprite {
             color: projectile.color,
-            custom_size: Some(Vec2::new(1.0, 5.0)),
+            custom_size: Some(Vec2::new(1., 5.)),
             ..default()
           },
           transform: Transform {
@@ -71,7 +71,7 @@ fn projectile_shooting_system(
         RigidBody::Dynamic,
         projectile.collider.clone(),
         ActiveEvents::COLLISION_EVENTS,
-        GravityScale(0.0),
+        GravityScale(0.),
         AdditionalMassProperties::Mass(100.),
         Velocity {
           linvel: Vec2::new(player_forward.x, player_forward.y) * projectile.speed,
