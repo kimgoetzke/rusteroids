@@ -1,3 +1,4 @@
+use bevy::audio::{AudioPlugin, SpatialScale};
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
@@ -54,6 +55,10 @@ fn main() {
             resizable: false,
             ..default()
           }),
+          ..default()
+        })
+        .set(AudioPlugin {
+          default_spatial_scale: SpatialScale::new_2d(0.005),
           ..default()
         })
         .set(LogPlugin::default())

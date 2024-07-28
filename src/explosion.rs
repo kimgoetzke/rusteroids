@@ -65,6 +65,7 @@ fn spawn_explosion_event(
           mode: bevy::audio::PlaybackMode::Remove,
           speed: audio_speed,
           volume: audio_volume,
+          spatial: true,
           ..Default::default()
         },
       },

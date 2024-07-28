@@ -99,6 +99,7 @@ fn spawn_projectile(
       settings: PlaybackSettings {
         mode: bevy::audio::PlaybackMode::Remove,
         volume: Volume::new(0.4),
+        spatial: true,
         ..Default::default()
       },
     },
