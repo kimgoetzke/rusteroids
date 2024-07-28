@@ -1,4 +1,5 @@
 use bevy::app::{App, Plugin};
+use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_rapier2d::pipeline::CollisionEvent;
 
@@ -99,6 +100,7 @@ fn handle_player_collision(
     source: asset_server.load("audio/player_death.ogg"),
     settings: PlaybackSettings {
       mode: bevy::audio::PlaybackMode::Remove,
+      volume: Volume::new(2.),
       ..Default::default()
     },
     ..Default::default()

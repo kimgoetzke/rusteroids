@@ -112,12 +112,10 @@ fn follow_player_system(
   time: Res<Time>,
 ) {
   let Ok(mut camera) = camera.get_single_mut() else {
-    error_once!("No camera found to follow player");
     return;
   };
 
   let Ok(player) = player.get_single() else {
-    error_once!("No player found to follow");
     return;
   };
 

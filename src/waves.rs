@@ -23,6 +23,7 @@ impl Plugin for WavesPlugin {
 pub(crate) struct WaveEvent {
   pub(crate) wave: u16,
   pub(crate) asteroid_count: u16,
+  pub(crate) ufo_count: u16,
 }
 
 #[derive(Resource, Default)]
@@ -43,10 +44,11 @@ fn start_next_wave(
   let event = WaveEvent {
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
+    ufo_count: wave.0 - 1,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
-    source: asset_server.load("audio/wave_complete.ogg"),
+    source: asset_server.load("audio/wave_started.ogg"),
     settings: PlaybackSettings {
       mode: bevy::audio::PlaybackMode::Remove,
       volume: Volume::new(0.5),
@@ -54,7 +56,8 @@ fn start_next_wave(
     },
     ..Default::default()
   });
-  crate::asteroids::spawn_asteroid_wave(event.asteroid_count, commands, asteroid_spawn_event);
+  crate::asteroids::spawn_asteroid_wave(event.asteroid_count, &mut commands, asteroid_spawn_event);
+  crate::enemies::ufo::spawn_ufo_wave(event.ufo_count, &mut commands, &asset_server);
   wave_event.send(event);
 }
 

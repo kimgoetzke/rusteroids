@@ -1,97 +1,107 @@
-use crate::game_state::GameState;
-use crate::player::Player;
 use bevy::audio::Volume;
-use bevy::color::Color;
-use bevy::input::ButtonInput;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+
+use crate::game_state::GameState;
 
 pub struct ProjectilePlugin;
 
 impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_event::<ProjectileSpawnEvent>()
       .add_systems(
         FixedUpdate,
-        projectile_shooting_system.run_if(in_state(GameState::Playing)),
+        process_projectile_spawn_event.run_if(in_state(GameState::Playing)),
       )
       .add_systems(Update, projectile_life_time_system);
   }
 }
 
-#[derive(Component, Clone)]
-pub(crate) struct Projectile {
-  speed: f32,
-  life_time: f32,
-  max_life_time: f32,
-  cooldown: f32,
-  collider: Collider,
-  color: Color,
+#[derive(Event)]
+pub(crate) struct ProjectileSpawnEvent {
+  pub(crate) projectile_info: ProjectileInfo,
+  pub(crate) origin_transform: Transform,
+  pub(crate) origin_forward: Vec3,
+  pub(crate) spawn_position: Vec3,
 }
 
-fn projectile_shooting_system(
+#[derive(Component, Clone)]
+pub(crate) struct Projectile;
+
+#[derive(Component, Clone)]
+pub(crate) struct ProjectileInfo {
+  pub(crate) speed: f32,
+  pub(crate) life_time: f32,
+  pub(crate) max_life_time: f32,
+  pub(crate) cooldown: f32,
+  pub(crate) collider: Collider,
+  pub(crate) sprite: Sprite,
+}
+
+fn process_projectile_spawn_event(
+  mut projectile_spawn_event: EventReader<ProjectileSpawnEvent>,
   mut commands: Commands,
-  keyboard_input: Res<ButtonInput<KeyCode>>,
-  mut query: Query<(&mut Player, &Transform)>,
   asset_server: Res<AssetServer>,
 ) {
-  if let Ok((mut player, player_transform)) = query.get_single_mut() {
-    if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
-      let player_forward = player_transform.rotation * Vec3::Y;
-      let projectile_position = player_transform.translation + player_forward * 15.;
-      let projectile = Projectile {
-        speed: 750.,
-        life_time: 0.,
-        max_life_time: 0.4,
-        cooldown: 0.1,
-        collider: Collider::cuboid(0.5, 2.5),
-        color: Color::hsl(0.59, 0.32, 0.52),
-      };
-
-      // Reset the shooting cooldown
-      player.shooting_cooldown = projectile.cooldown;
-
-      // Spawn the projectile
-      commands.spawn((
-        SpriteBundle {
-          sprite: Sprite {
-            color: projectile.color,
-            custom_size: Some(Vec2::new(1., 5.)),
-            ..default()
-          },
-          transform: Transform {
-            translation: projectile_position,
-            rotation: player_transform.rotation,
-            ..default()
-          },
-          ..default()
-        },
-        Name::new("Projectile"),
-        RigidBody::Dynamic,
-        projectile.collider.clone(),
-        ActiveEvents::COLLISION_EVENTS,
-        GravityScale(0.),
-        AdditionalMassProperties::Mass(100.),
-        Velocity {
-          linvel: Vec2::new(player_forward.x, player_forward.y) * projectile.speed,
-          angvel: 0.,
-        },
-        projectile,
-        AudioBundle {
-          source: asset_server.load("audio/shoot_laser_default.ogg"),
-          settings: PlaybackSettings {
-            mode: bevy::audio::PlaybackMode::Remove,
-            volume: Volume::new(0.4),
-            ..Default::default()
-          },
-        },
-      ));
-    }
+  for event in projectile_spawn_event.read() {
+    spawn_projectile(
+      &mut commands,
+      &asset_server,
+      &event.projectile_info,
+      &event.origin_transform,
+      event.origin_forward,
+      event.spawn_position,
+    );
   }
 }
 
-fn projectile_life_time_system(mut commands: Commands, time: Res<Time>, mut query: Query<(Entity, &mut Projectile)>) {
+fn spawn_projectile(
+  commands: &mut Commands,
+  asset_server: &Res<AssetServer>,
+  projectile: &ProjectileInfo,
+  origin_transform: &Transform,
+  origin_forward: Vec3,
+  spawn_position: Vec3,
+) {
+  commands.spawn((
+    SpriteBundle {
+      sprite: projectile.sprite.clone(),
+      transform: Transform {
+        translation: spawn_position,
+        rotation: origin_transform.rotation,
+        ..default()
+      },
+      ..default()
+    },
+    Name::new("Projectile"),
+    RigidBody::Dynamic,
+    projectile.collider.clone(),
+    ActiveEvents::COLLISION_EVENTS,
+    GravityScale(0.),
+    AdditionalMassProperties::Mass(100.),
+    Velocity {
+      linvel: Vec2::new(origin_forward.x, origin_forward.y) * projectile.speed,
+      angvel: 0.,
+    },
+    Projectile,
+    AudioBundle {
+      source: asset_server.load("audio/shoot_laser_default.ogg"),
+      settings: PlaybackSettings {
+        mode: bevy::audio::PlaybackMode::Remove,
+        volume: Volume::new(0.4),
+        ..Default::default()
+      },
+    },
+  ));
+}
+
+fn projectile_life_time_system(
+  mut commands: Commands,
+  time: Res<Time>,
+  mut query: Query<(Entity, &mut ProjectileInfo)>,
+) {
   for (entity, mut projectile) in query.iter_mut() {
     projectile.life_time += time.delta_seconds();
 

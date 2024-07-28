@@ -10,6 +10,7 @@ use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
 use crate::asteroids::AsteroidPlugin;
 use crate::camera::PixelPerfectCameraPlugin;
 use crate::collision::CollisionPlugin;
+use crate::enemies::EnemyPlugin;
 use crate::explosion::ExplosionPlugin;
 use crate::game_state::{GameState, GameStatePlugin};
 use crate::game_world::GameWorldPlugin;
@@ -22,6 +23,7 @@ use crate::waves::WavesPlugin;
 mod asteroids;
 mod camera;
 mod collision;
+mod enemies;
 mod explosion;
 mod game_state;
 mod game_world;
@@ -70,6 +72,7 @@ fn main() {
       AsteroidPlugin,
       GameStatePlugin,
       WavesPlugin,
+      EnemyPlugin,
     ))
     .add_plugins((CollisionPlugin, ExplosionPlugin))
     .add_plugins(InGameUiPlugin)

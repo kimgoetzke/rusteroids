@@ -2,6 +2,8 @@ use crate::asteroids::ResetAsteroidEvent;
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
+use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
+use crate::shared::PURPLE;
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerBundle, DEFAULT_MATERIAL};
@@ -21,9 +23,9 @@ impl Plugin for PlayerPlugin {
         Update,
         (
           player_movement_system,
+          player_shooting_system,
           other_controls_system,
           player_wraparound_system,
-          player_shooting_cooldown_system,
         ),
       );
   }
@@ -31,9 +33,9 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Component)]
 pub struct Player {
-  pub movement_speed: f32,
-  pub rotation_speed: f32,
-  pub shooting_cooldown: f32,
+  movement_speed: f32,
+  rotation_speed: f32,
+  shooting_cooldown: f32,
 }
 
 #[derive(Component)]
@@ -133,6 +135,44 @@ fn player_movement_system(
   }
 }
 
+fn player_shooting_system(
+  time: Res<Time>,
+  mut query: Query<(&mut Player, &Transform)>,
+  keyboard_input: Res<ButtonInput<KeyCode>>,
+  mut projective_spawn_event: EventWriter<ProjectileSpawnEvent>,
+) {
+  for (mut player, player_transform) in query.iter_mut() {
+    // Spawn a projectile if the player is shooting
+    if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
+      let player_forward = player_transform.rotation * Vec3::Y;
+      let projectile_info = ProjectileInfo {
+        speed: 750.,
+        life_time: 0.,
+        max_life_time: 0.4,
+        cooldown: 0.1,
+        collider: Collider::cuboid(0.5, 2.5),
+        sprite: Sprite {
+          color: PURPLE,
+          custom_size: Some(Vec2::new(1., 5.)),
+          ..default()
+        },
+      };
+      player.shooting_cooldown = projectile_info.cooldown;
+      projective_spawn_event.send(ProjectileSpawnEvent {
+        projectile_info,
+        origin_transform: player_transform.clone(),
+        origin_forward: player_forward,
+        spawn_position: player_transform.translation + player_forward * 15.,
+      });
+    }
+
+    // Update the shooting cooldown
+    if player.shooting_cooldown > 0. {
+      player.shooting_cooldown -= time.delta_seconds();
+    }
+  }
+}
+
 fn other_controls_system(
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut reset_asteroid_event: EventWriter<ResetAsteroidEvent>,
@@ -140,14 +180,6 @@ fn other_controls_system(
   if keyboard_input.just_pressed(KeyCode::F9) {
     info!("[F9] Despawning asteroids of current wave");
     reset_asteroid_event.send(ResetAsteroidEvent {});
-  }
-}
-
-fn player_shooting_cooldown_system(time: Res<Time>, mut query: Query<&mut Player>) {
-  for mut player in query.iter_mut() {
-    if player.shooting_cooldown > 0. {
-      player.shooting_cooldown -= time.delta_seconds();
-    }
   }
 }
 
