@@ -42,7 +42,7 @@ fn start_next_wave(
   wave.0 += 1;
   let event = WaveEvent {
     wave: wave.0,
-    asteroid_count: wave.0 * ASTEROID_START_COUNT,
+    asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {

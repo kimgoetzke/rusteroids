@@ -82,10 +82,7 @@ fn handle_asteroid_collision(
     origin: position,
     category: asteroid.category,
   });
-  score_event.send(ScoreEvent {
-    score: asteroid.score,
-    entity_type: "Asteroid".to_string(),
-  });
+  score_event.send(ScoreEvent { score: asteroid.score });
   commands.entity(asteroid_entity).despawn();
 }
 
@@ -94,7 +91,7 @@ fn handle_player_collision(
   player_entity: Entity,
   player_transform: &Transform,
   explosion_event: &mut EventWriter<ExplosionEvent>,
-  ui_event: &mut EventWriter<ScoreEvent>,
+  score_event: &mut EventWriter<ScoreEvent>,
   asset_server: &Res<AssetServer>,
 ) {
   commands.entity(player_entity).despawn();
@@ -110,10 +107,7 @@ fn handle_player_collision(
     origin: player_transform.translation,
     category: Category::XL,
   });
-  ui_event.send(ScoreEvent {
-    score: 0,
-    entity_type: "Player".to_string(),
-  });
+  score_event.send(ScoreEvent { score: 0 });
 }
 
 fn handle_projectile_collision(

@@ -23,7 +23,6 @@ trait UiComponent {}
 #[derive(Event)]
 pub(crate) struct ScoreEvent {
   pub(crate) score: u16,
-  pub(crate) entity_type: String,
 }
 
 #[derive(Resource, Default, Reflect)]

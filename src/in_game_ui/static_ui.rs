@@ -127,9 +127,7 @@ fn process_asteroid_destroyed_event(
   mut asteroid_count_texts: Query<&mut Text, (With<AsteroidCountComponent>, Without<ScoreComponent>)>,
 ) {
   for _ in events.read() {
-    info!("Asteroid destroyed event received in static UI component");
     for mut text in asteroid_count_texts.iter_mut() {
-      info!("Updating asteroid count in static UI component");
       asteroid_count.0 -= 1;
       text.sections[0].value = format!("{} {}", ASTEROIDS_LABEL, asteroid_count.0);
     }

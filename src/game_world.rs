@@ -50,7 +50,7 @@ fn create_world_system(
                 TextStyle {
                   font: asset_server.load(DEFAULT_FONT),
                   font_size: 20.,
-                  color: DARK_GRAY,
+                  color: DARK_GRAY.with_alpha(0.3),
                   ..default()
                 },
               )

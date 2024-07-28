@@ -112,6 +112,7 @@ impl Asteroid {
   }
 }
 
+// TODO: Spawn asteroids where the player is not
 pub fn spawn_asteroid_wave(
   count: u16,
   mut commands: Commands,
