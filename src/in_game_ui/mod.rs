@@ -23,11 +23,16 @@ trait UiComponent {}
 #[derive(Event)]
 pub(crate) struct ScoreEvent {
   pub(crate) score: u16,
+  pub(crate) entity_type: String,
 }
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
 pub struct Score(pub u16);
+
+#[derive(Resource, Default, Reflect)]
+#[reflect(Resource)]
+pub struct AsteroidCount(pub u16);
 
 fn centered_overlay_base_ui<T: UiComponent + Component>(ui_component: T) -> (NodeBundle, T) {
   (

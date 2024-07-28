@@ -15,6 +15,7 @@ use rand::random;
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
+use crate::in_game_ui::AsteroidCount;
 use crate::shared::*;
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
@@ -28,7 +29,8 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<AsteroidSpawnEvent>()
+      .add_event::<AsteroidSpawnedEvent>()
+      .add_event::<AsteroidDestroyedEvent>()
       .add_event::<ResetAsteroidEvent>()
       .add_systems(OnEnter(GameState::Starting), reset_asteroids_system)
       .add_systems(
@@ -40,13 +42,16 @@ impl Plugin for AsteroidPlugin {
 }
 
 #[derive(Event)]
-pub(crate) struct AsteroidSpawnEvent {
+pub(crate) struct AsteroidSpawnedEvent;
+
+#[derive(Event)]
+pub(crate) struct AsteroidDestroyedEvent {
   pub(crate) category: Category,
   pub(crate) origin: Vec3,
 }
 
 #[derive(Event)]
-pub(crate) struct ResetAsteroidEvent {}
+pub(crate) struct ResetAsteroidEvent;
 
 #[derive(Component, Clone, Debug)]
 pub(crate) struct Asteroid {
@@ -107,39 +112,62 @@ impl Asteroid {
   }
 }
 
-pub fn spawn_asteroid_wave(count: u16, mut commands: Commands) {
+pub fn spawn_asteroid_wave(
+  count: u16,
+  mut commands: Commands,
+  mut asteroid_spawned_event: EventWriter<AsteroidSpawnedEvent>,
+) {
   for _ in 0..count {
     let category = Category::L;
     let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.;
     let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.;
     spawn_asteroid(&mut commands, category, x, y);
+    asteroid_spawned_event.send(AsteroidSpawnedEvent);
   }
 }
 
-fn spawn_smaller_asteroids_event(mut asteroid_event: EventReader<AsteroidSpawnEvent>, mut commands: Commands) {
+fn spawn_smaller_asteroids_event(
+  mut asteroid_event: EventReader<AsteroidDestroyedEvent>,
+  mut commands: Commands,
+  mut asteroid_spawned_event: EventWriter<AsteroidSpawnedEvent>,
+) {
   for event in asteroid_event.read() {
-    let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
-    for _ in 0..spawn_count {
-      let x = event.origin.x + (random::<f32>() * 20.);
-      let y = event.origin.y + (random::<f32>() * 20.);
-      spawn_asteroid(&mut commands, event.category, x, y);
+    if let Some(closest_smaller_category) = match event.category {
+      Category::XL => Some(Category::L),
+      Category::L => Some(Category::M),
+      Category::M => Some(Category::S),
+      Category::S => None,
+    } {
+      let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
+      for _ in 0..spawn_count {
+        let x = event.origin.x + random::<f32>() * 20.;
+        let y = event.origin.y + random::<f32>() * 20.;
+        spawn_asteroid(&mut commands, closest_smaller_category, x, y);
+        asteroid_spawned_event.send(AsteroidSpawnedEvent);
+      }
     }
   }
 }
 
-fn reset_asteroids_system(mut commands: Commands, asteroid_query: Query<Entity, With<Asteroid>>) {
+fn reset_asteroids_system(
+  mut commands: Commands,
+  asteroid_query: Query<Entity, With<Asteroid>>,
+  mut asteroid_count: ResMut<AsteroidCount>,
+) {
   for entity in asteroid_query.iter() {
     commands.entity(entity).despawn();
   }
+  asteroid_count.0 = 0;
 }
 
 fn reset_asteroid_event(
   mut reset_events: EventReader<ResetAsteroidEvent>,
   commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
+  asteroid_count: ResMut<AsteroidCount>,
 ) {
   for _ in reset_events.read() {
-    reset_asteroids_system(commands, asteroid_query);
+    reset_asteroids_system(commands, asteroid_query, asteroid_count);
     return;
   }
 }

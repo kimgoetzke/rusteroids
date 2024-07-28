@@ -2,7 +2,7 @@ use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 use bevy_rapier2d::pipeline::CollisionEvent;
 
-use crate::asteroids::{Asteroid, AsteroidSpawnEvent};
+use crate::asteroids::{Asteroid, AsteroidDestroyedEvent};
 use crate::explosion::ExplosionEvent;
 use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
@@ -25,7 +25,7 @@ fn collision_system(
   asteroid_query: Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
   player_query: Query<(Entity, &Transform), With<Player>>,
   projectile_query: Query<(Entity, &Transform), With<Projectile>>,
-  mut asteroid_spawn_event: EventWriter<AsteroidSpawnEvent>,
+  mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
   mut score_event: EventWriter<ScoreEvent>,
   asset_server: Res<AssetServer>,
@@ -39,7 +39,7 @@ fn collision_system(
             asteroid_entity,
             asteroid,
             &mut explosion_event,
-            &mut asteroid_spawn_event,
+            &mut asteroid_destroyed_event,
             &mut score_event,
             transform.translation,
           );
@@ -70,31 +70,23 @@ fn handle_asteroid_collision(
   asteroid_entity: Entity,
   asteroid: &Asteroid,
   explosion_event: &mut EventWriter<ExplosionEvent>,
-  asteroid_spawn_event: &mut EventWriter<AsteroidSpawnEvent>,
-  ui_event: &mut EventWriter<ScoreEvent>,
+  asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
+  score_event: &mut EventWriter<ScoreEvent>,
   position: Vec3,
 ) {
-  match asteroid.category {
-    Category::L => {
-      asteroid_spawn_event.send(AsteroidSpawnEvent {
-        category: Category::M,
-        origin: position,
-      });
-    }
-    Category::M => {
-      asteroid_spawn_event.send(AsteroidSpawnEvent {
-        category: Category::S,
-        origin: position,
-      });
-    }
-    _ => {}
-  }
-  commands.entity(asteroid_entity).despawn();
+  asteroid_destroyed_event.send(AsteroidDestroyedEvent {
+    category: asteroid.category,
+    origin: position,
+  });
   explosion_event.send(ExplosionEvent {
     origin: position,
     category: asteroid.category,
   });
-  ui_event.send(ScoreEvent { score: asteroid.score });
+  score_event.send(ScoreEvent {
+    score: asteroid.score,
+    entity_type: "Asteroid".to_string(),
+  });
+  commands.entity(asteroid_entity).despawn();
 }
 
 fn handle_player_collision(
@@ -118,7 +110,10 @@ fn handle_player_collision(
     origin: player_transform.translation,
     category: Category::XL,
   });
-  ui_event.send(ScoreEvent { score: 0 });
+  ui_event.send(ScoreEvent {
+    score: 0,
+    entity_type: "Player".to_string(),
+  });
 }
 
 fn handle_projectile_collision(

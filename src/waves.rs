@@ -2,7 +2,7 @@ use bevy::app::{App, Plugin};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 
-use crate::asteroids::Asteroid;
+use crate::asteroids::{Asteroid, AsteroidSpawnedEvent};
 use crate::game_state::GameState;
 
 const ASTEROID_START_COUNT: u16 = 1;
@@ -34,6 +34,7 @@ fn start_next_wave(
   mut wave: ResMut<Wave>,
   mut wave_event: EventWriter<WaveEvent>,
   asset_server: Res<AssetServer>,
+  asteroid_spawn_event: EventWriter<AsteroidSpawnedEvent>,
 ) {
   if !asteroid_query.is_empty() {
     return;
@@ -53,7 +54,7 @@ fn start_next_wave(
     },
     ..Default::default()
   });
-  crate::asteroids::spawn_asteroid_wave(event.asteroid_count, commands);
+  crate::asteroids::spawn_asteroid_wave(event.asteroid_count, commands, asteroid_spawn_event);
   wave_event.send(event);
 }
 
