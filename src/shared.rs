@@ -14,7 +14,7 @@ pub const BLACK: Color = Color::srgb(0.118, 0.129, 0.161);
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
 #[derive(Component, Clone, Copy, Debug)]
-pub(crate) enum Category {
+pub enum Category {
   XL,
   L,
   M,
@@ -27,10 +27,10 @@ impl fmt::Display for Category {
   }
 }
 
-pub(crate) fn random_f32_range(min: f32, max: f32) -> f32 {
+pub fn random_f32_range(min: f32, max: f32) -> f32 {
   (random::<f32>() * (max - min)) + min
 }
 
-pub(crate) fn random_u16_range(min: u16, max: u16) -> u16 {
+pub fn random_u16_range(min: u16, max: u16) -> u16 {
   random::<u16>() % (max - min) + min
 }

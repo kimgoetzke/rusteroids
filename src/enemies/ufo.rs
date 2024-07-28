@@ -11,6 +11,7 @@ use crate::shared::{random_f32_range, RED};
 
 const SPEED: f32 = 50.;
 const SHOOTING_COOLDOWN: f32 = 1.;
+const HEALTH_POINTS: u16 = 10;
 
 pub struct UfoPlugin;
 
@@ -22,9 +23,10 @@ impl Plugin for UfoPlugin {
   }
 }
 
-#[derive(Component)]
+#[derive(Component, Copy, Clone)]
 pub struct Ufo {
-  shooting_cooldown: f32,
+  pub(crate) shooting_cooldown: f32,
+  pub(crate) health_points: u16,
 }
 
 pub fn spawn_ufo_wave(count: u16, mut commands: &mut Commands, asset_server: &Res<AssetServer>) {
@@ -54,6 +56,7 @@ fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
     Ccd::enabled(),
     Ufo {
       shooting_cooldown: SHOOTING_COOLDOWN,
+      health_points: HEALTH_POINTS,
     },
   ));
 }

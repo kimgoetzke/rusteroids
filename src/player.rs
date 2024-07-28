@@ -31,7 +31,7 @@ impl Plugin for PlayerPlugin {
   }
 }
 
-#[derive(Component)]
+#[derive(Component, Copy, Clone)]
 pub struct Player {
   movement_speed: f32,
   rotation_speed: f32,
