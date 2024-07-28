@@ -12,7 +12,7 @@ use bevy_rapier2d::prelude::*;
 
 pub const SHOOTING_COOLDOWN: f32 = 0.1;
 const MOVEMENT_SPEED: f32 = 125.;
-const DAMAGE: u16 = 5;
+const DAMAGE: u16 = 3;
 
 pub struct PlayerPlugin;
 

@@ -47,7 +47,7 @@ fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
     PIXEL_PERFECT_LAYERS,
     Name::new("UFO"),
     RigidBody::Dynamic,
-    Collider::ball(2.),
+    Collider::ball(9.),
     ActiveEvents::COLLISION_EVENTS,
     GravityScale(0.),
     Velocity {
@@ -103,7 +103,7 @@ fn ufo_shooting_system(
         projectile_info,
         origin_transform: transform.clone(),
         origin_forward,
-        spawn_position: transform.translation + origin_forward * 10.,
+        spawn_position: transform.translation + origin_forward * 15.,
       });
     }
 
