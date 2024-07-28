@@ -21,7 +21,7 @@ impl Plugin for EnemyPlugin {
 #[derive(Event, Debug)]
 pub(crate) struct EnemyDamageEvent {
   pub(crate) entity: Entity,
-  pub(crate) damage: f32,
+  pub(crate) damage: u16,
 }
 
 #[derive(Component, Copy, Clone)]

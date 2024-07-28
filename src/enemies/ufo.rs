@@ -14,6 +14,7 @@ use crate::shared::{random_f32_range, RED};
 const SPEED: f32 = 50.;
 const SHOOTING_COOLDOWN: f32 = 1.;
 const HEALTH_POINTS: i16 = 10;
+const DAMAGE: u16 = 5;
 
 pub struct UfoPlugin;
 
@@ -86,9 +87,9 @@ fn ufo_shooting_system(
     if ufo.shooting_cooldown <= 0. {
       let origin_forward = get_origin_forward(&player_query, transform);
       let projectile_info = ProjectileInfo {
+        damage: DAMAGE,
         speed: 100.,
-        life_time: 0.,
-        max_life_time: 1.5,
+        max_life_time: 3.5,
         cooldown: 1.,
         collider: Collider::cuboid(1.25, 1.25),
         sprite: Sprite {

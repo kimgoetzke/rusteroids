@@ -23,7 +23,7 @@ impl Plugin for CollisionPlugin {
 
 pub enum EntityType {
   Player(),
-  Projectile(),
+  Projectile(Projectile),
   Asteroid(Asteroid),
   Ufo(),
 }
@@ -41,7 +41,7 @@ fn collision_system(
   asset_server: Res<AssetServer>,
   asteroid_query: Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
   player_query: Query<(Entity, &Transform), With<Player>>,
-  projectile_query: Query<(Entity, &Transform), With<Projectile>>,
+  projectile_query: Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   ufo_query: Query<(Entity, &Transform), With<Enemy>>,
   mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
@@ -50,15 +50,17 @@ fn collision_system(
 ) {
   for collision_event in collision_events.read() {
     if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
-      let entity1_info =
-        get_collision_entity_info(entity1, &asteroid_query, &player_query, &projectile_query, &ufo_query);
-      let entity2_info =
-        get_collision_entity_info(entity2, &asteroid_query, &player_query, &projectile_query, &ufo_query);
-
+      let entity_info = get_collision_entity_info(
+        [entity1, entity2],
+        &asteroid_query,
+        &player_query,
+        &projectile_query,
+        &ufo_query,
+      );
       handle_collisions(
         &mut commands,
         &asset_server,
-        vec![entity1_info, entity2_info],
+        entity_info,
         &mut explosion_event,
         &mut asteroid_destroyed_event,
         &mut score_event,
@@ -69,65 +71,81 @@ fn collision_system(
 }
 
 fn get_collision_entity_info(
-  entity: &Entity,
+  colliding_entities: [&Entity; 2],
   asteroid_query: &Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
   player_query: &Query<(Entity, &Transform), With<Player>>,
-  projectile_query: &Query<(Entity, &Transform), With<Projectile>>,
+  projectile_query: &Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   ufo_query: &Query<(Entity, &Transform), With<Enemy>>,
-) -> Option<CollisionEntityInfo> {
-  if let Ok((entity, transform, asteroid)) = asteroid_query.get(*entity) {
-    Some(CollisionEntityInfo {
-      entity,
-      transform: transform.clone(),
-      entity_type: EntityType::Asteroid(asteroid.clone()),
-    })
-  } else if let Ok((entity, transform)) = projectile_query.get(*entity) {
-    Some(CollisionEntityInfo {
-      entity,
-      transform: transform.clone(),
-      entity_type: EntityType::Projectile(),
-    })
-  } else if let Ok((entity, transform)) = ufo_query.get(*entity) {
-    Some(CollisionEntityInfo {
-      entity,
-      transform: transform.clone(),
-      entity_type: EntityType::Ufo(),
-    })
-  } else if let Ok((entity, transform)) = player_query.get(*entity) {
-    Some(CollisionEntityInfo {
-      entity,
-      transform: transform.clone(),
-      entity_type: EntityType::Player(),
-    })
-  } else {
-    None
+) -> Vec<CollisionEntityInfo> {
+  let mut entity_list = vec![];
+  for collision_entity in colliding_entities {
+    if let Ok((entity, transform, asteroid)) = asteroid_query.get(*collision_entity) {
+      entity_list.push(CollisionEntityInfo {
+        entity,
+        transform: transform.clone(),
+        entity_type: EntityType::Asteroid(asteroid.clone()),
+      });
+    } else if let Ok((entity, transform, projectile)) = projectile_query.get(*collision_entity) {
+      entity_list.push(CollisionEntityInfo {
+        entity,
+        transform: transform.clone(),
+        entity_type: EntityType::Projectile(projectile.clone()),
+      });
+    } else if let Ok((entity, transform)) = ufo_query.get(*collision_entity) {
+      entity_list.push(CollisionEntityInfo {
+        entity,
+        transform: transform.clone(),
+        entity_type: EntityType::Ufo(),
+      });
+    } else if let Ok((entity, transform)) = player_query.get(*collision_entity) {
+      entity_list.push(CollisionEntityInfo {
+        entity,
+        transform: transform.clone(),
+        entity_type: EntityType::Player(),
+      });
+    }
   }
+  entity_list
 }
 
 fn handle_collisions(
   commands: &mut Commands,
   asset_server: &Res<AssetServer>,
-  entity_list: Vec<Option<CollisionEntityInfo>>,
+  entity_list: Vec<CollisionEntityInfo>,
   explosion_event: &mut EventWriter<ExplosionEvent>,
   asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
-  for entity in entity_list {
-    if let Some(entity_info) = entity {
-      match entity_info.entity_type {
-        EntityType::Asteroid(_) => asteroid_collision(
-          entity_info,
-          commands,
-          explosion_event,
-          asteroid_destroyed_event,
-          score_event,
-        ),
-        EntityType::Projectile() => projectile_collision(entity_info, commands, explosion_event),
-        EntityType::Ufo() => ufo_collision(entity_info, explosion_event, enemy_damage_event),
-        EntityType::Player() => player_collision(entity_info, commands, asset_server, explosion_event, score_event),
-      }
+  let damage_dealt = get_damage_dealt(&entity_list);
+  for entity_info in entity_list {
+    match entity_info.entity_type {
+      EntityType::Asteroid(_) => asteroid_collision(
+        entity_info,
+        commands,
+        explosion_event,
+        asteroid_destroyed_event,
+        score_event,
+      ),
+      EntityType::Projectile(_) => projectile_collision(entity_info, commands, explosion_event),
+      EntityType::Ufo() => ufo_collision(entity_info, damage_dealt, explosion_event, enemy_damage_event),
+      EntityType::Player() => player_collision(entity_info, commands, asset_server, explosion_event, score_event),
     }
+  }
+}
+
+fn get_damage_dealt(entity_list: &Vec<CollisionEntityInfo>) -> u16 {
+  if let Some(projectile_info) = entity_list
+    .iter()
+    .find(|entity_info| matches!(entity_info.entity_type, EntityType::Projectile(_)))
+  {
+    if let EntityType::Projectile(projectile) = &projectile_info.entity_type {
+      projectile.damage
+    } else {
+      0
+    }
+  } else {
+    0
   }
 }
 
@@ -194,7 +212,7 @@ fn projectile_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
 ) {
   if let Some(()) = match entity_info.entity_type {
-    EntityType::Projectile() => Some(()),
+    EntityType::Projectile(_) => Some(()),
     _ => None,
   } {
     commands.entity(entity_info.entity).despawn();
@@ -209,6 +227,7 @@ fn projectile_collision(
 
 fn ufo_collision(
   entity_info: CollisionEntityInfo,
+  damage_dealt: u16,
   explosion_event: &mut EventWriter<ExplosionEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
@@ -218,7 +237,7 @@ fn ufo_collision(
   } {
     enemy_damage_event.send(EnemyDamageEvent {
       entity: entity_info.entity,
-      damage: 3.,
+      damage: damage_dealt,
     });
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,

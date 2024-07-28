@@ -12,6 +12,7 @@ use bevy_rapier2d::prelude::*;
 
 pub const SHOOTING_COOLDOWN: f32 = 0.1;
 const MOVEMENT_SPEED: f32 = 125.;
+const DAMAGE: u16 = 5;
 
 pub struct PlayerPlugin;
 
@@ -146,8 +147,8 @@ fn player_shooting_system(
     if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
       let player_forward = player_transform.rotation * Vec3::Y;
       let projectile_info = ProjectileInfo {
+        damage: DAMAGE,
         speed: 750.,
-        life_time: 0.,
         max_life_time: 0.4,
         cooldown: 0.1,
         collider: Collider::cuboid(0.5, 2.5),

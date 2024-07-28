@@ -28,12 +28,16 @@ pub(crate) struct ProjectileSpawnEvent {
 }
 
 #[derive(Component, Clone)]
-pub(crate) struct Projectile;
+pub(crate) struct Projectile {
+  pub(crate) damage: u16,
+  pub(crate) life_time: f32,
+  pub(crate) max_life_time: f32,
+}
 
 #[derive(Component, Clone)]
 pub(crate) struct ProjectileInfo {
+  pub(crate) damage: u16,
   pub(crate) speed: f32,
-  pub(crate) life_time: f32,
   pub(crate) max_life_time: f32,
   pub(crate) cooldown: f32,
   pub(crate) collider: Collider,
@@ -85,7 +89,11 @@ fn spawn_projectile(
       linvel: Vec2::new(origin_forward.x, origin_forward.y) * projectile.speed,
       angvel: 0.,
     },
-    Projectile,
+    Projectile {
+      damage: projectile.damage,
+      life_time: 0.,
+      max_life_time: projectile.max_life_time,
+    },
     AudioBundle {
       source: asset_server.load("audio/shoot_laser_default.ogg"),
       settings: PlaybackSettings {
@@ -97,11 +105,7 @@ fn spawn_projectile(
   ));
 }
 
-fn projectile_life_time_system(
-  mut commands: Commands,
-  time: Res<Time>,
-  mut query: Query<(Entity, &mut ProjectileInfo)>,
-) {
+fn projectile_life_time_system(mut commands: Commands, time: Res<Time>, mut query: Query<(Entity, &mut Projectile)>) {
   for (entity, mut projectile) in query.iter_mut() {
     projectile.life_time += time.delta_seconds();
 
