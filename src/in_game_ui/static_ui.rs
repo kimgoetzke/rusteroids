@@ -30,7 +30,7 @@ impl Plugin for StaticUiPlugin {
           process_score_event,
           process_asteroid_spawn_event,
           process_asteroid_destroyed_event,
-          change_visibility_with_delay_system,
+          change_message_visibility_system,
         ),
       );
   }
@@ -192,7 +192,7 @@ fn current_wave_event(
 }
 
 // TODO: Move or change size of message over time
-fn change_visibility_with_delay_system(
+fn change_message_visibility_system(
   mut commands: Commands,
   mut query: Query<(Entity, &mut MessageUi), With<MessageUi>>,
   time: Res<Time>,
