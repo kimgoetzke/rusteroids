@@ -1,4 +1,5 @@
 use crate::game_state::GameState;
+use crate::game_world::WORLD_SIZE;
 use crate::player::Player;
 use bevy::app::{App, Plugin, Startup, Update};
 use bevy::asset::Assets;
@@ -125,5 +126,9 @@ fn follow_player_system(
 
   camera.translation = camera
     .translation
-    .lerp(direction, time.delta_seconds() * CAM_LERP_FACTOR);
+    .lerp(direction, time.delta_seconds() * CAM_LERP_FACTOR)
+    .clamp(
+      Vec3::new(-WORLD_SIZE / 5.5, -WORLD_SIZE / 3.1, camera.translation.z),
+      Vec3::new(WORLD_SIZE / 5.5, WORLD_SIZE / 3.1, camera.translation.z),
+    );
 }
