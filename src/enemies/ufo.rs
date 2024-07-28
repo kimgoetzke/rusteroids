@@ -5,6 +5,7 @@ use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
+use crate::game_world::WORLD_SIZE;
 use crate::player::Player;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
 use crate::shared::{random_f32_range, RED};
@@ -40,6 +41,11 @@ fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
   commands.spawn((
     SpriteBundle {
       texture: ufo_handle,
+      transform: Transform::from_xyz(
+        random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.),
+        random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.),
+        0.,
+      ),
       ..default()
     },
     PIXEL_PERFECT_LAYERS,
