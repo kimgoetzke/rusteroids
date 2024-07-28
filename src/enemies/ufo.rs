@@ -4,6 +4,7 @@ use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, Rigid
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 use crate::camera::PIXEL_PERFECT_LAYERS;
+use crate::enemies::Enemy;
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
 use crate::player::Player;
@@ -12,7 +13,7 @@ use crate::shared::{random_f32_range, RED};
 
 const SPEED: f32 = 50.;
 const SHOOTING_COOLDOWN: f32 = 1.;
-const HEALTH_POINTS: u16 = 10;
+const HEALTH_POINTS: i16 = 10;
 
 pub struct UfoPlugin;
 
@@ -22,12 +23,6 @@ impl Plugin for UfoPlugin {
       .add_systems(FixedUpdate, ufo_movement_system.run_if(in_state(GameState::Playing)))
       .add_systems(Update, ufo_shooting_system.run_if(in_state(GameState::Playing)));
   }
-}
-
-#[derive(Component, Copy, Clone)]
-pub struct Ufo {
-  pub(crate) shooting_cooldown: f32,
-  pub(crate) health_points: u16,
 }
 
 pub fn spawn_ufo_wave(count: u16, mut commands: &mut Commands, asset_server: &Res<AssetServer>) {
@@ -60,7 +55,7 @@ fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
     },
     AdditionalMassProperties::Mass(4.),
     Ccd::enabled(),
-    Ufo {
+    Enemy {
       shooting_cooldown: SHOOTING_COOLDOWN,
       health_points: HEALTH_POINTS,
     },
@@ -68,7 +63,7 @@ fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
 }
 
 fn ufo_movement_system(
-  mut ufo_query: Query<(&Transform, &mut Velocity), With<Ufo>>,
+  mut ufo_query: Query<(&Transform, &mut Velocity), With<Enemy>>,
   player_query: Query<(Entity, &Transform), With<Player>>,
 ) {
   for (transform, mut velocity) in ufo_query.iter_mut() {
@@ -82,7 +77,7 @@ fn ufo_movement_system(
 
 fn ufo_shooting_system(
   time: Res<Time>,
-  mut query: Query<(&mut Ufo, &Transform)>,
+  mut query: Query<(&mut Enemy, &Transform)>,
   mut projective_spawn_event: EventWriter<ProjectileSpawnEvent>,
   player_query: Query<&Transform, With<Player>>,
 ) {
