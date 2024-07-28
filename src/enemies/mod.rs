@@ -1,4 +1,5 @@
 use bevy::app::{App, Plugin, Update};
+use bevy::core::Name;
 use bevy::log::info;
 use bevy::prelude::{
   in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With,
@@ -35,19 +36,22 @@ pub struct Enemy {
 
 fn enemy_damage_system(
   mut commands: Commands,
-  mut query: Query<(Entity, &mut Enemy), With<Enemy>>,
+  mut query: Query<(Entity, &mut Enemy, &Name), With<Enemy>>,
   mut damage_events: EventReader<EnemyDamageEvent>,
 ) {
   for event in damage_events.read() {
-    info!("EnemyDamageEvent: {:?}", event);
-    if let Ok((entity, mut enemy)) = query.get_mut(event.entity) {
-      info!("Enemy entity: {:?}, health_points: {}", entity, enemy.health_points);
+    if let Ok((entity, mut enemy, name)) = query.get_mut(event.entity) {
       if entity == event.entity && enemy.health_points > 0 {
         enemy.health_points -= event.damage as i16;
       }
 
       if enemy.health_points <= 0 {
         commands.entity(entity).despawn();
+      } else {
+        info!(
+          "Enemy {:?} received {} damage and has {} health left",
+          name, event.damage, enemy.health_points
+        );
       }
     }
   }
