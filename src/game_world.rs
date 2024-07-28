@@ -2,18 +2,25 @@ use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::shared::{BLACK, DARK_GRAY, DEFAULT_FONT};
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use bevy_rapier2d::dynamics::RigidBody;
 
 pub(crate) const WORLD_SIZE: f32 = 1000.;
 const TILES: f32 = 5.; // Must result in a whole number when dividing by WORLD_SIZE
 const MARGIN: f32 = 2.; // Must be divisible by 2
+const WRAPAROUND_MARGIN: f32 = 25.;
 
 pub struct GameWorldPlugin;
 
 impl Plugin for GameWorldPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, create_world_system);
+    app
+      .add_systems(Startup, create_world_system)
+      .add_systems(FixedUpdate, wraparound_system);
   }
 }
+
+#[derive(Component)]
+pub(crate) struct WrapAroundEntity;
 
 fn create_world_system(
   mut commands: Commands,
@@ -64,4 +71,20 @@ fn create_world_system(
     }
   }
   info!("Create game world: DONE");
+}
+
+pub(crate) fn wraparound_system(mut entities: Query<&mut Transform, (With<RigidBody>, With<WrapAroundEntity>)>) {
+  let extents = Vec3::new(WORLD_SIZE / 2., WORLD_SIZE / 2., 0.);
+  for mut transform in entities.iter_mut() {
+    if transform.translation.x > (extents.x + WRAPAROUND_MARGIN) {
+      transform.translation.x = -extents.x - WRAPAROUND_MARGIN;
+    } else if transform.translation.x < (-extents.x - WRAPAROUND_MARGIN) {
+      transform.translation.x = extents.x + WRAPAROUND_MARGIN;
+    }
+    if transform.translation.y > (extents.y + WRAPAROUND_MARGIN) {
+      transform.translation.y = -extents.y - WRAPAROUND_MARGIN;
+    } else if transform.translation.y < (-extents.y - WRAPAROUND_MARGIN) {
+      transform.translation.y = extents.y + WRAPAROUND_MARGIN;
+    }
+  }
 }

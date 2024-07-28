@@ -14,7 +14,7 @@ use rand::random;
 
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
-use crate::game_world::WORLD_SIZE;
+use crate::game_world::WrapAroundEntity;
 use crate::in_game_ui::AsteroidCount;
 use crate::shared::*;
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
@@ -22,7 +22,6 @@ use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
 const MAX_SPEED: f32 = 50.;
 const MAX_ROTATIONAL_SPEED: f32 = 2.5;
-const MARGIN: f32 = 25.;
 
 pub struct AsteroidPlugin;
 
@@ -36,8 +35,7 @@ impl Plugin for AsteroidPlugin {
       .add_systems(
         Update,
         (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Playing)),
-      )
-      .add_systems(FixedUpdate, asteroid_wraparound_system);
+      );
   }
 }
 
@@ -209,22 +207,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
     },
     Ccd::enabled(),
     asteroid,
+    WrapAroundEntity,
     // ActiveEvents::COLLISION_EVENTS // Only makes sense if we handle collisions based on the combination of both entities
   ));
-}
-
-fn asteroid_wraparound_system(mut asteroids: Query<&mut Transform, (With<RigidBody>, With<Asteroid>)>) {
-  let extents = Vec3::new(WORLD_SIZE / 2., WORLD_SIZE / 2., 0.);
-  for mut transform in asteroids.iter_mut() {
-    if transform.translation.x > (extents.x + MARGIN) {
-      transform.translation.x = -extents.x - MARGIN;
-    } else if transform.translation.x < (-extents.x - MARGIN) {
-      transform.translation.x = extents.x + MARGIN;
-    }
-    if transform.translation.y > (extents.y + MARGIN) {
-      transform.translation.y = -extents.y - MARGIN;
-    } else if transform.translation.y < (-extents.y - MARGIN) {
-      transform.translation.y = extents.y + MARGIN;
-    }
-  }
 }
