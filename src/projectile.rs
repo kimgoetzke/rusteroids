@@ -22,7 +22,7 @@ impl Plugin for ProjectilePlugin {
 #[derive(Event)]
 pub(crate) struct ProjectileSpawnEvent {
   pub(crate) projectile_info: ProjectileInfo,
-  pub(crate) origin_transform: Transform,
+  pub(crate) origin_rotation: Quat,
   pub(crate) origin_forward: Vec3,
   pub(crate) spawn_position: Vec3,
 }
@@ -54,7 +54,7 @@ fn process_projectile_spawn_event(
       &mut commands,
       &asset_server,
       &event.projectile_info,
-      &event.origin_transform,
+      event.origin_rotation,
       event.origin_forward,
       event.spawn_position,
     );
@@ -65,7 +65,7 @@ fn spawn_projectile(
   commands: &mut Commands,
   asset_server: &Res<AssetServer>,
   projectile: &ProjectileInfo,
-  origin_transform: &Transform,
+  origin_rotation: Quat,
   origin_forward: Vec3,
   spawn_position: Vec3,
 ) {
@@ -74,7 +74,7 @@ fn spawn_projectile(
       sprite: projectile.sprite.clone(),
       transform: Transform {
         translation: spawn_position,
-        rotation: origin_transform.rotation,
+        rotation: origin_rotation,
         ..default()
       },
       ..default()

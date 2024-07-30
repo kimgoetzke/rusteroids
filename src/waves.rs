@@ -24,7 +24,8 @@ impl Plugin for WavesPlugin {
 pub(crate) struct WaveEvent {
   pub(crate) wave: u16,
   pub(crate) asteroid_count: u16,
-  pub(crate) ufo_count: u16,
+  pub(crate) small_ufo_count: u16,
+  pub(crate) large_ufo_count: u16,
   pub(crate) player_position: Vec3,
 }
 
@@ -48,7 +49,8 @@ fn start_next_wave(
   let event = WaveEvent {
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
-    ufo_count: wave.0 - 1,
+    small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
+    large_ufo_count: if (wave.0 % 2) == 0 { 1u16 } else { 0u16 },
     player_position,
   };
   info!("Starting wave {}: {:?}", wave.0, event);

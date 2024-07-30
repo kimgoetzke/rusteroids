@@ -32,6 +32,7 @@ pub(crate) struct EnemyDamageEvent {
 pub struct Enemy {
   pub(crate) shooting_cooldown: f32,
   pub(crate) health_points: i16,
+  pub(crate) movement_speed: f32,
 }
 
 fn enemy_damage_system(

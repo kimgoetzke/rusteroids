@@ -146,7 +146,7 @@ fn player_shooting_system(
     // Spawn a projectile if the player is shooting
     if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
       let player_forward = player_transform.rotation * Vec3::Y;
-      let projectile_info = ProjectileInfo {
+      let info = ProjectileInfo {
         damage: DAMAGE,
         speed: 750.,
         max_life_time: 0.4,
@@ -158,10 +158,10 @@ fn player_shooting_system(
           ..default()
         },
       };
-      player.shooting_cooldown = projectile_info.cooldown;
+      player.shooting_cooldown = info.cooldown;
       projective_spawn_event.send(ProjectileSpawnEvent {
-        projectile_info,
-        origin_transform: player_transform.clone(),
+        projectile_info: info,
+        origin_rotation: player_transform.rotation,
         origin_forward: player_forward,
         spawn_position: player_transform.translation + player_forward * 15.,
       });
