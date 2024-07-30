@@ -6,10 +6,10 @@ use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::enemies::Enemy;
 use crate::game_state::GameState;
-use crate::game_world::WORLD_SIZE;
 use crate::player::Player;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
-use crate::shared::{random_f32_range, RED};
+use crate::shared::{random_f32_range, random_game_world_point_away_from_player, RED};
+use crate::waves::WaveEvent;
 
 const SPEED: f32 = 50.;
 const SHOOTING_COOLDOWN: f32 = 1.;
@@ -26,22 +26,19 @@ impl Plugin for UfoPlugin {
   }
 }
 
-pub fn spawn_ufo_wave(count: u16, mut commands: &mut Commands, asset_server: &Res<AssetServer>) {
-  for _ in 0..count {
-    spawn_ufo(&mut commands, &asset_server);
+pub fn spawn_ufo_wave(event: &WaveEvent, mut commands: &mut Commands, asset_server: &Res<AssetServer>) {
+  for _ in 0..event.ufo_count {
+    let spawn_point = random_game_world_point_away_from_player(event.player_position, 200.);
+    spawn_ufo(&mut commands, &asset_server, spawn_point);
   }
 }
 
-fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>) {
+fn spawn_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>, spawn_point: Vec3) {
   let ufo_handle = asset_server.load("enemy_ufo.png");
   commands.spawn((
     SpriteBundle {
       texture: ufo_handle,
-      transform: Transform::from_xyz(
-        random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.),
-        random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.),
-        0.,
-      ),
+      transform: Transform::from_translation(spawn_point),
       ..default()
     },
     PIXEL_PERFECT_LAYERS,

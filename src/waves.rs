@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 use crate::asteroids::{Asteroid, AsteroidSpawnedEvent};
 use crate::game_state::GameState;
+use crate::player::Player;
 
 const ASTEROID_START_COUNT: u16 = 1;
 
@@ -24,6 +25,7 @@ pub(crate) struct WaveEvent {
   pub(crate) wave: u16,
   pub(crate) asteroid_count: u16,
   pub(crate) ufo_count: u16,
+  pub(crate) player_position: Vec3,
 }
 
 #[derive(Resource, Default)]
@@ -36,15 +38,18 @@ fn start_next_wave(
   mut wave_event: EventWriter<WaveEvent>,
   asset_server: Res<AssetServer>,
   asteroid_spawn_event: EventWriter<AsteroidSpawnedEvent>,
+  player_query: Query<&Transform, With<Player>>,
 ) {
   if !asteroid_query.is_empty() {
     return;
   }
   wave.0 += 1;
+  let player_position = get_player_position(player_query);
   let event = WaveEvent {
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
     ufo_count: wave.0 - 1,
+    player_position,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
@@ -56,9 +61,17 @@ fn start_next_wave(
     },
     ..Default::default()
   });
-  crate::asteroids::spawn_asteroid_wave(event.asteroid_count, &mut commands, asteroid_spawn_event);
-  crate::enemies::ufo::spawn_ufo_wave(event.ufo_count, &mut commands, &asset_server);
+  crate::asteroids::spawn_asteroid_wave(&event, &mut commands, asteroid_spawn_event);
+  crate::enemies::ufo::spawn_ufo_wave(&event, &mut commands, &asset_server);
   wave_event.send(event);
+}
+
+fn get_player_position(player_query: Query<&Transform, With<Player>>) -> Vec3 {
+  let player_transform = player_query.get_single();
+  if let Ok(player_transform) = player_transform {
+    return player_transform.translation;
+  }
+  Vec3::ZERO
 }
 
 fn reset_waves_system(mut wave: ResMut<Wave>) {

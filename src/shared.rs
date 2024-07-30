@@ -1,7 +1,8 @@
 use std::fmt;
 
+use crate::game_world::WORLD_SIZE;
 use bevy::color::Color;
-use bevy::prelude::Component;
+use bevy::prelude::{info, Component, Vec3};
 use rand::random;
 
 pub const RED: Color = Color::hsl(0.59, 0.32, 0.52);
@@ -33,4 +34,25 @@ pub fn random_f32_range(min: f32, max: f32) -> f32 {
 
 pub fn random_u16_range(min: u16, max: u16) -> u16 {
   random::<u16>() % (max - min) + min
+}
+
+pub fn random_game_world_point() -> Vec3 {
+  let x = random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.);
+  let y = random_f32_range(-WORLD_SIZE / 2., WORLD_SIZE / 2.);
+  Vec3::new(x, y, 0.)
+}
+
+pub fn random_game_world_point_away_from_player(player_position: Vec3, distance: f32) -> Vec3 {
+  let proposed_point = random_game_world_point();
+  return if (player_position.x - proposed_point.x).abs() < distance
+    && (player_position.y - proposed_point.y).abs() < distance
+  {
+    info!(
+      "Proposed spawn point {} too close to player {}, retrying...",
+      proposed_point, player_position
+    );
+    random_game_world_point_away_from_player(player_position, distance)
+  } else {
+    proposed_point
+  };
 }

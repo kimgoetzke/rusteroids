@@ -17,7 +17,7 @@ use crate::game_state::GameState;
 use crate::game_world::WrapAroundEntity;
 use crate::in_game_ui::AsteroidCount;
 use crate::shared::*;
-use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::waves::WaveEvent;
 
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
 const MAX_SPEED: f32 = 50.;
@@ -110,17 +110,15 @@ impl Asteroid {
   }
 }
 
-// TODO: Spawn asteroids where the player is not
 pub fn spawn_asteroid_wave(
-  count: u16,
+  event: &WaveEvent,
   mut commands: &mut Commands,
   mut asteroid_spawned_event: EventWriter<AsteroidSpawnedEvent>,
 ) {
-  for _ in 0..count {
+  for _ in 0..event.asteroid_count {
     let category = Category::L;
-    let x = (random::<f32>() * WINDOW_WIDTH) - WINDOW_WIDTH / 2.;
-    let y = (random::<f32>() * WINDOW_HEIGHT) - WINDOW_HEIGHT / 2.;
-    spawn_asteroid(&mut commands, category, x, y);
+    let spawn_point = random_game_world_point_away_from_player(event.player_position, 100.);
+    spawn_asteroid(&mut commands, category, spawn_point);
     asteroid_spawned_event.send(AsteroidSpawnedEvent);
   }
 }
@@ -141,7 +139,7 @@ fn spawn_smaller_asteroids_event(
       for _ in 0..spawn_count {
         let x = event.origin.x + random::<f32>() * 20.;
         let y = event.origin.y + random::<f32>() * 20.;
-        spawn_asteroid(&mut commands, closest_smaller_category, x, y);
+        spawn_asteroid(&mut commands, closest_smaller_category, Vec3::new(x, y, 0.));
         asteroid_spawned_event.send(AsteroidSpawnedEvent);
       }
     }
@@ -172,7 +170,7 @@ fn reset_asteroid_event(
 }
 
 // TODO: Improve collider to support shapes more accurately
-fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
+fn spawn_asteroid(commands: &mut Commands, category: Category, spawn_point: Vec3) {
   let asteroid = match category {
     Category::XL => Asteroid::large(),
     Category::L => Asteroid::large(),
@@ -183,10 +181,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, x: f32, y: f32) {
     ShapeBundle {
       path: GeometryBuilder::build_as(&asteroid.shape()),
       spatial: SpatialBundle {
-        transform: Transform {
-          translation: Vec3::new(x, y, 0.),
-          ..default()
-        },
+        transform: Transform::from_translation(spawn_point),
         ..default()
       },
       ..Default::default()
