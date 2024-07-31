@@ -1,9 +1,8 @@
-use crate::asteroids::ResetAsteroidEvent;
 use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
-use crate::shared::PURPLE;
+use crate::shared::{ResetWaveEvent, PURPLE};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerBundle, DEFAULT_MATERIAL};
@@ -174,13 +173,10 @@ fn player_shooting_system(
   }
 }
 
-fn other_controls_system(
-  keyboard_input: Res<ButtonInput<KeyCode>>,
-  mut reset_asteroid_event: EventWriter<ResetAsteroidEvent>,
-) {
+fn other_controls_system(keyboard_input: Res<ButtonInput<KeyCode>>, mut reset_wave_event: EventWriter<ResetWaveEvent>) {
   if keyboard_input.just_pressed(KeyCode::F9) {
     info!("[F9] Despawning asteroids of current wave");
-    reset_asteroid_event.send(ResetAsteroidEvent {});
+    reset_wave_event.send(ResetWaveEvent {});
   }
 }
 

@@ -1,12 +1,12 @@
+use crate::enemies::ufo::UfoPlugin;
+use crate::game_state::GameState;
+use crate::shared::ResetWaveEvent;
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::info;
 use bevy::prelude::{
   in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With,
 };
-
-use crate::enemies::ufo::UfoPlugin;
-use crate::game_state::GameState;
 
 pub(crate) mod ufo;
 
@@ -18,7 +18,10 @@ impl Plugin for EnemyPlugin {
       .add_event::<EnemyDamageEvent>()
       .add_plugins(UfoPlugin)
       .add_systems(OnEnter(GameState::Starting), reset_enemies_system)
-      .add_systems(Update, enemy_damage_system.run_if(in_state(GameState::Playing)));
+      .add_systems(
+        Update,
+        (enemy_damage_system, reset_enemies_event).run_if(in_state(GameState::Playing)),
+      );
   }
 }
 
@@ -61,5 +64,16 @@ fn enemy_damage_system(
 fn reset_enemies_system(mut commands: Commands, query: Query<Entity, With<Enemy>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn();
+  }
+}
+
+fn reset_enemies_event(
+  mut reset_events: EventReader<ResetWaveEvent>,
+  commands: Commands,
+  query: Query<Entity, With<Enemy>>,
+) {
+  for _ in reset_events.read() {
+    reset_enemies_system(commands, query);
+    return;
   }
 }

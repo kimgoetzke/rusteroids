@@ -18,7 +18,7 @@ use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
-use crate::shared::DARK_GRAY;
+use crate::shared::{ResetWaveEvent, DARK_GRAY};
 use crate::waves::WavesPlugin;
 
 mod asteroids;
@@ -81,6 +81,7 @@ fn main() {
     ))
     .add_plugins((CollisionPlugin, ExplosionPlugin))
     .add_plugins(InGameUiPlugin)
+    .add_event::<ResetWaveEvent>()
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
     .insert_resource(ClearColor(DARK_GRAY))

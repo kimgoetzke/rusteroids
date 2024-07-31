@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::game_world::WORLD_SIZE;
 use bevy::color::Color;
-use bevy::prelude::{info, Component, Vec3};
+use bevy::prelude::{info, Component, Event, Vec3};
 use rand::random;
 
 pub const RED: Color = Color::hsl(0.59, 0.32, 0.52);
@@ -27,6 +27,9 @@ impl fmt::Display for Category {
     write!(f, "{:?}", self)
   }
 }
+
+#[derive(Event)]
+pub(crate) struct ResetWaveEvent;
 
 pub fn random_f32_range(min: f32, max: f32) -> f32 {
   (random::<f32>() * (max - min)) + min

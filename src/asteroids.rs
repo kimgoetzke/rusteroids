@@ -30,7 +30,6 @@ impl Plugin for AsteroidPlugin {
     app
       .add_event::<AsteroidSpawnedEvent>()
       .add_event::<AsteroidDestroyedEvent>()
-      .add_event::<ResetAsteroidEvent>()
       .add_systems(OnEnter(GameState::Starting), reset_asteroids_system)
       .add_systems(
         Update,
@@ -47,9 +46,6 @@ pub(crate) struct AsteroidDestroyedEvent {
   pub(crate) category: Category,
   pub(crate) origin: Vec3,
 }
-
-#[derive(Event)]
-pub(crate) struct ResetAsteroidEvent;
 
 #[derive(Component, Clone, Debug)]
 pub(crate) struct Asteroid {
@@ -158,7 +154,7 @@ fn reset_asteroids_system(
 }
 
 fn reset_asteroid_event(
-  mut reset_events: EventReader<ResetAsteroidEvent>,
+  mut reset_events: EventReader<ResetWaveEvent>,
   commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
   asteroid_count: ResMut<AsteroidCount>,
