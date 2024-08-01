@@ -1,4 +1,3 @@
-use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
@@ -50,7 +49,6 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
       texture: player_handle,
       ..default()
     },
-    PIXEL_PERFECT_LAYERS,
     Player {
       movement_speed: MOVEMENT_SPEED,
       rotation_speed: 5.,

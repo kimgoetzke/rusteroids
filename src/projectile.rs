@@ -3,6 +3,7 @@ use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
 use crate::game_state::GameState;
 
 pub struct ProjectilePlugin;
@@ -94,6 +95,7 @@ fn spawn_projectile(
       life_time: 0.,
       max_life_time: projectile.max_life_time,
     },
+    PIXEL_PERFECT_BLOOM_LAYER,
     AudioBundle {
       source: asset_server.load("audio/shoot_laser_default.ogg"),
       settings: PlaybackSettings {

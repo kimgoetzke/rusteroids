@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
-use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::enemies::Enemy;
 use crate::game_state::GameState;
 use crate::player::Player;
@@ -61,7 +60,6 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       transform: Transform::from_translation(spawn_point),
       ..default()
     },
-    PIXEL_PERFECT_LAYERS,
     Name::new("UFO Small"),
     RigidBody::Dynamic,
     Collider::ball(9.),
@@ -90,7 +88,6 @@ fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       transform: Transform::from_translation(spawn_point),
       ..default()
     },
-    PIXEL_PERFECT_LAYERS,
     Name::new("UFO Large"),
     RigidBody::Dynamic,
     Collider::ball(17.),

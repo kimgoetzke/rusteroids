@@ -1,8 +1,8 @@
+use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
+use crate::shared::Category;
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
-
-use crate::shared::Category;
 
 pub struct ExplosionPlugin;
 
@@ -58,6 +58,7 @@ fn spawn_explosion_event(
       },
       OneShot::Despawn,
       Explosion,
+      PIXEL_PERFECT_BLOOM_LAYER,
       Name::new("Explosion"),
       AudioBundle {
         source: asset_server.load("audio/explosion_rock_default.ogg"),

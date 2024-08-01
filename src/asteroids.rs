@@ -12,7 +12,6 @@ use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
 use rand::random;
 
-use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::game_state::GameState;
 use crate::game_world::WrapAroundEntity;
 use crate::in_game_ui::AsteroidCount;
@@ -182,7 +181,6 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, spawn_point: Vec3
       },
       ..Default::default()
     },
-    PIXEL_PERFECT_LAYERS,
     Stroke::new(WHITE, 1.),
     Name::new(format!("Asteroid {}", category.to_string().to_uppercase())),
     RigidBody::Dynamic,

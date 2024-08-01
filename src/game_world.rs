@@ -1,4 +1,3 @@
-use crate::camera::PIXEL_PERFECT_LAYERS;
 use crate::shared::{BLACK, DARK_GRAY, DEFAULT_FONT};
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
@@ -46,27 +45,23 @@ fn create_world_system(
             material: materials.add(BLACK),
             ..default()
           },
-          PIXEL_PERFECT_LAYERS,
           Name::new("Tile ".to_owned() + i.to_string().as_str() + "|" + j.to_string().as_str()),
         ))
         .with_children(|builder| {
-          builder.spawn((
-            Text2dBundle {
-              text: Text::from_section(
-                format!("{}/{}", i, j),
-                TextStyle {
-                  font: asset_server.load(DEFAULT_FONT),
-                  font_size: 20.,
-                  color: DARK_GRAY.with_alpha(0.3),
-                  ..default()
-                },
-              )
-              .with_justify(JustifyText::Center),
-              transform: Transform::from_xyz(0., 0., 1.),
-              ..default()
-            },
-            PIXEL_PERFECT_LAYERS,
-          ));
+          builder.spawn((Text2dBundle {
+            text: Text::from_section(
+              format!("{}/{}", i, j),
+              TextStyle {
+                font: asset_server.load(DEFAULT_FONT),
+                font_size: 20.,
+                color: DARK_GRAY.with_alpha(0.3),
+                ..default()
+              },
+            )
+            .with_justify(JustifyText::Center),
+            transform: Transform::from_xyz(0., 0., 1.),
+            ..default()
+          },));
         });
     }
   }
