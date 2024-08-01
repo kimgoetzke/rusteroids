@@ -1,8 +1,10 @@
 mod game_over_menu;
+mod interactive_ui;
 mod pause_menu;
 mod static_ui;
 
 use crate::in_game_ui::game_over_menu::GameOverMenuPlugin;
+use crate::in_game_ui::interactive_ui::InteractiveUiPlugin;
 use crate::in_game_ui::pause_menu::PauseMenuPlugin;
 use crate::in_game_ui::static_ui::StaticUiPlugin;
 use bevy::prelude::*;
@@ -12,8 +14,8 @@ pub struct InGameUiPlugin;
 impl Plugin for InGameUiPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_plugins(PauseMenuPlugin)
-      .add_plugins(GameOverMenuPlugin)
+      .add_plugins(InteractiveUiPlugin)
+      .add_plugins((GameOverMenuPlugin, PauseMenuPlugin))
       .add_plugins(StaticUiPlugin);
   }
 }
