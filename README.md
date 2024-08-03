@@ -70,11 +70,16 @@ such as JetBrains RustRover, you'll have to set up the environment manually. You
 
 Then you can build the WASM file:
 
-1. Run:
+1. Build the WASM file:
    ```shell
    cargo build --target wasm32-unknown-unknown --release
    ```
-2. Run `wasm-bindgen` to generate the JS bindings:
+2. Clean the `www/public` directory and copy the game's assets over:
+   ```powershell
+   ./scripts/clean-rusteroids-files.ps1 # Windows only, bash script may be coming later
+   ./scripts/copy-assets.ps1   # Windows only, bash script may be coming later
+   ```
+3. Run `wasm-bindgen` to generate the JS bindings and move all relevant files to the `www/public` directory:
     1. **Linux**:
        ```shell
        wasm-bindgen --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm
@@ -83,15 +88,11 @@ Then you can build the WASM file:
        ```powershell
        wasm-bindgen.exe --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm
        ```
-3. Make sure you have the assets in the `www/public` directory:
-   ```shell
-   ./scripts/copy-assets.ps1   # Windows only, bash script coming soon
-   ```
 
 #### Optimising
 
-You can optimise the WASM file (
-from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
+You can optimise the WASM file (from the
+[Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
 
    ```shell
    # Optimize for size (z profile).
@@ -109,10 +110,8 @@ from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/was
 
 #### Running
 
-Finally, to run the game in your browser locally:
-
-1. Run:
-    ```shell
-    npx serve ./www/public
-    ```
-2. Paste the URL copied to your clipboard into your browser
+Finally, to run the game in your browser locally, run the below and paste the URL copied to your clipboard into your
+browser:
+```shell
+npx serve ./www/public
+```

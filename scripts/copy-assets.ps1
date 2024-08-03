@@ -1,11 +1,16 @@
+# The purpose of this script is to copy all assets from the ./assets directory to the ./www/public/assets directory,
+# except the contents of the ./assets/github directory. The script can be used as part of the WASM build process
+# which allows running the game in a web browser.
+
 # Define the directories
 $sourceDirectory = "./assets"
 $destinationDirectory = "./www/public/assets"
 
-Write-Host "Copying assets from $sourceDirectory to $destinationDirectory"
+Write-Host "Copying assets from $sourceDirectory to $destinationDirectory..."
 
 # Remove the destination directory, if it exists
-if (Test-Path -Path $destinationDirectory) {
+if (Test-Path -Path $destinationDirectory)
+{
     Remove-Item -Path $destinationDirectory -Recurse -Force
     Write-Host "Removed the existing destination directory: $destinationDirectory"
 }
@@ -20,7 +25,7 @@ if (-Not (Test-Path -Path $destinationDirectory))
 # Copy all files and directories, excluding ./assets/github/*
 Get-ChildItem -Path $sourceDirectory -Recurse | Where-Object { $_.FullName -notlike "*\github\*" } | ForEach-Object {
     $destPath = $_.FullName.Replace((Get-Item $sourceDirectory).FullName, (Get-Item $destinationDirectory).FullName)
-    Write-Host "Copying $_ to $destPath"
+    Write-Host "Copying $_ to $destPath..."
     if ($_.PSIsContainer)
     {
         # Create the directory, if it doesn't exist
