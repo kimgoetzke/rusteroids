@@ -1,11 +1,13 @@
 use crate::enemies::ufo::UfoPlugin;
 use crate::game_state::GameState;
+use crate::in_game_ui::ScoreEvent;
 use crate::shared::ResetWaveEvent;
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::info;
-use bevy::prelude::{in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With, EventWriter};
-use crate::in_game_ui::ScoreEvent;
+use bevy::prelude::{
+  in_state, Commands, Component, Entity, Event, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, With,
+};
 
 pub(crate) mod ufo;
 
@@ -52,7 +54,9 @@ fn enemy_damage_system(
 
       if enemy.health_points <= 0 {
         commands.entity(entity).despawn();
-        score_event.send(ScoreEvent { score: enemy.score_points });
+        score_event.send(ScoreEvent {
+          score: enemy.score_points,
+        });
       } else {
         info!(
           "Enemy {:?} received {} damage and has {} health left",

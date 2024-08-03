@@ -1,4 +1,4 @@
-use crate::shared::{BLACK, DARK_GRAY, DEFAULT_FONT};
+use crate::shared::{DARK_4, DEFAULT_FONT, VERY_DARK};
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy_rapier2d::dynamics::RigidBody;
@@ -45,7 +45,7 @@ fn create_world_system(
           MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(adjusted_tile_size, adjusted_tile_size))),
             transform: Transform::from_xyz(x + half_margin, y + half_margin, -999.),
-            material: materials.add(BLACK),
+            material: materials.add(VERY_DARK),
             ..default()
           },
           Name::new(description.clone()),
@@ -57,11 +57,11 @@ fn create_world_system(
               TextStyle {
                 font: asset_server.load(DEFAULT_FONT),
                 font_size: 20.,
-                color: DARK_GRAY.with_alpha(0.3),
+                color: DARK_4.with_alpha(0.2),
                 ..default()
               },
             )
-              .with_justify(JustifyText::Center),
+            .with_justify(JustifyText::Center),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
           },));

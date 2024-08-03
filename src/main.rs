@@ -1,16 +1,17 @@
 use bevy::audio::{AudioPlugin, SpatialScale};
+#[cfg(feature = "dev")]
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_enoki::EnokiPlugin;
-#[cfg(feature = "dev")]
-use bevy::input::common_conditions::input_toggle_active;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
 
 use crate::asteroids::AsteroidPlugin;
+use crate::background_stars::BackgroundStarsPlugin;
 use crate::camera::PixelPerfectCameraPlugin;
 use crate::collision::CollisionPlugin;
 use crate::enemies::EnemyPlugin;
@@ -20,10 +21,11 @@ use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
-use crate::shared::{ResetWaveEvent, DARK_GRAY};
+use crate::shared::{ResetWaveEvent, DARK_4};
 use crate::waves::WavesPlugin;
 
 mod asteroids;
+mod background_stars;
 mod camera;
 mod collision;
 mod enemies;
@@ -42,7 +44,6 @@ const WINDOW_HEIGHT: f32 = 720.;
 // TODO: Add another, stronger/smarter enemies
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
-// TODO: Consider parallex scrolling background with stars
 
 fn main() {
   let mut app = App::new();
@@ -73,6 +74,7 @@ fn main() {
     .add_plugins((
       PixelPerfectCameraPlugin,
       GameWorldPlugin,
+      BackgroundStarsPlugin,
       PlayerPlugin,
       ProjectilePlugin,
       AsteroidPlugin,
@@ -85,7 +87,7 @@ fn main() {
     .add_event::<ResetWaveEvent>()
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
-    .insert_resource(ClearColor(DARK_GRAY));
+    .insert_resource(ClearColor(DARK_4));
 
   #[cfg(feature = "dev")]
   app

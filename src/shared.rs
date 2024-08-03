@@ -5,12 +5,34 @@ use bevy::color::Color;
 use bevy::prelude::{info, Component, Event, Vec3};
 use rand::random;
 
+#[allow(dead_code)]
 pub const RED: Color = Color::hsl(0.59, 0.32, 0.52);
+#[allow(dead_code)]
 pub const PURPLE: Color = Color::srgb(0.706, 0.557, 0.678);
+#[allow(dead_code)]
 pub const YELLOW: Color = Color::srgb(0.922, 0.796, 0.545);
+#[allow(dead_code)]
 pub const BLUE: Color = Color::srgb(0.533, 0.753, 0.816);
-pub const DARK_GRAY: Color = Color::srgb(0.18, 0.204, 0.251);
-pub const BLACK: Color = Color::srgb(0.118, 0.129, 0.161);
+#[allow(dead_code)]
+pub const ORANGE: Color = Color::srgb(0.816, 0.529, 0.439);
+#[allow(dead_code)]
+pub const GREEN: Color = Color::srgb(0.639, 0.745, 0.549);
+#[allow(dead_code)]
+pub const LIGHT_1: Color = Color::srgb(0.925, 0.937, 0.957);
+#[allow(dead_code)]
+pub const LIGHT_2: Color = Color::srgb(0.898, 0.914, 0.941);
+#[allow(dead_code)]
+pub const LIGHT_3: Color = Color::srgb(0.847, 0.871, 0.914);
+#[allow(dead_code)]
+pub const MEDIUM_1: Color = Color::srgb(0.60, 0.639, 0.714);
+#[allow(dead_code)]
+pub const MEDIUM_2: Color = Color::srgb(0.427, 0.478, 0.588);
+#[allow(dead_code)]
+pub const DARK_1: Color = Color::srgb(0.298, 0.337, 0.416);
+#[allow(dead_code)]
+pub const DARK_4: Color = Color::srgb(0.18, 0.204, 0.251);
+#[allow(dead_code)]
+pub const VERY_DARK: Color = Color::srgb(0.118, 0.129, 0.161);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
