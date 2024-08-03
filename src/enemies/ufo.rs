@@ -17,6 +17,8 @@ const LARGE_UFO_SHOOTING_COOLDOWN: f32 = 0.2;
 const SMALL_UFO_HEALTH: i16 = 10;
 const LARGE_UFO_HEALTH: i16 = 70;
 const DAMAGE: u16 = 5;
+const SMALL_UFO_SCORE: u16 = 75;
+const LARGE_UFO_SCORE: u16 = 150;
 
 pub struct UfoPlugin;
 
@@ -75,6 +77,7 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       shooting_cooldown: SMALL_UFO_SHOOTING_COOLDOWN,
       health_points: SMALL_UFO_HEALTH,
       movement_speed: SMALL_UFO_SPEED,
+      score_points: SMALL_UFO_SCORE,
     },
     Ufo,
     UfoSmall,
@@ -103,6 +106,7 @@ fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       shooting_cooldown: LARGE_UFO_SHOOTING_COOLDOWN,
       health_points: LARGE_UFO_HEALTH,
       movement_speed: LARGE_UFO_SPEED,
+      score_points: LARGE_UFO_SCORE,
     },
     Ufo,
     UfoLarge,

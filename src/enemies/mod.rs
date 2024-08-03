@@ -4,9 +4,8 @@ use crate::shared::ResetWaveEvent;
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::info;
-use bevy::prelude::{
-  in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With,
-};
+use bevy::prelude::{in_state, Commands, Component, Entity, Event, EventReader, IntoSystemConfigs, OnEnter, Query, With, EventWriter};
+use crate::in_game_ui::ScoreEvent;
 
 pub(crate) mod ufo;
 
@@ -36,12 +35,14 @@ pub struct Enemy {
   pub(crate) shooting_cooldown: f32,
   pub(crate) health_points: i16,
   pub(crate) movement_speed: f32,
+  pub(crate) score_points: u16,
 }
 
 fn enemy_damage_system(
   mut commands: Commands,
   mut query: Query<(Entity, &mut Enemy, &Name), With<Enemy>>,
   mut damage_events: EventReader<EnemyDamageEvent>,
+  mut score_event: EventWriter<ScoreEvent>,
 ) {
   for event in damage_events.read() {
     if let Ok((entity, mut enemy, name)) = query.get_mut(event.entity) {
@@ -51,6 +52,7 @@ fn enemy_damage_system(
 
       if enemy.health_points <= 0 {
         commands.entity(entity).despawn();
+        score_event.send(ScoreEvent { score: enemy.score_points });
       } else {
         info!(
           "Enemy {:?} received {} damage and has {} health left",

@@ -39,7 +39,6 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
-// TODO: Make sure enemies give score points
 // TODO: Add another, stronger/smarter enemies
 // TODO: Make game web-compatible
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.

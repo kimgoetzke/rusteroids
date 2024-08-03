@@ -43,14 +43,20 @@ such as JetBrains RustRover, you'll have to set up the environment manually. You
 ## How to build WASM for the web
 
 Prerequisites:
-1. Run `rustup target add wasm32-unknown-unknown`
+1. Run:
+   ```
+   rustup target add wasm32-unknown-unknown
+   ```
 2. Set `RUSTFLAGS`
    1. Linux: `export RUSTFLAGS="--cfg=web_sys_unstable_apis"`
    2. Windows: `$env:RUSTFLAGS="--cfg=web_sys_unstable_apis"`
 3. Make sure you have Node.js with `serve` installed
 
 Then you can build the WASM file:
-1. Run `cargo build --target wasm32-unknown-unknown --release`
+1. Run:
+   ```
+   cargo build --target wasm32-unknown-unknown --release
+   ```
 2. Run `wasm-bindgen` to generate the JS bindings:
    1. **Linux**: `wasm-bindgen --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
    2. **Windows**: `wasm-bindgen.exe --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
@@ -60,22 +66,21 @@ Then you can build the WASM file:
    ```
 
 You can optimise the WASM file (from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
-```shell
-# Optimize for size (z profile).
-wasm-opt -Oz -o output.wasm input.wasm
+   ```shell
+   # Optimize for size (z profile).
+   wasm-opt -Oz -o output.wasm input.wasm
+   
+   # Optimize for size (s profile).
+   wasm-opt -Os -o output.wasm input.wasm
+   
+   # Optimize for speed.
+   wasm-opt -O3 -o output.wasm input.wasm
+   
+   # Optimize for both size and speed.
+   wasm-opt -O -ol 100 -s 100 -o output.wasm input.wasm
+   ```
 
-# Optimize for size (s profile).
-wasm-opt -Os -o output.wasm input.wasm
-
-# Optimize for speed.
-wasm-opt -O3 -o output.wasm input.wasm
-
-# Optimize for both size and speed.
-wasm-opt -O -ol 100 -s 100 -o output.wasm input.wasm
+To run the game in your browser locally, run:
 ```
-
-To run the game in your browser locally:
-1. Run `cd www/public`
-2. Run `npx serve ./www/public`
-Finally, run `npx serve .`
-
+npx serve ./www/public
+```
