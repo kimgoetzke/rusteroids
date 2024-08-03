@@ -22,8 +22,8 @@ if (-Not (Test-Path -Path $destinationDirectory))
     Write-Host "Created the destination directory: $destinationDirectory"
 }
 
-# Copy all files and directories, excluding ./assets/github/*
-Get-ChildItem -Path $sourceDirectory -Recurse | Where-Object { $_.FullName -notlike "*\github\*" } | ForEach-Object {
+# Copy all files and directories, excluding ./assets/ignore/*
+Get-ChildItem -Path $sourceDirectory -Recurse | Where-Object { $_.FullName -notlike "*\ignore\*" } | ForEach-Object {
     $destPath = $_.FullName.Replace((Get-Item $sourceDirectory).FullName, (Get-Item $destinationDirectory).FullName)
     Write-Host "Copying $_ to $destPath..."
     if ($_.PSIsContainer)

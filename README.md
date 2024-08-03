@@ -6,7 +6,7 @@ will be millions of things that could have been done in a better and more idioma
 
 ## Demo
 
-![Demo GIF](assets/github/demo.gif)
+![Demo GIF](assets/ignore/demo.gif)
 
 ## Features
 
