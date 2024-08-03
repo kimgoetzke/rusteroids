@@ -56,6 +56,7 @@ fn main() {
             title: "Rusteroids".into(),
             resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
             resizable: false,
+            canvas: Some("#rusteroids-canvas".into()),
             ..default()
           }),
           ..default()

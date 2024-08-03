@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Rusteroids</title>
+    <link rel="stylesheet" href="style.css"/>
 </head>
 <body style="margin: 0;">
+<div class="loader"></div>
+<h1>Rusteroids</h1>
+<canvas id="rusteroids-canvas" width="1280" height="720"></canvas>
 <script type="module">
+    import './restart-audio-context.js';
     import init from './rusteroids.js';
 
     init().catch((error) => {
@@ -14,5 +19,6 @@
         }
     });
 </script>
+<p>Accelerate with <code>W</code>. Turn left/right with <code>A</code>/<code>D</code>. Fire with <code>Space</code>.</p>
 </body>
 </html>

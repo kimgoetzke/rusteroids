@@ -19,6 +19,13 @@ will be millions of things that could have been done in a better and more idioma
 - Collision system powered by `bevy_rapier2d`
 - Particles powered by `bevy_enoki`
 
+## Attribution
+
+The in-game (non-UI) font is Bulky Pixels by John Bloor's [Smoking Drum ](http://www.smokingdrum.com) (domain no longer
+active but required by license).
+
+Audio files downloaded from [Pixabay](https://pixabay.com) under a CC0 license or created by myself.
+
 ## How to develop
 
 ### Using Nix Flakes, JetBrains RustRover & Direnv
@@ -42,30 +49,50 @@ such as JetBrains RustRover, you'll have to set up the environment manually. You
 
 ## How to build WASM for the web
 
-Prerequisites:
+#### Prerequisites
+
 1. Run:
-   ```
+   ```shell
    rustup target add wasm32-unknown-unknown
    ```
 2. Set `RUSTFLAGS`
-   1. Linux: `export RUSTFLAGS="--cfg=web_sys_unstable_apis"`
-   2. Windows: `$env:RUSTFLAGS="--cfg=web_sys_unstable_apis"`
+    1. **Linux**:
+       ```bash
+       export RUSTFLAGS="--cfg=web_sys_unstable_apis"
+       ```
+    2. **Windows**:
+       ```powershell
+       $env:RUSTFLAGS="--cfg=web_sys_unstable_apis"
+       ```
 3. Make sure you have Node.js with `serve` installed
 
+#### Building
+
 Then you can build the WASM file:
+
 1. Run:
-   ```
+   ```shell
    cargo build --target wasm32-unknown-unknown --release
    ```
 2. Run `wasm-bindgen` to generate the JS bindings:
-   1. **Linux**: `wasm-bindgen --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
-   2. **Windows**: `wasm-bindgen.exe --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
+    1. **Linux**:
+       ```shell
+       wasm-bindgen --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm
+       ```
+    2. **Windows**:
+       ```powershell
+       wasm-bindgen.exe --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm
+       ```
 3. Make sure you have the assets in the `www/public` directory:
    ```shell
-   ./scripts/copy-assets.ps1   # Windows
+   ./scripts/copy-assets.ps1   # Windows only, bash script coming soon
    ```
 
-You can optimise the WASM file (from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
+#### Optimising
+
+You can optimise the WASM file (
+from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
+
    ```shell
    # Optimize for size (z profile).
    wasm-opt -Oz -o output.wasm input.wasm
@@ -80,7 +107,12 @@ You can optimise the WASM file (from [Unofficial Bevy Cheat Book](https://bevy-c
    wasm-opt -O -ol 100 -s 100 -o output.wasm input.wasm
    ```
 
-To run the game in your browser locally, run:
-```
-npx serve ./www/public
-```
+#### Running
+
+Finally, to run the game in your browser locally:
+
+1. Run:
+    ```shell
+    npx serve ./www/public
+    ```
+2. Paste the URL copied to your clipboard into your browser
