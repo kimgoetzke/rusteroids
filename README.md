@@ -9,7 +9,7 @@ will be millions of things that could have been done in a better and more idioma
 
 ## Demo
 
-![Demo GIF](./assets/demo.gif)
+![Demo GIF](assets/github/demo.gif)
 
 ## Features
 
@@ -39,3 +39,43 @@ available to your IDE and you can run the project from there (vs `cargo build` a
 Without `direnv`, you can use the Nix Flake by running `nix develop` in the project directory. If you want to use an IDE
 such as JetBrains RustRover, you'll have to set up the environment manually. You'll most likely have to make
 `LD_LIBRARY_PATH` available to your IDE.
+
+## How to build WASM for the web
+
+Prerequisites:
+1. Run `rustup target add wasm32-unknown-unknown`
+2. Set `RUSTFLAGS`
+   1. Linux: `export RUSTFLAGS="--cfg=web_sys_unstable_apis"`
+   2. Windows: `$env:RUSTFLAGS="--cfg=web_sys_unstable_apis"`
+3. Make sure you have Node.js with `serve` installed
+
+Then you can build the WASM file:
+1. Run `cargo build --target wasm32-unknown-unknown --release`
+2. Run `wasm-bindgen` to generate the JS bindings:
+   1. **Linux**: `wasm-bindgen --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
+   2. **Windows**: `wasm-bindgen.exe --out-dir ./www/public --target web ./target/wasm32-unknown-unknown/release/rusteroids.wasm`
+3. Make sure you have the assets in the `www/public` directory:
+   ```shell
+   ./scripts/copy-assets.ps1   # Windows
+   ```
+
+You can optimise the WASM file (from [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)):
+```shell
+# Optimize for size (z profile).
+wasm-opt -Oz -o output.wasm input.wasm
+
+# Optimize for size (s profile).
+wasm-opt -Os -o output.wasm input.wasm
+
+# Optimize for speed.
+wasm-opt -O3 -o output.wasm input.wasm
+
+# Optimize for both size and speed.
+wasm-opt -O -ol 100 -s 100 -o output.wasm input.wasm
+```
+
+To run the game in your browser locally:
+1. Run `cd www/public`
+2. Run `npx serve ./www/public`
+Finally, run `npx serve .`
+

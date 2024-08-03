@@ -56,7 +56,7 @@ pub fn spawn_ufo_wave(event: &WaveEvent, mut commands: &mut Commands, asset_serv
 fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>, spawn_point: Vec3) {
   commands.spawn((
     SpriteBundle {
-      texture: asset_server.load("enemy_ufo_small.png"),
+      texture: asset_server.load("sprites/enemy_ufo_small.png"),
       transform: Transform::from_translation(spawn_point),
       ..default()
     },
@@ -84,7 +84,7 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
 fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>, spawn_point: Vec3) {
   commands.spawn((
     SpriteBundle {
-      texture: asset_server.load("enemy_ufo_large.png"),
+      texture: asset_server.load("sprites/enemy_ufo_large.png"),
       transform: Transform::from_translation(spawn_point),
       ..default()
     },

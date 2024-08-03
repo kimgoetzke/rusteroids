@@ -41,7 +41,7 @@ pub struct Player {
 pub struct ExhaustParticles;
 
 fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
-  let player_handle = asset_server.load("player_base.png");
+  let player_handle = asset_server.load("sprites/player_base.png");
   let audio_handle = asset_server.load("audio/spaceship_loop_default.ogg");
 
   commands.spawn((

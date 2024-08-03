@@ -2,3 +2,8 @@
 .direnv
 .idea
 /nohup.out
+/www/public/assets/
+/www/public/rusteroids.d.ts
+/www/public/rusteroids.js
+/www/public/rusteroids_bg.wasm.d.ts
+/www/public/rusteroids_bg.wasm

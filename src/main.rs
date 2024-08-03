@@ -1,9 +1,11 @@
 use bevy::audio::{AudioPlugin, SpatialScale};
-use bevy::input::common_conditions::input_toggle_active;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_enoki::EnokiPlugin;
+#[cfg(feature = "dev")]
+use bevy::input::common_conditions::input_toggle_active;
+#[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
 use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
@@ -37,6 +39,7 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
+// TODO: Make sure enemies give score points
 // TODO: Add another, stronger/smarter enemies
 // TODO: Make game web-compatible
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
@@ -44,7 +47,8 @@ const WINDOW_HEIGHT: f32 = 720.;
 // TODO: Consider parallex scrolling background with stars
 
 fn main() {
-  App::new()
+  let mut app = App::new();
+  app
     .add_plugins(
       DefaultPlugins
         .set(ImagePlugin::default_nearest())
@@ -67,8 +71,6 @@ fn main() {
     .add_plugins(EnokiPlugin)
     .add_plugins(ShapePlugin)
     .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.))
-    // .add_plugins(RapierDebugRenderPlugin::default())
-    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)))
     .add_plugins((
       PixelPerfectCameraPlugin,
       GameWorldPlugin,
@@ -84,6 +86,12 @@ fn main() {
     .add_event::<ResetWaveEvent>()
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
-    .insert_resource(ClearColor(DARK_GRAY))
-    .run();
+    .insert_resource(ClearColor(DARK_GRAY));
+
+  #[cfg(feature = "dev")]
+  app
+    //.add_plugins(RapierDebugRenderPlugin::default())
+    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)));
+
+  app.run();
 }
