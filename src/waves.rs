@@ -50,7 +50,7 @@ fn start_next_wave(
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
     small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
-    large_ufo_count: if (wave.0 % 2) == 0 { 1u16 } else { 0u16 },
+    large_ufo_count: if (wave.0 % 3) == 0 { 1u16 } else { 0u16 },
     player_position,
   };
   info!("Starting wave {}: {:?}", wave.0, event);

@@ -160,7 +160,7 @@ fn player_shooting_system(
         projectile_info: info,
         origin_rotation: player_transform.rotation,
         origin_forward: player_forward,
-        spawn_position: player_transform.translation + player_forward * 15.,
+        spawn_position: player_transform.translation + player_forward * 20.,
       });
     }
 
