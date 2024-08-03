@@ -33,9 +33,12 @@ fn create_world_system(
   let adjusted_tile_size = tile_size - MARGIN;
 
   for i in 0..TILES as i32 {
-    for j in 0..TILES as i32 {
+    for j in (0..TILES as i32).rev() {
       let x = (i as f32 * tile_size) - half_world + (tile_size / 2.);
       let y = (j as f32 * tile_size) - half_world + (tile_size / 2.);
+
+      let letter = (b'A' + i as u8) as char;
+      let description = format!("{}{}", letter, TILES as i32 - j);
 
       commands
         .spawn((
@@ -45,12 +48,12 @@ fn create_world_system(
             material: materials.add(BLACK),
             ..default()
           },
-          Name::new("Tile ".to_owned() + i.to_string().as_str() + "|" + j.to_string().as_str()),
+          Name::new(description.clone()),
         ))
         .with_children(|builder| {
           builder.spawn((Text2dBundle {
             text: Text::from_section(
-              format!("{}/{}", i, j),
+              description,
               TextStyle {
                 font: asset_server.load(DEFAULT_FONT),
                 font_size: 20.,
@@ -58,7 +61,7 @@ fn create_world_system(
                 ..default()
               },
             )
-            .with_justify(JustifyText::Center),
+              .with_justify(JustifyText::Center),
             transform: Transform::from_xyz(0., 0., 1.),
             ..default()
           },));

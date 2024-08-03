@@ -4,9 +4,6 @@ This is a crappy asteroids-like game written in Rust, using Bevy engine and Rapi
 learn Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy), so there
 will be millions of things that could have been done in a better and more idiomatic way.
 
-> [!IMPORTANT]
-> I'm still working on this, so the info below will be incomplete.
-
 ## Demo
 
 ![Demo GIF](assets/github/demo.gif)
@@ -14,8 +11,8 @@ will be millions of things that could have been done in a better and more idioma
 ## Features
 
 - Infinite wave system with increasing difficulty
-- Single-button menu to exit the game
-- Audio
+- Single-button menu to exit the game :-)
+- Basic audio
 - Collision system powered by `bevy_rapier2d`
 - Particles powered by `bevy_enoki`
 
@@ -24,7 +21,7 @@ will be millions of things that could have been done in a better and more idioma
 The in-game (non-UI) font is Bulky Pixels by John Bloor's [Smoking Drum ](http://www.smokingdrum.com) (domain no longer
 active but required by license).
 
-Audio files downloaded from [Pixabay](https://pixabay.com) under a CC0 license or created by myself.
+Audio files from [Pixabay](https://pixabay.com) under a CC0 license or created by myself.
 
 ## How to develop
 
