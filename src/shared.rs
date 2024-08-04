@@ -32,7 +32,9 @@ pub const DARK_1: Color = Color::srgb(0.298, 0.337, 0.416);
 #[allow(dead_code)]
 pub const DARK_4: Color = Color::srgb(0.18, 0.204, 0.251);
 #[allow(dead_code)]
-pub const VERY_DARK: Color = Color::srgb(0.118, 0.129, 0.161);
+pub const VERY_DARK_1: Color = Color::srgb(0.12, 0.14, 0.18);
+#[allow(dead_code)]
+pub const VERY_DARK_2: Color = Color::srgb(0.06, 0.07, 0.09);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
