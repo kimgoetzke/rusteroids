@@ -162,6 +162,11 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut
   }
 }
 
+// TODO: Clean up this system
+// TODO: Set collider size correctly
+// TODO: Consider adding audio for charging attack and other states
+// TODO: Consider adding indicator
+// TODO: Add better explosion effect
 fn boss_movement_system(
   mut boss_query: Query<(&mut Transform, &mut Velocity, &Enemy, &mut MorphBoss, &TextureAtlas), Without<Player>>,
   player_query: Query<&Transform, With<Player>>,
