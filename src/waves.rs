@@ -52,10 +52,12 @@ fn start_next_wave(
     player_position,
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
-    small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
+    // small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
+    small_ufo_count: 0,
     large_ufo_count: if (wave.0 % 3) == 0 { 1u16 } else { 0u16 },
     player_position,
     // morph_boss: wave.0 == 4,
+    morph_boss: wave.0 == 4,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
