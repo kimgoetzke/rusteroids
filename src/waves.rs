@@ -22,11 +22,12 @@ impl Plugin for WavesPlugin {
 
 #[derive(Event, Debug)]
 pub(crate) struct WaveEvent {
-  pub(crate) wave: u16,
-  pub(crate) asteroid_count: u16,
-  pub(crate) small_ufo_count: u16,
-  pub(crate) large_ufo_count: u16,
-  pub(crate) player_position: Vec3,
+  pub(super) player_position: Vec3,
+  pub(super) wave: u16,
+  pub(super) asteroid_count: u16,
+  pub(super) small_ufo_count: u16,
+  pub(super) morph_boss: bool,
+  pub(super) large_ufo_count: u16,
 }
 
 #[derive(Resource, Default)]
@@ -40,6 +41,7 @@ fn start_next_wave(
   asset_server: Res<AssetServer>,
   asteroid_spawn_event: EventWriter<AsteroidSpawnedEvent>,
   player_query: Query<&Transform, With<Player>>,
+  texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   if !asteroid_query.is_empty() {
     return;
@@ -47,11 +49,13 @@ fn start_next_wave(
   wave.0 += 1;
   let player_position = get_player_position(player_query);
   let event = WaveEvent {
+    player_position,
     wave: wave.0,
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
     small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
     large_ufo_count: if (wave.0 % 3) == 0 { 1u16 } else { 0u16 },
     player_position,
+    // morph_boss: wave.0 == 4,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
@@ -65,6 +69,7 @@ fn start_next_wave(
   });
   crate::asteroids::spawn_asteroid_wave(&event, &mut commands, asteroid_spawn_event);
   crate::enemies::ufo::spawn_ufo_wave(&event, &mut commands, &asset_server);
+  crate::enemies::boss_morph::spawn_boss_wave(&event, &mut commands, &asset_server, texture_atlas_layouts);
   wave_event.send(event);
 }
 

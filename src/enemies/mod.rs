@@ -1,3 +1,4 @@
+use crate::enemies::boss_morph::MorphBossPlugin;
 use crate::enemies::ufo::UfoPlugin;
 use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
@@ -6,9 +7,12 @@ use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::info;
 use bevy::prelude::{
-  in_state, Commands, Component, Entity, Event, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, With,
+  in_state, Commands, Component, Entity, Event, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, Transform,
+  Vec2, With,
 };
+use bevy_rapier2d::prelude::Velocity;
 
+pub(crate) mod boss_morph;
 pub(crate) mod ufo;
 
 pub struct EnemyPlugin;
@@ -17,7 +21,7 @@ impl Plugin for EnemyPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_event::<EnemyDamageEvent>()
-      .add_plugins(UfoPlugin)
+      .add_plugins((UfoPlugin, MorphBossPlugin))
       .add_systems(OnEnter(GameState::Starting), reset_enemies_system)
       .add_systems(
         Update,
@@ -82,4 +86,15 @@ fn reset_enemies_event(
     reset_enemies_system(commands, query);
     return;
   }
+}
+
+pub(crate) fn move_toward_target(
+  target_transform: &Transform,
+  transform: &Transform,
+  velocity: &mut Velocity,
+  speed: f32,
+) {
+  let direction = target_transform.translation - transform.translation;
+  let direction = direction / direction.length();
+  velocity.linvel = Vec2::new(direction.x * speed, direction.y * speed);
 }

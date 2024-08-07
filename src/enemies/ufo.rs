@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
-use crate::enemies::Enemy;
+use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
@@ -119,9 +119,7 @@ fn ufo_movement_system(
 ) {
   for (transform, mut velocity, enemy) in ufo_query.iter_mut() {
     if let Ok(player) = player_query.get_single().as_ref() {
-      let direction = player.1.translation - transform.translation;
-      let direction = direction / direction.length();
-      velocity.linvel = Vec2::new(direction.x * enemy.movement_speed, direction.y * enemy.movement_speed);
+      move_toward_target(&player.1, transform, &mut *velocity, enemy.movement_speed);
     }
   }
 }
