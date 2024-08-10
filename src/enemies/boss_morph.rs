@@ -14,7 +14,6 @@ use crate::shared::random_game_world_point_away_from_player;
 use crate::waves::WaveEvent;
 
 const SPEED: f32 = 80.;
-const SHOOTING_COOLDOWN: f32 = 2.;
 const HEALTH: i16 = 150;
 const SCORE: u16 = 500;
 const ROTATING_THRESHOLD: f32 = 200.; // Distance from player to start rotating towards it
@@ -141,7 +140,6 @@ fn spawn_morph_boss(
     AdditionalMassProperties::Mass(40.),
     Ccd::enabled(),
     Enemy {
-      shooting_cooldown: SHOOTING_COOLDOWN,
       health_points: HEALTH,
       movement_speed: SPEED,
       score_points: SCORE,

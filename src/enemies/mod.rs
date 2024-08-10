@@ -38,7 +38,6 @@ pub(crate) struct EnemyDamageEvent {
 
 #[derive(Component, Copy, Clone)]
 pub struct Enemy {
-  pub(crate) shooting_cooldown: f32,
   pub(crate) health_points: i16,
   pub(crate) movement_speed: f32,
   pub(crate) score_points: u16,
