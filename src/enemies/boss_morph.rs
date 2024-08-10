@@ -39,7 +39,7 @@ struct MorphBoss {
 impl MorphBoss {
   fn new() -> Self {
     Self {
-      current_state: State::idling(),
+      current_state: State::idle(),
     }
   }
 }
@@ -62,40 +62,40 @@ impl State {
     }
   }
 
-  fn idling() -> Self {
-    Self::new(Behaviour::Idling, 0, 9)
+  fn idle() -> Self {
+    Self::new(Behaviour::Idle, 0, 9)
   }
 
-  fn rotating() -> Self {
-    Self::new(Behaviour::Rotating, 0, 9)
+  fn rotate() -> Self {
+    Self::new(Behaviour::Rotate, 0, 9)
   }
 
-  fn morphing() -> Self {
-    Self::new(Behaviour::Morphing, 10, 16)
+  fn morph() -> Self {
+    Self::new(Behaviour::Morph, 10, 16)
   }
 
-  fn attacking() -> Self {
-    Self::new(Behaviour::Attacking, 16, 17)
+  fn attack() -> Self {
+    Self::new(Behaviour::Attack, 16, 17)
   }
 
-  fn reverting() -> Self {
-    Self::new(Behaviour::Reverting, 19, 24)
+  fn revert() -> Self {
+    Self::new(Behaviour::Revert, 19, 24)
   }
 }
 
 #[derive(Clone, PartialEq)]
 enum Behaviour {
-  Idling,
-  Rotating,
-  Morphing,
-  Attacking,
-  Reverting,
+  Idle,
+  Rotate,
+  Morph,
+  Attack,
+  Revert,
 }
 
 #[derive(Component, Deref, DerefMut, Clone)]
 struct AnimationTimer(Timer);
 
-pub fn spawn_boss_wave(
+pub fn spawn_once(
   event: &WaveEvent,
   mut commands: &mut Commands,
   asset_server: &Res<AssetServer>,
@@ -176,71 +176,49 @@ fn boss_movement_system(
 ) {
   for (mut transform, mut velocity, enemy, mut morph_boss, atlas) in boss_query.iter_mut() {
     match morph_boss.current_state.behaviour {
-      Behaviour::Idling => {
-        if execute_idling_state_and_exit(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss) {
-          return;
-        }
-      }
-      Behaviour::Rotating => {
-        if execute_rotating_state_and_exit(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss) {
-          return;
-        }
-      }
-      Behaviour::Morphing => {
-        if execute_morphing_state_and_exit(&player_query, &mut transform, &mut morph_boss, atlas) {
-          return;
-        }
-      }
-      Behaviour::Attacking => {
-        if execute_attacking_state_and_exit(
-          &player_query,
-          &time,
-          &mut transform,
-          &mut velocity,
-          enemy,
-          &mut morph_boss,
-        ) {
-          return;
-        }
-      }
-      Behaviour::Reverting => {
-        if execute_reverting_state_and_exit(&mut velocity, &mut morph_boss, atlas) {
-          return;
-        }
-      }
+      Behaviour::Idle => idle_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
+      Behaviour::Rotate => rotate_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
+      Behaviour::Morph => morph_state(&player_query, &mut transform, &mut morph_boss, atlas),
+      Behaviour::Attack => attack_state(
+        &player_query,
+        &time,
+        &mut transform,
+        &mut velocity,
+        enemy,
+        &mut morph_boss,
+      ),
+      Behaviour::Revert => revert_state(&mut velocity, &mut morph_boss, atlas),
     }
   }
 }
 
-fn execute_idling_state_and_exit(
+fn idle_state(
   player_query: &Query<&Transform, With<Player>>,
   transform: &mut Mut<Transform>,
   velocity: &mut Mut<Velocity>,
   enemy: &Enemy,
   morph_boss: &mut Mut<MorphBoss>,
-) -> bool {
+) {
   if let Ok(player) = player_query.get_single().as_ref() {
     // State behaviour
     move_toward_target(player, &transform, &mut *velocity, enemy.movement_speed);
 
     // Exit condition
     if (transform.translation - player.translation).length() < ROTATING_THRESHOLD {
-      morph_boss.current_state = State::rotating();
+      morph_boss.current_state = State::rotate();
       velocity.angvel = 0.;
-      info!("Morph boss: Switch to rotating state");
-      return true;
+      info!("Morph boss: Switch to rotate state");
     }
   }
-  false
 }
 
-fn execute_rotating_state_and_exit(
+fn rotate_state(
   player_query: &Query<&Transform, With<Player>>,
   mut transform: &mut Mut<Transform>,
   velocity: &mut Mut<Velocity>,
   enemy: &Enemy,
   morph_boss: &mut Mut<MorphBoss>,
-) -> bool {
+) {
   if let Ok(player) = player_query.get_single().as_ref() {
     // State behaviour
     move_toward_target(player, &transform, &mut *velocity, enemy.movement_speed);
@@ -248,25 +226,22 @@ fn execute_rotating_state_and_exit(
 
     // Exit condition
     if difference.abs() < 0.1 {
-      morph_boss.current_state = State::morphing();
-      info!("Morph boss: Switch to morphing state");
-      return true;
+      morph_boss.current_state = State::morph();
+      info!("Morph boss: Switch to morph state");
     }
   } else {
     // Exit condition
-    info!("Morph boss: Player not found, resetting to idling state...");
-    morph_boss.current_state = State::idling();
-    return true;
+    info!("Morph boss: Player not found, resetting to idle state...");
+    morph_boss.current_state = State::idle();
   }
-  false
 }
 
-fn execute_morphing_state_and_exit(
+fn morph_state(
   player_query: &Query<&Transform, With<Player>>,
   mut transform: &mut Mut<Transform>,
   morph_boss: &mut Mut<MorphBoss>,
   atlas: &TextureAtlas,
-) -> bool {
+) {
   // State behaviour
   if let Ok(player) = player_query.get_single().as_ref() {
     rotate_towards_target(player, &mut transform);
@@ -274,21 +249,19 @@ fn execute_morphing_state_and_exit(
 
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
-    morph_boss.current_state = State::attacking();
-    info!("Morph boss: Switch to attacking state");
-    return true;
+    morph_boss.current_state = State::attack();
+    info!("Morph boss: Switching to attack state");
   }
-  false
 }
 
-fn execute_attacking_state_and_exit(
+fn attack_state(
   player_query: &Query<&Transform, With<Player>>,
   time: &Res<Time>,
   transform: &mut Mut<Transform>,
   velocity: &mut Mut<Velocity>,
   enemy: &Enemy,
   morph_boss: &mut Mut<MorphBoss>,
-) -> bool {
+) {
   if let Ok(player) = player_query.get_single().as_ref() {
     // State behaviour
     let direction = transform.rotation * Vec3::X;
@@ -297,32 +270,23 @@ fn execute_attacking_state_and_exit(
 
     // Exit condition
     if (player.translation - transform.translation).length() > REVERTING_THRESHOLD {
-      morph_boss.current_state = State::reverting();
-      info!("Morph boss: Switch to reverting state");
-      return true;
+      morph_boss.current_state = State::revert();
+      info!("Morph boss: Switching to revert state");
     }
   } else {
     // Exit condition
-    info!("Morph boss: Player not found, resetting to idling state...");
-    morph_boss.current_state = State::idling();
-    return true;
+    info!("Morph boss: Player not found, resetting to idle state...");
+    morph_boss.current_state = State::idle();
   }
-  false
 }
 
-fn execute_reverting_state_and_exit(
-  velocity: &mut Mut<Velocity>,
-  morph_boss: &mut Mut<MorphBoss>,
-  atlas: &TextureAtlas,
-) -> bool {
+fn revert_state(velocity: &mut Mut<Velocity>, morph_boss: &mut Mut<MorphBoss>, atlas: &TextureAtlas) {
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
-    morph_boss.current_state = State::idling();
+    morph_boss.current_state = State::idle();
     velocity.angvel = 2.;
-    info!("Morph boss: Switch to idling state");
-    return true;
+    info!("Morph boss: Switching to idle state");
   }
-  false
 }
 
 fn rotate_towards_target(target_transform: &Transform, transform: &mut Mut<Transform>) -> f32 {

@@ -33,6 +33,7 @@ pub(crate) struct WaveEvent {
 #[derive(Resource, Default)]
 pub struct Wave(pub u16);
 
+// TODO: Stop calling other functions directly from this system (which requires ensuring alternative is only executed once)
 fn start_next_wave(
   mut commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
@@ -68,7 +69,7 @@ fn start_next_wave(
   });
   crate::asteroids::spawn_asteroid_wave(&event, &mut commands, asteroid_spawn_event);
   crate::enemies::ufo::spawn_ufo_wave(&event, &mut commands, &asset_server);
-  crate::enemies::boss_morph::spawn_boss_wave(&event, &mut commands, &asset_server, texture_atlas_layouts);
+  crate::enemies::boss_morph::spawn_once(&event, &mut commands, &asset_server, texture_atlas_layouts);
   wave_event.send(event);
 }
 
