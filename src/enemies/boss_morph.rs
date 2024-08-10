@@ -245,6 +245,9 @@ fn morph_state(
   // State behaviour
   if let Ok(player) = player_query.get_single().as_ref() {
     rotate_towards_target(player, &mut transform);
+  } else {
+    info!("Morph boss: Player not found, resetting to idle state...");
+    morph_boss.current_state = State::idle();
   }
 
   // Exit condition
