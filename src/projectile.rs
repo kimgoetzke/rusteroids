@@ -28,7 +28,7 @@ pub(crate) struct ProjectileSpawnEvent {
   pub(crate) spawn_position: Vec3,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, PartialEq)]
 pub(crate) struct Projectile {
   pub(crate) damage: u16,
   pub(crate) life_time: f32,

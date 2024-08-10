@@ -56,6 +56,16 @@ pub(crate) struct Asteroid {
   pub(crate) score: u16,
 }
 
+impl PartialEq for Asteroid {
+  fn eq(&self, other: &Self) -> bool {
+    self.category == other.category
+      && self.size_range == other.size_range
+      && self.sides == other.sides
+      && self.additional_mass == other.additional_mass
+      && self.score == other.score
+  }
+}
+
 impl Asteroid {
   fn large() -> Self {
     Self {

@@ -38,7 +38,7 @@ pub const VERY_DARK_2: Color = Color::srgb(0.06, 0.07, 0.09);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
-#[derive(Component, Clone, Copy, Debug)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
 pub enum Category {
   XL,
   L,
