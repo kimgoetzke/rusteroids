@@ -8,7 +8,7 @@ use bevy_enoki::EnokiPlugin;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
-use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
+use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
 use crate::asteroids::AsteroidPlugin;
 use crate::background_stars::BackgroundStarsPlugin;
@@ -41,9 +41,9 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
-// TODO: Add another, stronger/smarter enemies
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
+// TODO: Add another/stronger/smarter enemies
 
 fn main() {
   let mut app = App::new();
@@ -91,7 +91,7 @@ fn main() {
 
   #[cfg(feature = "dev")]
   app
-    //.add_plugins(RapierDebugRenderPlugin::default())
+    .add_plugins(RapierDebugRenderPlugin::default())
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)));
 
   app.run();

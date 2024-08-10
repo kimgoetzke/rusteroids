@@ -61,7 +61,7 @@ fn spawn_explosion_event(
       PIXEL_PERFECT_BLOOM_LAYER,
       Name::new("Explosion"),
       AudioBundle {
-        source: asset_server.load("audio/explosion_rock_default.ogg"),
+        source: asset_server.load("audio/explosion_rock.ogg"),
         settings: PlaybackSettings {
           mode: bevy::audio::PlaybackMode::Remove,
           speed: audio_speed,
