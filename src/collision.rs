@@ -156,10 +156,7 @@ fn asteroid_collision(
   asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
-  if let Some(asteroid) = match entity_info.entity_type {
-    EntityType::Asteroid(asteroid) => Some(asteroid),
-    _ => None,
-  } {
+  if let EntityType::Asteroid(asteroid) = entity_info.entity_type {
     asteroid_destroyed_event.send(AsteroidDestroyedEvent {
       category: asteroid.category,
       origin: entity_info.transform.translation,
@@ -171,7 +168,7 @@ fn asteroid_collision(
     score_event.send(ScoreEvent { score: asteroid.score });
     commands.entity(entity_info.entity).despawn();
   } else {
-    warn!("Collision entity info is not an asteroid");
+    error!("Bug in collision logic detected: Attempting to handle asteroid collision but entity is not an asteroid");
   }
 }
 
@@ -182,10 +179,7 @@ fn player_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
-  if let Some(()) = match entity_info.entity_type {
-    EntityType::Player() => Some(()),
-    _ => None,
-  } {
+  if matches!(entity_info.entity_type, EntityType::Player()) {
     commands.entity(entity_info.entity).despawn();
     commands.spawn(AudioBundle {
       source: asset_server.load("audio/player_death.ogg"),
@@ -202,7 +196,7 @@ fn player_collision(
     });
     score_event.send(ScoreEvent { score: 0 });
   } else {
-    warn!("Collision entity info is not the player");
+    error!("Bug in collision logic detected: Attempting to handle player collision but entity is not the player");
   }
 }
 
@@ -211,17 +205,14 @@ fn projectile_collision(
   commands: &mut Commands,
   explosion_event: &mut EventWriter<ExplosionEvent>,
 ) {
-  if let Some(()) = match entity_info.entity_type {
-    EntityType::Projectile(_) => Some(()),
-    _ => None,
-  } {
+  if matches!(entity_info.entity_type, EntityType::Projectile(_)) {
     commands.entity(entity_info.entity).despawn();
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
       category: Category::S,
     });
   } else {
-    warn!("Collision entity info is not a projectile");
+    error!("Bug in collision logic detected: Attempting to handle projectile collision but entity is not a projectile");
   }
 }
 
@@ -231,10 +222,7 @@ fn enemy_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
-  if let Some(()) = match entity_info.entity_type {
-    EntityType::Enemy() => Some(()),
-    _ => None,
-  } {
+  if matches!(entity_info.entity_type, EntityType::Enemy()) {
     enemy_damage_event.send(EnemyDamageEvent {
       entity: entity_info.entity,
       damage: damage_dealt,
@@ -244,6 +232,6 @@ fn enemy_collision(
       category: Category::S,
     });
   } else {
-    warn!("Collision entity info is not a UFO");
+    error!("Bug in collision logic detected: Attempting to handle enemy collision but entity is not an enemy");
   }
 }
