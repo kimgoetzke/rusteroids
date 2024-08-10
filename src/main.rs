@@ -8,7 +8,9 @@ use bevy_enoki::EnokiPlugin;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::plugin::ShapePlugin;
-use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
+#[cfg(feature = "dev")]
+use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
+use bevy_rapier2d::prelude::{NoUserData, RapierPhysicsPlugin};
 
 use crate::asteroids::AsteroidPlugin;
 use crate::background_stars::BackgroundStarsPlugin;
