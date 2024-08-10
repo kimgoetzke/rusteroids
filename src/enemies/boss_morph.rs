@@ -9,6 +9,7 @@ use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
+use crate::game_world::WrapAroundEntity;
 use crate::player::Player;
 use crate::shared::random_game_world_point_away_from_player;
 use crate::waves::WaveEvent;
@@ -127,7 +128,6 @@ fn spawn_morph_boss(
       layout: texture_atlas_layout,
       index: 0,
     },
-    MorphBoss::new(),
     Name::new("Morph Boss"),
     RigidBody::Dynamic,
     Collider::triangle(Vec2::new(25., 0.), Vec2::new(-25., 15.), Vec2::new(-25., -15.)),
@@ -139,11 +139,13 @@ fn spawn_morph_boss(
     },
     AdditionalMassProperties::Mass(40.),
     Ccd::enabled(),
+    WrapAroundEntity,
     Enemy {
       health_points: HEALTH,
       movement_speed: SPEED,
       score_points: SCORE,
     },
+    MorphBoss::new(),
   ));
 }
 
