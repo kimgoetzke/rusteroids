@@ -14,7 +14,7 @@ impl Plugin for BackgroundStarsPlugin {
 }
 
 #[derive(Component)]
-struct Star {
+struct Stars {
   layer: u8, // 0 for foreground, 1 for background
 }
 
@@ -36,7 +36,8 @@ fn spawn_stars_system(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(x, y, if layer == 0 { -950.0 } else { -951.0 }),
             ..default()
           },
-          Star { layer },
+          Name::new("Stars: L".to_string() + &layer.to_string()),
+          Stars { layer },
         ));
       }
     }
@@ -44,8 +45,8 @@ fn spawn_stars_system(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn parallax_scrolling_system(
-  mut query: Query<(&Star, &mut Transform), Without<Player>>,
-  player_query: Query<&Transform, (With<Player>, Without<Star>)>,
+  mut query: Query<(&Stars, &mut Transform), Without<Player>>,
+  player_query: Query<&Transform, (With<Player>, Without<Stars>)>,
   mut last_player_position: Local<Option<Vec3>>,
 ) {
   if let Ok(player_transform) = player_query.get_single() {
