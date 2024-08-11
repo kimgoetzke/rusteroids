@@ -183,6 +183,11 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, spawn_point: Vec3
     Name::new(format!("Asteroid {}", category.to_string().to_uppercase())),
     RigidBody::Dynamic,
     asteroid.collider.clone(),
+    ImpactInfo {
+      impact_category: category,
+      death_category: category,
+      substance: Substance::Rock,
+    },
     GravityScale(0.),
     AdditionalMassProperties::Mass(asteroid.additional_mass.clone()),
     Velocity {
