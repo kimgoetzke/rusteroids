@@ -5,7 +5,7 @@ use crate::in_game_ui::ScoreEvent;
 use crate::shared::ResetWaveEvent;
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
-use bevy::log::info;
+use bevy::log::{debug, info};
 use bevy::prelude::{
   in_state, Commands, Component, Entity, Event, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, Transform,
   Vec2, With,
@@ -60,11 +60,16 @@ fn enemy_damage_system(
         score_event.send(ScoreEvent {
           score: enemy.score_points,
         });
+        info!("Enemy {:?} was destroyed", name);
       } else {
-        info!(
-          "Enemy {:?} received {} damage and has {} health left",
-          name, event.damage, enemy.health_points
-        );
+        if event.damage > 0 {
+          debug!(
+            "Enemy {:?} received {} damage and has {} health left",
+            name, event.damage, enemy.health_points
+          );
+        } else {
+          debug!("Enemy {:?} received no damage from this collision", name);
+        }
       }
     }
   }

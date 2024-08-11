@@ -44,6 +44,12 @@ Without `direnv`, you can use the Nix Flake by running `nix develop` in the proj
 such as JetBrains RustRover, you'll have to set up the environment manually. You'll most likely have to make
 `LD_LIBRARY_PATH` available to your IDE.
 
+### Reminders
+
+- Create a run configuration with environment variable `RUST_LOG=rusteroids=debug` for debug logs e.g. damage,
+  collisions, explosions
+- Create a run configuration with `--features dev` to enable `RapierDebugRenderPlugin` and `WorldInspectorPlugin`
+
 ## How to build WASM for the web
 
 #### Prerequisites
@@ -109,6 +115,7 @@ You can optimise the WASM file (from the
 
 Finally, to run the game in your browser locally, run the below and paste the URL copied to your clipboard into your
 browser:
+
 ```shell
 npx serve ./www/public
 ```

@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::game_world::WORLD_SIZE;
 use bevy::color::Color;
-use bevy::prelude::{info, Component, Event, Vec3};
+use bevy::prelude::{info, Event, Vec3};
 use rand::random;
 
 #[allow(dead_code)]
@@ -38,12 +38,19 @@ pub const VERY_DARK_2: Color = Color::srgb(0.06, 0.07, 0.09);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
-#[derive(Component, Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Category {
   XL,
   L,
   M,
   S,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Substance {
+  Rock,
+  Metal,
+  Undefined,
 }
 
 impl fmt::Display for Category {

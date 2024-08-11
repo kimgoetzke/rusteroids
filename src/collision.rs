@@ -11,7 +11,7 @@ use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
 use crate::player::Player;
 use crate::projectile::Projectile;
-use crate::shared::Category;
+use crate::shared::{Category, Substance};
 
 pub struct CollisionPlugin;
 
@@ -164,6 +164,7 @@ fn asteroid_collision(
     explosion_event.send(ExplosionEvent {
       category: asteroid.category,
       origin: entity_info.transform.translation,
+      substance: Substance::Rock,
     });
     score_event.send(ScoreEvent { score: asteroid.score });
     commands.entity(entity_info.entity).despawn();
@@ -193,6 +194,7 @@ fn player_collision(
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
       category: Category::XL,
+      substance: Substance::Metal,
     });
     score_event.send(ScoreEvent { score: 0 });
   } else {
@@ -209,7 +211,8 @@ fn projectile_collision(
     commands.entity(entity_info.entity).despawn();
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
-      category: Category::S,
+      category: Category::M,
+      substance: Substance::Undefined,
     });
   } else {
     error!("Bug in collision logic detected: Attempting to handle projectile collision but entity is not a projectile");
@@ -230,6 +233,7 @@ fn enemy_collision(
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
       category: Category::S,
+      substance: Substance::Metal,
     });
   } else {
     error!("Bug in collision logic detected: Attempting to handle enemy collision but entity is not an enemy");

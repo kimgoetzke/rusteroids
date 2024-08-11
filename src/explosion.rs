@@ -1,5 +1,5 @@
 use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
-use crate::shared::Category;
+use crate::shared::{Category, Substance};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
@@ -13,10 +13,11 @@ impl Plugin for ExplosionPlugin {
       .add_systems(Update, spawn_explosion_event);
   }
 }
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub(crate) struct ExplosionEvent {
-  pub(crate) origin: Vec3,
-  pub(crate) category: Category,
+  pub origin: Vec3,
+  pub category: Category,
+  pub substance: Substance,
 }
 
 #[derive(Component)]
@@ -34,6 +35,13 @@ fn spawn_explosion_event(
       Category::M => asset_server.load("particles/explosion_m.ron"),
       Category::S => asset_server.load("particles/explosion_s.ron"),
     };
+
+    let audio_handle = match explosion.substance {
+      Substance::Rock => asset_server.load("audio/explosion_rock.ogg"),
+      Substance::Metal => asset_server.load("audio/explosion_metal.ogg"),
+      Substance::Undefined => asset_server.load("audio/explosion_undefined.ogg"),
+    };
+    debug!("Explosion: {:?}", explosion);
 
     let audio_volume = match explosion.category {
       Category::XL => Volume::new(0.9),
@@ -61,7 +69,7 @@ fn spawn_explosion_event(
       PIXEL_PERFECT_BLOOM_LAYER,
       Name::new("Explosion"),
       AudioBundle {
-        source: asset_server.load("audio/explosion_rock.ogg"),
+        source: audio_handle,
         settings: PlaybackSettings {
           mode: bevy::audio::PlaybackMode::Remove,
           speed: audio_speed,
