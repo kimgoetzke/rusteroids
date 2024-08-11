@@ -6,8 +6,8 @@ use crate::shared::random_game_world_point_away_from_player;
 use crate::waves::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
 use bevy::asset::AssetServer;
+use bevy::audio::Volume;
 use bevy::core::Name;
-use bevy::log::info;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
@@ -131,6 +131,15 @@ fn spawn_morph_boss(
       layout: texture_atlas_layout,
       index: 0,
     },
+    AudioBundle {
+      source: asset_server.load("audio/spaceship_loop_odd.ogg"),
+      settings: PlaybackSettings {
+        mode: bevy::audio::PlaybackMode::Loop,
+        volume: Volume::new(0.7),
+        spatial: true,
+        ..Default::default()
+      },
+    },
     Name::new("Morph Boss"),
     RigidBody::Dynamic,
     Collider::triangle(Vec2::new(25., 0.), Vec2::new(-25., 15.), Vec2::new(-25., -15.)),
@@ -166,29 +175,47 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut
 }
 
 // TODO: Consider updating collider when morphing
-// TODO: Add new audio for charging attack and explosion
 // TODO: Consider adding indicator
 // TODO: Add better explosion effect
 // TODO: Use a basic state machine, this is embarrassing
-// TODO: Check why boss reverts too often after having morphed
 fn boss_movement_system(
-  mut boss_query: Query<(&mut Transform, &mut Velocity, &Enemy, &mut MorphBoss, &TextureAtlas), Without<Player>>,
+  mut boss_query: Query<
+    (
+      Entity,
+      &mut Transform,
+      &mut Velocity,
+      &Enemy,
+      &mut MorphBoss,
+      &TextureAtlas,
+      &SpatialAudioSink,
+    ),
+    Without<Player>,
+  >,
   player_query: Query<&Transform, With<Player>>,
   time: Res<Time>,
   asset_server: Res<AssetServer>,
   mut commands: Commands,
 ) {
-  for (mut transform, mut velocity, enemy, mut morph_boss, atlas) in boss_query.iter_mut() {
+  for (entity, mut transform, mut velocity, enemy, mut morph_boss, atlas, audio_sink) in boss_query.iter_mut() {
     match morph_boss.current_state.behaviour {
       Behaviour::Idle => idle_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
-      Behaviour::Rotate => rotate_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
+      Behaviour::Rotate => rotate_state(
+        &player_query,
+        &mut transform,
+        &mut velocity,
+        enemy,
+        &mut morph_boss,
+        audio_sink,
+      ),
       Behaviour::Morph => morph_state(
+        &entity,
         &player_query,
         &mut transform,
         &mut morph_boss,
         atlas,
         &asset_server,
         &mut commands,
+        audio_sink,
       ),
       Behaviour::Attack => attack_state(
         &player_query,
@@ -198,7 +225,7 @@ fn boss_movement_system(
         enemy,
         &mut morph_boss,
       ),
-      Behaviour::Revert => revert_state(&mut velocity, &mut morph_boss, atlas),
+      Behaviour::Revert => revert_state(&mut velocity, &mut morph_boss, atlas, audio_sink),
     }
   }
 }
@@ -218,7 +245,7 @@ fn idle_state(
     if (transform.translation - player.translation).length() < ROTATING_THRESHOLD {
       morph_boss.current_state = State::rotate();
       velocity.angvel = 0.;
-      info!("Morph boss: Rotate state");
+      debug!("Morph boss: Rotate state");
     }
   }
 }
@@ -229,6 +256,7 @@ fn rotate_state(
   velocity: &mut Mut<Velocity>,
   enemy: &Enemy,
   morph_boss: &mut Mut<MorphBoss>,
+  audio_sink: &SpatialAudioSink,
 ) {
   if let Ok(player) = player_query.get_single().as_ref() {
     // State behaviour
@@ -238,22 +266,26 @@ fn rotate_state(
     // Exit condition
     if difference.abs() < 0.1 {
       morph_boss.current_state = State::morph();
-      info!("Morph boss: Morph state");
+      audio_sink.pause();
+      debug!("Morph boss: Morph state");
     }
   } else {
     // Exit condition
     info!("Morph boss: Player not found, resetting to idle state...");
     morph_boss.current_state = State::idle();
+    audio_sink.play();
   }
 }
 
 fn morph_state(
+  entity: &Entity,
   player_query: &Query<&Transform, With<Player>>,
   mut transform: &mut Mut<Transform>,
   morph_boss: &mut Mut<MorphBoss>,
   atlas: &TextureAtlas,
   asset_server: &Res<AssetServer>,
   commands: &mut Commands,
+  audio_sink: &SpatialAudioSink,
 ) {
   if let Ok(player) = player_query.get_single().as_ref() {
     // State behaviour
@@ -262,19 +294,28 @@ fn morph_state(
     // Exit condition
     info!("Morph boss: Player not found, resetting to idle state...");
     morph_boss.current_state = State::idle();
+    audio_sink.play();
   }
 
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
     morph_boss.current_state = State::attack();
-    info!("Morph boss: Attack state");
-    commands.spawn(AudioBundle {
-      source: asset_server.load("audio/whoosh.ogg"),
-      settings: PlaybackSettings {
-        mode: bevy::audio::PlaybackMode::Remove,
-        ..Default::default()
-      },
-      ..Default::default()
+    debug!("Morph boss: Attack state");
+    commands.entity(*entity).with_children(|builder| {
+      builder.spawn((
+        AudioBundle {
+          source: asset_server.load("audio/whoosh.ogg"),
+          settings: PlaybackSettings {
+            mode: bevy::audio::PlaybackMode::Remove,
+            volume: Volume::new(0.5),
+            spatial: true,
+            ..Default::default()
+          },
+          ..Default::default()
+        },
+        SpatialBundle::default(),
+        Name::new("SFX: Whoosh"),
+      ));
     });
   }
 }
@@ -296,7 +337,7 @@ fn attack_state(
     // Exit condition
     if (player.translation - transform.translation).length() > REVERTING_THRESHOLD {
       morph_boss.current_state = State::revert();
-      info!("Morph boss: Revert state");
+      debug!("Morph boss: Revert state");
     }
   } else {
     // Exit condition
@@ -305,12 +346,18 @@ fn attack_state(
   }
 }
 
-fn revert_state(velocity: &mut Mut<Velocity>, morph_boss: &mut Mut<MorphBoss>, atlas: &TextureAtlas) {
+fn revert_state(
+  velocity: &mut Mut<Velocity>,
+  morph_boss: &mut Mut<MorphBoss>,
+  atlas: &TextureAtlas,
+  audio_sink: &SpatialAudioSink,
+) {
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
     morph_boss.current_state = State::idle();
     velocity.angvel = DEFAULT_ANGULAR_VELOCITY;
-    info!("Morph boss: Idle state");
+    audio_sink.play();
+    debug!("Morph boss: Idle state");
   }
 }
 
