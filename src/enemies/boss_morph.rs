@@ -1,10 +1,8 @@
 use crate::enemies::{move_toward_target, Enemy};
-use crate::explosion::ImpactInfo;
 use crate::game_state::GameState;
-use crate::game_world::WrapAroundEntity;
 use crate::player::Player;
-use crate::shared::{random_game_world_point_away_from_player, Category, Substance};
-use crate::waves::WaveEvent;
+use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, Substance, WrapAroundEntity};
+use crate::shared_events::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
 use bevy::asset::AssetServer;
 use bevy::audio::Volume;
@@ -17,7 +15,7 @@ use consts::PI;
 use std::f32::consts;
 
 const SPEED: f32 = 75.;
-const HEALTH: i16 = 20;
+const HEALTH: i16 = 120;
 const SCORE: u16 = 500;
 const ROTATION_SPEED: f32 = 0.06;
 const ROTATING_THRESHOLD: f32 = 225.; // Distance from player to start rotating towards it

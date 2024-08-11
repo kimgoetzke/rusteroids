@@ -23,7 +23,9 @@ use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
 use crate::projectile::ProjectilePlugin;
-use crate::shared::{ResetWaveEvent, VERY_DARK_1};
+use crate::shared::VERY_DARK_1;
+use crate::shared_events::SharedEventsPlugin;
+use crate::shared_resources::SharedResourcesPlugin;
 use crate::waves::WavesPlugin;
 
 mod asteroids;
@@ -38,6 +40,8 @@ mod in_game_ui;
 mod player;
 mod projectile;
 mod shared;
+mod shared_events;
+mod shared_resources;
 mod waves;
 
 const WINDOW_WIDTH: f32 = 1280.;
@@ -73,6 +77,7 @@ fn main() {
     .add_plugins(EnokiPlugin)
     .add_plugins(ShapePlugin)
     .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(3.))
+    .add_plugins((SharedResourcesPlugin, SharedEventsPlugin))
     .add_plugins((
       PixelPerfectCameraPlugin,
       GameWorldPlugin,
@@ -86,7 +91,6 @@ fn main() {
     ))
     .add_plugins((CollisionPlugin, ExplosionPlugin))
     .add_plugins(InGameUiPlugin)
-    .add_event::<ResetWaveEvent>()
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
     .insert_resource(ClearColor(VERY_DARK_1));

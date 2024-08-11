@@ -2,9 +2,10 @@ use bevy::app::{App, Plugin};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 
-use crate::asteroids::{Asteroid, AsteroidSpawnedEvent};
+use crate::asteroids::Asteroid;
 use crate::game_state::GameState;
 use crate::player::Player;
+use crate::shared_events::{AsteroidSpawnedEvent, WaveEvent};
 
 const ASTEROID_START_COUNT: u16 = 1;
 
@@ -13,25 +14,14 @@ pub struct WavesPlugin;
 impl Plugin for WavesPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<WaveEvent>()
       .insert_resource(Wave(0))
       .add_systems(OnEnter(GameState::Starting), reset_waves_system)
       .add_systems(FixedUpdate, start_next_wave.run_if(in_state(GameState::Playing)));
   }
 }
 
-#[derive(Event, Debug)]
-pub(crate) struct WaveEvent {
-  pub(super) player_position: Vec3,
-  pub(super) wave: u16,
-  pub(super) asteroid_count: u16,
-  pub(super) small_ufo_count: u16,
-  pub(super) morph_boss: bool,
-  pub(super) large_ufo_count: u16,
-}
-
 #[derive(Resource, Default)]
-pub struct Wave(pub u16);
+struct Wave(pub u16);
 
 // TODO: Stop calling other functions directly from this system (which requires ensuring alternative is only executed once)
 fn start_next_wave(

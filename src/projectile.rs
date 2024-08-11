@@ -5,13 +5,14 @@ use bevy_rapier2d::prelude::*;
 
 use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
 use crate::game_state::GameState;
+use crate::shared::ProjectileInfo;
+use crate::shared_events::ProjectileSpawnEvent;
 
 pub struct ProjectilePlugin;
 
 impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<ProjectileSpawnEvent>()
       .add_systems(
         FixedUpdate,
         process_projectile_spawn_event.run_if(in_state(GameState::Playing)),
@@ -20,29 +21,11 @@ impl Plugin for ProjectilePlugin {
   }
 }
 
-#[derive(Event)]
-pub(crate) struct ProjectileSpawnEvent {
-  pub(crate) projectile_info: ProjectileInfo,
-  pub(crate) origin_rotation: Quat,
-  pub(crate) origin_forward: Vec3,
-  pub(crate) spawn_position: Vec3,
-}
-
-#[derive(Component, Clone, PartialEq)]
+#[derive(Debug, Component, Clone, PartialEq)]
 pub(crate) struct Projectile {
-  pub(crate) damage: u16,
-  pub(crate) life_time: f32,
-  pub(crate) max_life_time: f32,
-}
-
-#[derive(Component, Clone)]
-pub(crate) struct ProjectileInfo {
-  pub(crate) damage: u16,
-  pub(crate) speed: f32,
-  pub(crate) max_life_time: f32,
-  pub(crate) cooldown: f32,
-  pub(crate) collider: Collider,
-  pub(crate) sprite: Sprite,
+  pub damage: u16,
+  pub life_time: f32,
+  pub max_life_time: f32,
 }
 
 fn process_projectile_spawn_event(

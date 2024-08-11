@@ -4,12 +4,12 @@ use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, Rigid
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 use crate::enemies::{move_toward_target, Enemy};
-use crate::explosion::ImpactInfo;
 use crate::game_state::GameState;
 use crate::player::Player;
-use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
-use crate::shared::{random_f32_range, random_game_world_point_away_from_player, Category, Substance, RED};
-use crate::waves::WaveEvent;
+use crate::shared::{
+  random_f32_range, random_game_world_point_away_from_player, Category, ImpactInfo, ProjectileInfo, Substance, RED,
+};
+use crate::shared_events::{ProjectileSpawnEvent, WaveEvent};
 
 const SMALL_UFO_SPEED: f32 = 50.;
 const LARGE_UFO_SPEED: f32 = 35.;
@@ -32,7 +32,7 @@ impl Plugin for UfoPlugin {
 }
 
 #[derive(Component)]
-pub(crate) struct Ufo {
+struct Ufo {
   shooting_cooldown: f32,
   size: UfoSize,
 }

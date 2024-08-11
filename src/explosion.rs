@@ -1,5 +1,6 @@
 use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
 use crate::shared::{Category, Substance};
+use crate::shared_events::ExplosionEvent;
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
@@ -8,23 +9,8 @@ pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
   fn build(&self, app: &mut App) {
-    app
-      .add_event::<ExplosionEvent>()
-      .add_systems(Update, spawn_explosion_event);
+    app.add_systems(Update, spawn_explosion_event);
   }
-}
-#[derive(Event, Debug)]
-pub(crate) struct ExplosionEvent {
-  pub origin: Vec3,
-  pub category: Category,
-  pub substance: Substance,
-}
-
-#[derive(Component, Copy, Clone)]
-pub(crate) struct ImpactInfo {
-  pub impact_category: Category,
-  pub death_category: Category,
-  pub substance: Substance,
 }
 
 #[derive(Component)]

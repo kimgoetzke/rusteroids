@@ -1,15 +1,14 @@
 use crate::enemies::boss_morph::MorphBossPlugin;
 use crate::enemies::ufo::UfoPlugin;
-use crate::explosion::{ExplosionEvent, ImpactInfo};
 use crate::game_state::GameState;
-use crate::in_game_ui::ScoreEvent;
-use crate::shared::ResetWaveEvent;
+use crate::shared::ImpactInfo;
+use crate::shared_events::{EnemyDamageEvent, ExplosionEvent, ResetWaveEvent, ScoreEvent};
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::{debug, info};
 use bevy::prelude::{
-  in_state, Commands, Component, Entity, Event, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, Transform,
-  Vec2, With,
+  in_state, Commands, Component, Entity, EventReader, EventWriter, IntoSystemConfigs, OnEnter, Query, Transform, Vec2,
+  With,
 };
 use bevy_rapier2d::prelude::Velocity;
 
@@ -31,17 +30,11 @@ impl Plugin for EnemyPlugin {
   }
 }
 
-#[derive(Event, Debug)]
-pub(crate) struct EnemyDamageEvent {
-  pub(crate) entity: Entity,
-  pub(crate) damage: u16,
-}
-
 #[derive(Component, Copy, Clone)]
 pub struct Enemy {
-  pub(crate) health_points: i16,
-  pub(crate) movement_speed: f32,
-  pub(crate) score_points: u16,
+  pub health_points: i16,
+  pub movement_speed: f32,
+  pub score_points: u16,
 }
 
 fn enemy_damage_system(

@@ -1,4 +1,4 @@
-use crate::shared::{DEFAULT_FONT, VERY_DARK_1, VERY_DARK_2};
+use crate::shared::{WrapAroundEntity, DEFAULT_FONT, VERY_DARK_1, VERY_DARK_2};
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy_rapier2d::dynamics::RigidBody;
@@ -17,9 +17,6 @@ impl Plugin for GameWorldPlugin {
       .add_systems(FixedUpdate, wraparound_system);
   }
 }
-
-#[derive(Component)]
-pub(crate) struct WrapAroundEntity;
 
 fn create_world_system(
   mut commands: Commands,

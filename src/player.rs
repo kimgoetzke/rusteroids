@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
-use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
-use crate::shared::{ResetWaveEvent, PURPLE};
+use crate::shared::{Category, ImpactInfo, ProjectileInfo, Substance, PURPLE};
+use crate::shared_events::{ProjectileSpawnEvent, ResetWaveEvent};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerBundle, DEFAULT_MATERIAL};
@@ -38,7 +38,7 @@ pub struct Player {
 }
 
 #[derive(Component)]
-pub struct ExhaustParticles;
+struct ExhaustParticles;
 
 fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
   let player_handle = asset_server.load("sprites/player_base.png");
@@ -58,6 +58,11 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     RigidBody::Dynamic,
     Collider::ball(9.),
     ActiveEvents::COLLISION_EVENTS,
+    ImpactInfo {
+      impact_category: Category::XL, // TODO: Implement player damage system and then change this
+      death_category: Category::XL,
+      substance: Substance::Metal,
+    },
     GravityScale(0.),
     Velocity {
       linvel: Vec2::new(0., 25.),

@@ -23,7 +23,7 @@ struct PauseMenuUi;
 impl UiComponent for PauseMenuUi {}
 
 #[derive(Component)]
-pub struct QuitButton;
+struct QuitButton;
 
 fn toggle_pause_menu_event(
   mut commands: Commands,
@@ -82,7 +82,7 @@ fn toggle_pause_menu_event(
   }
 }
 
-pub fn interact_with_quit_button(
+fn interact_with_quit_button(
   mut app_exit_event_writer: EventWriter<AppExit>,
   mut button_query: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<QuitButton>)>,
 ) {

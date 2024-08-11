@@ -13,10 +13,9 @@ use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
 use rand::random;
 
 use crate::game_state::GameState;
-use crate::game_world::WrapAroundEntity;
-use crate::in_game_ui::AsteroidCount;
 use crate::shared::*;
-use crate::waves::WaveEvent;
+use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, ResetWaveEvent, WaveEvent};
+use crate::shared_resources::AsteroidCount;
 
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
 const MAX_SPEED: f32 = 50.;
@@ -27,23 +26,12 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<AsteroidSpawnedEvent>()
-      .add_event::<AsteroidDestroyedEvent>()
       .add_systems(OnEnter(GameState::Starting), reset_asteroids_system)
       .add_systems(
         Update,
         (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Playing)),
       );
   }
-}
-
-#[derive(Event)]
-pub(crate) struct AsteroidSpawnedEvent;
-
-#[derive(Event)]
-pub(crate) struct AsteroidDestroyedEvent {
-  pub(crate) category: Category,
-  pub(crate) origin: Vec3,
 }
 
 #[derive(Component, Clone, Debug)]

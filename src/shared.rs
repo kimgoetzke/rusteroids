@@ -2,7 +2,8 @@ use std::fmt;
 
 use crate::game_world::WORLD_SIZE;
 use bevy::color::Color;
-use bevy::prelude::{info, Event, Vec3};
+use bevy::prelude::*;
+use bevy_rapier2d::geometry::Collider;
 use rand::random;
 
 #[allow(dead_code)]
@@ -38,29 +39,46 @@ pub const VERY_DARK_2: Color = Color::srgb(0.06, 0.07, 0.09);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
+#[derive(Component, Clone)]
+pub(crate) struct ProjectileInfo {
+  pub damage: u16,
+  pub speed: f32,
+  pub max_life_time: f32,
+  pub cooldown: f32,
+  pub collider: Collider,
+  pub sprite: Sprite,
+}
+
+#[derive(Component, Copy, Clone)]
+pub(crate) struct ImpactInfo {
+  pub impact_category: Category,
+  pub death_category: Category,
+  pub substance: Substance,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Category {
+pub(crate) enum Category {
   XL,
   L,
   M,
   S,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Substance {
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) enum Substance {
   Rock,
   Metal,
   Undefined,
 }
+
+#[derive(Component)]
+pub(crate) struct WrapAroundEntity;
 
 impl fmt::Display for Category {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}", self)
   }
 }
-
-#[derive(Event)]
-pub(crate) struct ResetWaveEvent;
 
 pub fn random_f32_range(min: f32, max: f32) -> f32 {
   (random::<f32>() * (max - min)) + min

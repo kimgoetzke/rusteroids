@@ -2,11 +2,12 @@ use bevy::app::{App, Plugin, Update};
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 
-use crate::asteroids::{Asteroid, AsteroidDestroyedEvent, AsteroidSpawnedEvent};
+use crate::asteroids::Asteroid;
 use crate::game_state::GameState;
-use crate::in_game_ui::AsteroidCount;
 use crate::player::Player;
 use crate::shared::YELLOW;
+use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent};
+use crate::shared_resources::AsteroidCount;
 
 const SPAWN_INDICATOR_THRESHOLD: u16 = 5;
 
@@ -22,8 +23,8 @@ impl Plugin for InteractiveUiPlugin {
 }
 
 #[derive(Component)]
-pub struct AsteroidIndicator {
-  pub(crate) target_entity: Entity,
+struct AsteroidIndicator {
+  target_entity: Entity,
 }
 
 fn process_asteroid_count_change(

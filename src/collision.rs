@@ -3,15 +3,14 @@ use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_rapier2d::pipeline::CollisionEvent;
 
-use crate::asteroids::{Asteroid, AsteroidDestroyedEvent};
+use crate::asteroids::Asteroid;
 use crate::enemies::Enemy;
-use crate::enemies::EnemyDamageEvent;
-use crate::explosion::{ExplosionEvent, ImpactInfo};
 use crate::game_state::GameState;
-use crate::in_game_ui::ScoreEvent;
 use crate::player::Player;
 use crate::projectile::Projectile;
-use crate::shared::{Category, Substance};
+use crate::shared::{Category, ImpactInfo, Substance};
+use crate::shared_events::EnemyDamageEvent;
+use crate::shared_events::{AsteroidDestroyedEvent, ExplosionEvent, ScoreEvent};
 
 pub struct CollisionPlugin;
 
@@ -21,7 +20,8 @@ impl Plugin for CollisionPlugin {
   }
 }
 
-pub enum CollisionEntityType {
+#[derive(Debug)]
+enum CollisionEntityType {
   Player(),
   Projectile(Projectile),
   Asteroid(Asteroid),
@@ -41,7 +41,7 @@ fn collision_system(
   mut collision_events: EventReader<CollisionEvent>,
   asset_server: Res<AssetServer>,
   asteroid_query: Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
-  player_query: Query<(Entity, &Transform), With<Player>>,
+  player_query: Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   enemy_query: Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
   mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
@@ -74,7 +74,7 @@ fn collision_system(
 fn get_collision_entity_info(
   colliding_entities: [&Entity; 2],
   asteroid_query: &Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
-  player_query: &Query<(Entity, &Transform), With<Player>>,
+  player_query: &Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: &Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   enemy_query: &Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
 ) -> Vec<CollisionEntityInfo> {
@@ -94,19 +94,19 @@ fn get_collision_entity_info(
         entity_type: CollisionEntityType::Projectile(projectile.clone()),
         explosion_info: None,
       });
-    } else if let Ok((entity, transform, explosion_info)) = enemy_query.get(*collision_entity) {
+    } else if let Ok((entity, transform, impact_info)) = enemy_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
         entity_type: CollisionEntityType::Enemy(),
-        explosion_info: Some(explosion_info.clone()),
+        explosion_info: Some(impact_info.clone()),
       });
-    } else if let Ok((entity, transform)) = player_query.get(*collision_entity) {
+    } else if let Ok((entity, transform, impact_info)) = player_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
         entity_type: CollisionEntityType::Player(),
-        explosion_info: None,
+        explosion_info: Some(impact_info.clone()),
       });
     }
   }
@@ -198,12 +198,8 @@ fn player_collision(
       },
       ..Default::default()
     });
-    explosion_event.send(ExplosionEvent {
-      origin: entity_info.transform.translation,
-      category: Category::XL,
-      substance: Substance::Metal,
-    });
     score_event.send(ScoreEvent { score: 0 });
+    send_explosion_event(&entity_info, explosion_event);
   } else {
     error!("Bug in collision logic detected: Attempting to handle player collision but entity is not the player");
   }
@@ -237,18 +233,22 @@ fn enemy_collision(
       entity: entity_info.entity,
       damage: damage_dealt,
     });
-    if let Some(e) = &entity_info.explosion_info {
-      explosion_event.send(ExplosionEvent {
-        origin: entity_info.transform.translation,
-        category: e.impact_category,
-        substance: e.substance,
-      });
-    } else {
-      error!(
-        "Bug in collision logic detected: Attempting to handle enemy collision but entity is missing explosion info"
-      );
-    }
+    send_explosion_event(&entity_info, explosion_event);
   } else {
     error!("Bug in collision logic detected: Attempting to handle enemy collision but entity is not an enemy");
+  }
+}
+
+fn send_explosion_event(entity_info: &CollisionEntityInfo, explosion_event: &mut EventWriter<ExplosionEvent>) {
+  if let Some(e) = &entity_info.explosion_info {
+    explosion_event.send(ExplosionEvent {
+      origin: entity_info.transform.translation,
+      category: e.impact_category,
+      substance: e.substance,
+    });
+  } else {
+    error!(
+      "Bug in collision logic detected: Attempting to handle enemy collision but entity is missing explosion info on {:?}", entity_info.entity_type
+    );
   }
 }

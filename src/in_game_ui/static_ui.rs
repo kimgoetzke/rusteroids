@@ -1,7 +1,7 @@
-use crate::asteroids::{AsteroidDestroyedEvent, AsteroidSpawnedEvent};
 use crate::game_state::GameState;
-use crate::in_game_ui::{AsteroidCount, Score, ScoreEvent, UiComponent};
-use crate::waves::WaveEvent;
+use crate::in_game_ui::UiComponent;
+use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, ScoreEvent, WaveEvent};
+use crate::shared_resources::{AsteroidCount, Score};
 use bevy::app::{App, Plugin, Update};
 use bevy::prelude::*;
 
@@ -10,10 +10,6 @@ pub struct StaticUiPlugin;
 impl Plugin for StaticUiPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(Score(0))
-      .insert_resource(AsteroidCount(0))
-      .register_type::<Score>()
-      .add_event::<ScoreEvent>()
       .add_systems(
         OnEnter(GameState::Starting),
         (show_static_ui_system, reset_static_ui_system),

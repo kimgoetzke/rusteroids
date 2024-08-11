@@ -1,5 +1,6 @@
 use crate::game_state::GameState;
-use crate::in_game_ui::{Score, UiComponent};
+use crate::in_game_ui::UiComponent;
+use crate::shared_resources::Score;
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 
