@@ -179,8 +179,7 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut
 }
 
 // TODO: Consider updating collider when morphing
-// TODO: Consider adding indicator
-// TODO: Add better explosion effect
+// TODO: Consider adding indicator or health bar to highlight this enemy clearly
 // TODO: Use a basic state machine, this is embarrassing
 fn boss_movement_system(
   mut boss_query: Query<
@@ -299,6 +298,7 @@ fn morph_state(
     info!("Morph boss: Player not found, resetting to idle state...");
     morph_boss.current_state = State::idle();
     audio_sink.play();
+    return;
   }
 
   // Exit condition
@@ -311,7 +311,8 @@ fn morph_state(
           source: asset_server.load("audio/whoosh.ogg"),
           settings: PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Remove,
-            volume: Volume::new(0.5),
+            volume: Volume::new(0.45),
+            speed: 0.6,
             spatial: true,
             ..Default::default()
           },
