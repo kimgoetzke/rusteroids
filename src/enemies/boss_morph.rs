@@ -1,8 +1,9 @@
 use crate::enemies::{move_toward_target, Enemy};
+use crate::explosion::ImpactInfo;
 use crate::game_state::GameState;
 use crate::game_world::WrapAroundEntity;
 use crate::player::Player;
-use crate::shared::random_game_world_point_away_from_player;
+use crate::shared::{random_game_world_point_away_from_player, Category, Substance};
 use crate::waves::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
 use bevy::asset::AssetServer;
@@ -16,7 +17,7 @@ use consts::PI;
 use std::f32::consts;
 
 const SPEED: f32 = 75.;
-const HEALTH: i16 = 150;
+const HEALTH: i16 = 20;
 const SCORE: u16 = 500;
 const ROTATION_SPEED: f32 = 0.06;
 const ROTATING_THRESHOLD: f32 = 225.; // Distance from player to start rotating towards it
@@ -144,6 +145,11 @@ fn spawn_morph_boss(
     RigidBody::Dynamic,
     Collider::triangle(Vec2::new(25., 0.), Vec2::new(-25., 15.), Vec2::new(-25., -15.)),
     ActiveEvents::COLLISION_EVENTS,
+    ImpactInfo {
+      impact_category: Category::S,
+      death_category: Category::XL,
+      substance: Substance::Metal,
+    },
     GravityScale(0.),
     Velocity {
       linvel: Vec2::new(0., 0.),

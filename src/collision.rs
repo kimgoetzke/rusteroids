@@ -6,7 +6,7 @@ use bevy_rapier2d::pipeline::CollisionEvent;
 use crate::asteroids::{Asteroid, AsteroidDestroyedEvent};
 use crate::enemies::Enemy;
 use crate::enemies::EnemyDamageEvent;
-use crate::explosion::ExplosionEvent;
+use crate::explosion::{ExplosionEvent, ImpactInfo};
 use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
 use crate::player::Player;
@@ -21,7 +21,7 @@ impl Plugin for CollisionPlugin {
   }
 }
 
-pub enum EntityType {
+pub enum CollisionEntityType {
   Player(),
   Projectile(Projectile),
   Asteroid(Asteroid),
@@ -31,7 +31,8 @@ pub enum EntityType {
 struct CollisionEntityInfo {
   entity: Entity,
   transform: Transform,
-  entity_type: EntityType,
+  entity_type: CollisionEntityType,
+  explosion_info: Option<ImpactInfo>,
 }
 
 // TODO: Refactor collision system to detect collision type/pair e.g. asteroid-player vs asteroid-asteroid, etc.
@@ -42,7 +43,7 @@ fn collision_system(
   asteroid_query: Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
   player_query: Query<(Entity, &Transform), With<Player>>,
   projectile_query: Query<(Entity, &Transform, &Projectile), With<Projectile>>,
-  enemy_query: Query<(Entity, &Transform), With<Enemy>>,
+  enemy_query: Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
   mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
   mut score_event: EventWriter<ScoreEvent>,
@@ -75,7 +76,7 @@ fn get_collision_entity_info(
   asteroid_query: &Query<(Entity, &Transform, &Asteroid), With<Asteroid>>,
   player_query: &Query<(Entity, &Transform), With<Player>>,
   projectile_query: &Query<(Entity, &Transform, &Projectile), With<Projectile>>,
-  enemy_query: &Query<(Entity, &Transform), With<Enemy>>,
+  enemy_query: &Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
 ) -> Vec<CollisionEntityInfo> {
   let mut entity_list = vec![];
   for collision_entity in colliding_entities {
@@ -83,25 +84,29 @@ fn get_collision_entity_info(
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: EntityType::Asteroid(asteroid.clone()),
+        entity_type: CollisionEntityType::Asteroid(asteroid.clone()),
+        explosion_info: None,
       });
     } else if let Ok((entity, transform, projectile)) = projectile_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: EntityType::Projectile(projectile.clone()),
+        entity_type: CollisionEntityType::Projectile(projectile.clone()),
+        explosion_info: None,
       });
-    } else if let Ok((entity, transform)) = enemy_query.get(*collision_entity) {
+    } else if let Ok((entity, transform, explosion_info)) = enemy_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: EntityType::Enemy(),
+        entity_type: CollisionEntityType::Enemy(),
+        explosion_info: Some(explosion_info.clone()),
       });
     } else if let Ok((entity, transform)) = player_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: EntityType::Player(),
+        entity_type: CollisionEntityType::Player(),
+        explosion_info: None,
       });
     }
   }
@@ -120,16 +125,18 @@ fn handle_collisions(
   let damage_dealt = get_damage_dealt(&entity_list);
   for entity_info in entity_list {
     match entity_info.entity_type {
-      EntityType::Asteroid(_) => asteroid_collision(
+      CollisionEntityType::Asteroid(_) => asteroid_collision(
         entity_info,
         commands,
         explosion_event,
         asteroid_destroyed_event,
         score_event,
       ),
-      EntityType::Projectile(_) => projectile_collision(entity_info, commands, explosion_event),
-      EntityType::Enemy() => enemy_collision(entity_info, damage_dealt, explosion_event, enemy_damage_event),
-      EntityType::Player() => player_collision(entity_info, commands, asset_server, explosion_event, score_event),
+      CollisionEntityType::Projectile(_) => projectile_collision(entity_info, commands, explosion_event),
+      CollisionEntityType::Enemy() => enemy_collision(entity_info, damage_dealt, explosion_event, enemy_damage_event),
+      CollisionEntityType::Player() => {
+        player_collision(entity_info, commands, asset_server, explosion_event, score_event)
+      }
     }
   }
 }
@@ -137,9 +144,9 @@ fn handle_collisions(
 fn get_damage_dealt(entity_list: &Vec<CollisionEntityInfo>) -> u16 {
   if let Some(projectile_info) = entity_list
     .iter()
-    .find(|entity_info| matches!(entity_info.entity_type, EntityType::Projectile(_)))
+    .find(|entity_info| matches!(entity_info.entity_type, CollisionEntityType::Projectile(_)))
   {
-    if let EntityType::Projectile(projectile) = &projectile_info.entity_type {
+    if let CollisionEntityType::Projectile(projectile) = &projectile_info.entity_type {
       projectile.damage
     } else {
       0
@@ -156,7 +163,7 @@ fn asteroid_collision(
   asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
-  if let EntityType::Asteroid(asteroid) = entity_info.entity_type {
+  if let CollisionEntityType::Asteroid(asteroid) = entity_info.entity_type {
     asteroid_destroyed_event.send(AsteroidDestroyedEvent {
       category: asteroid.category,
       origin: entity_info.transform.translation,
@@ -180,7 +187,7 @@ fn player_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
-  if matches!(entity_info.entity_type, EntityType::Player()) {
+  if matches!(entity_info.entity_type, CollisionEntityType::Player()) {
     commands.entity(entity_info.entity).despawn();
     commands.spawn(AudioBundle {
       source: asset_server.load("audio/player_death.ogg"),
@@ -207,7 +214,7 @@ fn projectile_collision(
   commands: &mut Commands,
   explosion_event: &mut EventWriter<ExplosionEvent>,
 ) {
-  if matches!(entity_info.entity_type, EntityType::Projectile(_)) {
+  if matches!(entity_info.entity_type, CollisionEntityType::Projectile(_)) {
     commands.entity(entity_info.entity).despawn();
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
@@ -225,16 +232,22 @@ fn enemy_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
-  if matches!(entity_info.entity_type, EntityType::Enemy()) {
+  if matches!(entity_info.entity_type, CollisionEntityType::Enemy()) {
     enemy_damage_event.send(EnemyDamageEvent {
       entity: entity_info.entity,
       damage: damage_dealt,
     });
-    explosion_event.send(ExplosionEvent {
-      origin: entity_info.transform.translation,
-      category: Category::S,
-      substance: Substance::Metal,
-    });
+    if let Some(e) = &entity_info.explosion_info {
+      explosion_event.send(ExplosionEvent {
+        origin: entity_info.transform.translation,
+        category: e.impact_category,
+        substance: e.substance,
+      });
+    } else {
+      error!(
+        "Bug in collision logic detected: Attempting to handle enemy collision but entity is missing explosion info"
+      );
+    }
   } else {
     error!("Bug in collision logic detected: Attempting to handle enemy collision but entity is not an enemy");
   }

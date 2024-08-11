@@ -1,5 +1,6 @@
 use crate::enemies::boss_morph::MorphBossPlugin;
 use crate::enemies::ufo::UfoPlugin;
+use crate::explosion::{ExplosionEvent, ImpactInfo};
 use crate::game_state::GameState;
 use crate::in_game_ui::ScoreEvent;
 use crate::shared::ResetWaveEvent;
@@ -45,12 +46,13 @@ pub struct Enemy {
 
 fn enemy_damage_system(
   mut commands: Commands,
-  mut query: Query<(Entity, &mut Enemy, &Name), With<Enemy>>,
+  mut query: Query<(Entity, &mut Enemy, &Name, &Transform, &ImpactInfo), With<Enemy>>,
   mut damage_events: EventReader<EnemyDamageEvent>,
   mut score_event: EventWriter<ScoreEvent>,
+  mut explosion_event: EventWriter<ExplosionEvent>,
 ) {
   for event in damage_events.read() {
-    if let Ok((entity, mut enemy, name)) = query.get_mut(event.entity) {
+    if let Ok((entity, mut enemy, name, transform, impact_info)) = query.get_mut(event.entity) {
       if entity == event.entity && enemy.health_points > 0 {
         enemy.health_points -= event.damage as i16;
       }
@@ -59,6 +61,11 @@ fn enemy_damage_system(
         commands.entity(entity).despawn();
         score_event.send(ScoreEvent {
           score: enemy.score_points,
+        });
+        explosion_event.send(ExplosionEvent {
+          origin: transform.translation,
+          category: impact_info.death_category,
+          substance: impact_info.substance,
         });
         info!("Enemy {:?} was destroyed", name);
       } else {

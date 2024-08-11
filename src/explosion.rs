@@ -20,6 +20,13 @@ pub(crate) struct ExplosionEvent {
   pub substance: Substance,
 }
 
+#[derive(Component, Copy, Clone)]
+pub(crate) struct ImpactInfo {
+  pub impact_category: Category,
+  pub death_category: Category,
+  pub substance: Substance,
+}
+
 #[derive(Component)]
 struct Explosion;
 

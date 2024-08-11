@@ -4,10 +4,11 @@ use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, Rigid
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 use crate::enemies::{move_toward_target, Enemy};
+use crate::explosion::ImpactInfo;
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::projectile::{ProjectileInfo, ProjectileSpawnEvent};
-use crate::shared::{random_f32_range, random_game_world_point_away_from_player, RED};
+use crate::shared::{random_f32_range, random_game_world_point_away_from_player, Category, Substance, RED};
 use crate::waves::WaveEvent;
 
 const SMALL_UFO_SPEED: f32 = 50.;
@@ -65,6 +66,11 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
     RigidBody::Dynamic,
     Collider::ball(9.),
     ActiveEvents::COLLISION_EVENTS,
+    ImpactInfo {
+      impact_category: Category::S,
+      death_category: Category::M,
+      substance: Substance::Metal,
+    },
     GravityScale(0.),
     Velocity {
       linvel: Vec2::new(0., 0.),
@@ -95,6 +101,11 @@ fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
     RigidBody::Dynamic,
     Collider::ball(17.),
     ActiveEvents::COLLISION_EVENTS,
+    ImpactInfo {
+      impact_category: Category::M,
+      death_category: Category::L,
+      substance: Substance::Metal,
+    },
     GravityScale(0.),
     Velocity {
       linvel: Vec2::new(0., 0.),
