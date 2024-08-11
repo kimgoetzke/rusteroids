@@ -1,3 +1,9 @@
+use crate::enemies::{move_toward_target, Enemy};
+use crate::game_state::GameState;
+use crate::game_world::WrapAroundEntity;
+use crate::player::Player;
+use crate::shared::random_game_world_point_away_from_player;
+use crate::waves::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -6,20 +12,17 @@ use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
 use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
+use consts::PI;
+use std::f32::consts;
 
-use crate::enemies::{move_toward_target, Enemy};
-use crate::game_state::GameState;
-use crate::game_world::WrapAroundEntity;
-use crate::player::Player;
-use crate::shared::random_game_world_point_away_from_player;
-use crate::waves::WaveEvent;
-
-const SPEED: f32 = 80.;
+const SPEED: f32 = 75.;
 const HEALTH: i16 = 150;
 const SCORE: u16 = 500;
-const ROTATING_THRESHOLD: f32 = 200.; // Distance from player to start rotating towards it
-const REVERTING_THRESHOLD: f32 = 100.; // Distance from player to start reverting back to idle state
-const ATTACK_MOVEMENT_MULTIPLIER: f32 = 10.; // Speed multiplier when charging at player
+const ROTATION_SPEED: f32 = 0.06;
+const ROTATING_THRESHOLD: f32 = 225.; // Distance from player to start rotating towards it
+const REVERTING_THRESHOLD: f32 = 150.; // Distance from player to start reverting back to idle state
+const ATTACK_MOVEMENT_MULTIPLIER: f32 = 5.; // Speed multiplier when charging at player
+const DEFAULT_ANGULAR_VELOCITY: f32 = 0.;
 
 pub struct MorphBossPlugin;
 
@@ -135,7 +138,7 @@ fn spawn_morph_boss(
     GravityScale(0.),
     Velocity {
       linvel: Vec2::new(0., 0.),
-      angvel: 2.,
+      angvel: DEFAULT_ANGULAR_VELOCITY,
     },
     AdditionalMassProperties::Mass(40.),
     Ccd::enabled(),
@@ -167,18 +170,26 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut
 // TODO: Consider adding indicator
 // TODO: Add better explosion effect
 // TODO: Use a basic state machine, this is embarrassing
-// TODO: Add wraparound for boss
 // TODO: Check why boss reverts too often after having morphed
 fn boss_movement_system(
   mut boss_query: Query<(&mut Transform, &mut Velocity, &Enemy, &mut MorphBoss, &TextureAtlas), Without<Player>>,
   player_query: Query<&Transform, With<Player>>,
   time: Res<Time>,
+  asset_server: Res<AssetServer>,
+  mut commands: Commands,
 ) {
   for (mut transform, mut velocity, enemy, mut morph_boss, atlas) in boss_query.iter_mut() {
     match morph_boss.current_state.behaviour {
       Behaviour::Idle => idle_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
       Behaviour::Rotate => rotate_state(&player_query, &mut transform, &mut velocity, enemy, &mut morph_boss),
-      Behaviour::Morph => morph_state(&player_query, &mut transform, &mut morph_boss, atlas),
+      Behaviour::Morph => morph_state(
+        &player_query,
+        &mut transform,
+        &mut morph_boss,
+        atlas,
+        &asset_server,
+        &mut commands,
+      ),
       Behaviour::Attack => attack_state(
         &player_query,
         &time,
@@ -207,7 +218,7 @@ fn idle_state(
     if (transform.translation - player.translation).length() < ROTATING_THRESHOLD {
       morph_boss.current_state = State::rotate();
       velocity.angvel = 0.;
-      info!("Morph boss: Switch to rotate state");
+      info!("Morph boss: Rotate state");
     }
   }
 }
@@ -227,7 +238,7 @@ fn rotate_state(
     // Exit condition
     if difference.abs() < 0.1 {
       morph_boss.current_state = State::morph();
-      info!("Morph boss: Switch to morph state");
+      info!("Morph boss: Morph state");
     }
   } else {
     // Exit condition
@@ -241,11 +252,14 @@ fn morph_state(
   mut transform: &mut Mut<Transform>,
   morph_boss: &mut Mut<MorphBoss>,
   atlas: &TextureAtlas,
+  asset_server: &Res<AssetServer>,
+  commands: &mut Commands,
 ) {
-  // State behaviour
   if let Ok(player) = player_query.get_single().as_ref() {
+    // State behaviour
     rotate_towards_target(player, &mut transform);
   } else {
+    // Exit condition
     info!("Morph boss: Player not found, resetting to idle state...");
     morph_boss.current_state = State::idle();
   }
@@ -253,7 +267,15 @@ fn morph_state(
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
     morph_boss.current_state = State::attack();
-    info!("Morph boss: Switching to attack state");
+    info!("Morph boss: Attack state");
+    commands.spawn(AudioBundle {
+      source: asset_server.load("audio/whoosh.ogg"),
+      settings: PlaybackSettings {
+        mode: bevy::audio::PlaybackMode::Remove,
+        ..Default::default()
+      },
+      ..Default::default()
+    });
   }
 }
 
@@ -274,7 +296,7 @@ fn attack_state(
     // Exit condition
     if (player.translation - transform.translation).length() > REVERTING_THRESHOLD {
       morph_boss.current_state = State::revert();
-      info!("Morph boss: Switching to revert state");
+      info!("Morph boss: Revert state");
     }
   } else {
     // Exit condition
@@ -287,18 +309,22 @@ fn revert_state(velocity: &mut Mut<Velocity>, morph_boss: &mut Mut<MorphBoss>, a
   // Exit condition
   if atlas.index == morph_boss.current_state.last {
     morph_boss.current_state = State::idle();
-    velocity.angvel = 2.;
-    info!("Morph boss: Switching to idle state");
+    velocity.angvel = DEFAULT_ANGULAR_VELOCITY;
+    info!("Morph boss: Idle state");
   }
 }
 
-fn rotate_towards_target(target_transform: &Transform, transform: &mut Mut<Transform>) -> f32 {
+fn rotate_towards_target(target_transform: &Transform, transform: &mut Transform) -> f32 {
   let direction = target_transform.translation - transform.translation;
-  let normalised_direction = direction / direction.length();
-  let target_angle = normalised_direction.y.atan2(normalised_direction.x);
+  let target_angle = direction.y.atan2(direction.x);
   let current_angle = transform.rotation.to_euler(EulerRot::XYZ).2;
-  let difference = target_angle - current_angle;
-  let new_angle = current_angle + difference * 0.1;
-  transform.rotation = Quat::from_rotation_z(new_angle);
+  let difference = (target_angle - current_angle).rem_euclid(2.0 * PI);
+  let difference = if difference > PI {
+    difference - 2.0 * PI
+  } else {
+    difference
+  };
+  let rotation_step = ROTATION_SPEED.min(difference.abs()) * difference.signum();
+  transform.rotation = Quat::from_rotation_z(current_angle + rotation_step);
   difference
 }
