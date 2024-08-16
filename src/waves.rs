@@ -32,7 +32,7 @@ fn start_next_wave(
   asset_server: Res<AssetServer>,
   asteroid_spawn_event: EventWriter<AsteroidSpawnedEvent>,
   player_query: Query<&Transform, With<Player>>,
-  texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+  mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   if !asteroid_query.is_empty() {
     return;
@@ -59,7 +59,8 @@ fn start_next_wave(
   });
   crate::asteroids::spawn_asteroid_wave(&event, &mut commands, asteroid_spawn_event);
   crate::enemies::ufo::spawn_ufo_wave(&event, &mut commands, &asset_server);
-  crate::enemies::boss_morph::spawn_once(&event, &mut commands, &asset_server, texture_atlas_layouts);
+  crate::enemies::boss_morph::spawn_once(&event, &mut commands, &asset_server, &mut texture_atlas_layouts);
+  crate::power_ups::spawn_power_ups(&event, &mut commands, &asset_server, &mut texture_atlas_layouts);
   wave_event.send(event);
 }
 

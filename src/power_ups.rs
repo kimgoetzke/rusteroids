@@ -1,0 +1,90 @@
+use crate::shared::random_game_world_point_away_from_player;
+use crate::shared_events::WaveEvent;
+use bevy::app::{App, Plugin};
+use bevy::asset::{AssetServer, Assets};
+use bevy::core::Name;
+use bevy::log::info;
+use bevy::math::UVec2;
+use bevy::prelude::{
+  default, Commands, Component, Deref, DerefMut, Query, Res, ResMut, SpriteBundle, TextureAtlas, TextureAtlasLayout,
+  Time, Timer, TimerMode, Transform, Update, With,
+};
+
+pub struct PowerUpPlugin;
+
+impl Plugin for PowerUpPlugin {
+  fn build(&self, app: &mut App) {
+    app.add_systems(Update, animate_sprite_system);
+  }
+}
+
+#[allow(dead_code)] // TODO: Remove once in use
+#[derive(Component)]
+struct PowerUp {
+  power_up_type: PowerUpType,
+}
+
+#[allow(dead_code)] // TODO: Remove once in use
+enum PowerUpType {
+  Shield,
+}
+
+#[derive(Component, Clone)]
+struct AnimationState {
+  timer: AnimationTimer,
+  first: usize,
+  last: usize,
+}
+
+#[derive(Component, Deref, DerefMut, Clone)]
+struct AnimationTimer(Timer);
+
+pub(crate) fn spawn_power_ups(
+  event: &WaveEvent,
+  commands: &mut Commands,
+  asset_server: &Res<AssetServer>,
+  texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
+) {
+  let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
+  let texture = asset_server.load("sprites/power_up_shield.png");
+  let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
+  let texture_atlas_layout = texture_atlas_layouts.add(layout);
+  let power_up_type = PowerUpType::Shield;
+  commands.spawn((
+    SpriteBundle {
+      texture,
+      transform: Transform::from_translation(spawn_point),
+      ..default()
+    },
+    TextureAtlas {
+      layout: texture_atlas_layout,
+      index: 0,
+    },
+    Name::new(
+      "Power Up ".to_string()
+        + match power_up_type {
+          PowerUpType::Shield => "Shield",
+        },
+    ),
+    PowerUp { power_up_type },
+    AnimationState {
+      timer: AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
+      first: 0,
+      last: 3,
+    },
+  ));
+  info!("Spawn: Power up at {:?}", spawn_point);
+}
+
+fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut AnimationState, &mut TextureAtlas), With<PowerUp>>) {
+  for (mut state, mut atlas) in &mut query {
+    state.timer.tick(time.delta());
+    if state.timer.just_finished() {
+      atlas.index = if atlas.index >= state.last {
+        state.first
+      } else {
+        atlas.index + 1
+      };
+    }
+  }
+}

@@ -101,21 +101,21 @@ pub fn spawn_once(
   event: &WaveEvent,
   mut commands: &mut Commands,
   asset_server: &Res<AssetServer>,
-  texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+  texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
 ) {
   if !event.morph_boss {
     return;
   }
   let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
   spawn_morph_boss(&mut commands, &asset_server, spawn_point, texture_atlas_layouts);
-  info!("Spawning morph boss at {:?}", spawn_point);
+  info!("Spawn: Morph boss at {:?}", spawn_point);
 }
 
 fn spawn_morph_boss(
   commands: &mut &mut Commands,
   asset_server: &Res<AssetServer>,
   spawn_point: Vec3,
-  mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+  texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let texture = asset_server.load("sprites/boss_morph.png");
   let layout = TextureAtlasLayout::from_grid(UVec2::splat(64), 25, 1, None, None);

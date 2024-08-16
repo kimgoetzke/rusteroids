@@ -46,12 +46,12 @@ pub fn spawn_ufo_wave(event: &WaveEvent, mut commands: &mut Commands, asset_serv
   for _ in 0..event.large_ufo_count {
     let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
     spawn_large_ufo(&mut commands, &asset_server, spawn_point);
-    info!("Spawning large UFO at {:?}", spawn_point);
+    info!("Spawn: Large UFO at {:?}", spawn_point);
   }
   for _ in 0..event.small_ufo_count {
     let spawn_point = random_game_world_point_away_from_player(event.player_position, 200.);
     spawn_small_ufo(&mut commands, &asset_server, spawn_point);
-    info!("Spawning small UFO at {:?}", spawn_point);
+    info!("Spawn: Small UFO at {:?}", spawn_point);
   }
 }
 

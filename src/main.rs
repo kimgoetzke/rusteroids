@@ -22,6 +22,7 @@ use crate::game_state::{GameState, GameStatePlugin};
 use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
+use crate::power_ups::PowerUpPlugin;
 use crate::projectile::ProjectilePlugin;
 use crate::shared::VERY_DARK_1;
 use crate::shared_events::SharedEventsPlugin;
@@ -38,6 +39,7 @@ mod game_state;
 mod game_world;
 mod in_game_ui;
 mod player;
+mod power_ups;
 mod projectile;
 mod shared;
 mod shared_events;
@@ -88,6 +90,7 @@ fn main() {
       GameStatePlugin,
       WavesPlugin,
       EnemyPlugin,
+      PowerUpPlugin,
     ))
     .add_plugins((CollisionPlugin, ExplosionPlugin))
     .add_plugins(InGameUiPlugin)
