@@ -1,4 +1,4 @@
-use crate::shared::{Category, ProjectileInfo, Substance};
+use crate::shared::{Category, PowerUpType, ProjectileInfo, Substance};
 use bevy::app::{App, Plugin};
 use bevy::math::{Quat, Vec3};
 use bevy::prelude::{Entity, Event};
@@ -16,7 +16,8 @@ impl Plugin for SharedEventsPlugin {
       .add_event::<AsteroidSpawnedEvent>()
       .add_event::<AsteroidDestroyedEvent>()
       .add_event::<StaticIndicatorSpawnEvent>()
-      .add_event::<PowerUpCollectedEvent>();
+      .add_event::<PowerUpCollectedEvent>()
+      .add_event::<ShieldDamageEvent>();
   }
 }
 
@@ -76,5 +77,11 @@ pub(crate) struct StaticIndicatorSpawnEvent {
 
 #[derive(Event)]
 pub(crate) struct PowerUpCollectedEvent {
-  pub(crate) entity: Entity,
+  pub entity: Entity,
+  pub power_up_type: PowerUpType,
+}
+
+#[derive(Event)]
+pub(crate) struct ShieldDamageEvent {
+  pub damage: u16,
 }

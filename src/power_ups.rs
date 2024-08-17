@@ -1,5 +1,5 @@
 use crate::game_state::GameState;
-use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, Substance};
+use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, PowerUp, PowerUpType, Substance};
 use crate::shared_events::{StaticIndicatorSpawnEvent, WaveEvent};
 use bevy::app::{App, Plugin};
 use bevy::asset::{AssetServer, Assets};
@@ -21,18 +21,6 @@ impl Plugin for PowerUpPlugin {
       .add_systems(OnEnter(GameState::Starting), despawn_all_power_ups_system)
       .add_systems(Update, animate_sprite_system);
   }
-}
-
-#[allow(dead_code)] // TODO: Remove once in use
-#[derive(Component)]
-pub(crate) struct PowerUp {
-  power_up_type: PowerUpType,
-}
-
-#[allow(dead_code)] // TODO: Remove once in use
-#[derive(Debug, Clone)]
-enum PowerUpType {
-  Shield,
 }
 
 #[derive(Component, Clone)]

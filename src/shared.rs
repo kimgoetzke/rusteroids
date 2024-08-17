@@ -68,6 +68,7 @@ pub(crate) enum Category {
 pub(crate) enum Substance {
   Rock,
   Metal,
+  Energy,
   Magic,
   Undefined,
 }
@@ -80,6 +81,19 @@ pub(crate) struct StaticIndicator {
 
 #[derive(Component)]
 pub(crate) struct WrapAroundEntity;
+
+#[derive(Component, Debug, Clone, PartialEq)]
+pub(crate) struct PowerUp {
+  pub power_up_type: PowerUpType,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum PowerUpType {
+  Shield,
+}
+
+#[derive(Component)]
+pub(crate) struct Shield;
 
 impl fmt::Display for Category {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

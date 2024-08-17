@@ -11,7 +11,7 @@ use crate::shared_events::{
 };
 use crate::shared_resources::AsteroidCount;
 
-const SPAWN_INDICATOR_THRESHOLD: u16 = 5;
+const SPAWN_INDICATOR_THRESHOLD: i16 = 5;
 const INDICATOR_TRANSPARENCY: f32 = 0.25;
 
 pub struct InteractiveUiPlugin;

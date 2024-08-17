@@ -18,4 +18,4 @@ pub(crate) struct Score(pub u16);
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
-pub struct AsteroidCount(pub u16);
+pub struct AsteroidCount(pub i16);

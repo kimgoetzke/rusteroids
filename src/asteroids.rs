@@ -134,12 +134,12 @@ fn spawn_smaller_asteroids_event(
         let spawn_point = if let Ok(player_transform) = player_query.get_single() {
           random_game_world_point_close_to_origin_without_player_collision(
             event.origin,
-            20.,
+            35.,
             player_transform.translation,
-            15.,
+            20.,
           )
         } else {
-          random_game_world_point_close_to_origin_without_player_collision(event.origin, 20., Vec3::ZERO, 15.)
+          random_game_world_point_close_to_origin_without_player_collision(event.origin, 25., Vec3::ZERO, 0.)
         };
         spawn_asteroid(&mut commands, closest_smaller_category, spawn_point);
         asteroid_spawned_event.send(AsteroidSpawnedEvent);

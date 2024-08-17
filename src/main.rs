@@ -22,6 +22,7 @@ use crate::game_state::{GameState, GameStatePlugin};
 use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
+use crate::player_shield::PlayerShieldPlugin;
 use crate::power_ups::PowerUpPlugin;
 use crate::projectile::ProjectilePlugin;
 use crate::shared::VERY_DARK_1;
@@ -39,6 +40,7 @@ mod game_state;
 mod game_world;
 mod in_game_ui;
 mod player;
+mod player_shield;
 mod power_ups;
 mod projectile;
 mod shared;
@@ -85,6 +87,7 @@ fn main() {
       GameWorldPlugin,
       BackgroundStarsPlugin,
       PlayerPlugin,
+      PlayerShieldPlugin,
       ProjectilePlugin,
       AsteroidPlugin,
       GameStatePlugin,

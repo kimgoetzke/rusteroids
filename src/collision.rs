@@ -7,10 +7,9 @@ use crate::asteroids::Asteroid;
 use crate::enemies::Enemy;
 use crate::game_state::GameState;
 use crate::player::Player;
-use crate::power_ups::PowerUp;
 use crate::projectile::Projectile;
-use crate::shared::{Category, ImpactInfo, Substance};
-use crate::shared_events::{AsteroidDestroyedEvent, ExplosionEvent, ScoreEvent};
+use crate::shared::{Category, ImpactInfo, PowerUp, Shield, Substance};
+use crate::shared_events::{AsteroidDestroyedEvent, ExplosionEvent, ScoreEvent, ShieldDamageEvent};
 use crate::shared_events::{EnemyDamageEvent, PowerUpCollectedEvent};
 
 pub struct CollisionPlugin;
@@ -24,10 +23,11 @@ impl Plugin for CollisionPlugin {
 #[derive(Debug, Clone, PartialEq)]
 enum CollisionEntityType {
   Player,
+  Shield,
   Projectile(Projectile),
   Asteroid(Asteroid),
   Enemy,
-  PowerUp,
+  PowerUp(PowerUp),
   Unknown,
 }
 
@@ -40,7 +40,7 @@ struct CollisionEntityInfo {
   other_entity_type: CollisionEntityType,
 }
 
-// TODO: Research how to actually handle collisions properly and refactor this system
+// TODO: Research how to actually handle collisions and refactor; this is horrifying
 fn collision_system(
   mut commands: Commands,
   mut collision_events: EventReader<CollisionEvent>,
@@ -49,12 +49,14 @@ fn collision_system(
   player_query: Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   enemy_query: Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
-  power_up_query: Query<(Entity, &Transform, &ImpactInfo), With<PowerUp>>,
+  power_up_query: Query<(Entity, &Transform, &ImpactInfo, &PowerUp), With<PowerUp>>,
+  shield_query: Query<(Entity, &Transform, &ImpactInfo), With<Shield>>,
   mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
   mut explosion_event: EventWriter<ExplosionEvent>,
   mut score_event: EventWriter<ScoreEvent>,
   mut enemy_damage_event: EventWriter<EnemyDamageEvent>,
   mut power_up_collected_event: EventWriter<PowerUpCollectedEvent>,
+  mut shield_damage_event: EventWriter<ShieldDamageEvent>,
 ) {
   for collision_event in collision_events.read() {
     if let CollisionEvent::Started(entity1, entity2, _) = collision_event {
@@ -65,6 +67,7 @@ fn collision_system(
         &projectile_query,
         &enemy_query,
         &power_up_query,
+        &shield_query,
       );
       handle_collisions(
         &mut commands,
@@ -75,6 +78,7 @@ fn collision_system(
         &mut score_event,
         &mut enemy_damage_event,
         &mut power_up_collected_event,
+        &mut shield_damage_event,
       );
     }
   }
@@ -86,7 +90,8 @@ fn get_collision_entity_info(
   player_query: &Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: &Query<(Entity, &Transform, &Projectile), With<Projectile>>,
   enemy_query: &Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
-  power_up_query: &Query<(Entity, &Transform, &ImpactInfo), With<PowerUp>>,
+  power_up_query: &Query<(Entity, &Transform, &ImpactInfo, &PowerUp), With<PowerUp>>,
+  shield_query: &Query<(Entity, &Transform, &ImpactInfo), With<Shield>>,
 ) -> Vec<CollisionEntityInfo> {
   let mut entity_list = vec![];
   for collision_entity in colliding_entities {
@@ -115,6 +120,14 @@ fn get_collision_entity_info(
         impact_info: Some(impact_info.clone()),
         other_entity_type: CollisionEntityType::Unknown,
       });
+    } else if let Ok((entity, transform, impact_info)) = shield_query.get(*collision_entity) {
+      entity_list.push(CollisionEntityInfo {
+        entity,
+        transform: transform.clone(),
+        entity_type: CollisionEntityType::Shield,
+        impact_info: Some(impact_info.clone()),
+        other_entity_type: CollisionEntityType::Unknown,
+      });
     } else if let Ok((entity, transform, impact_info)) = player_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
@@ -123,18 +136,23 @@ fn get_collision_entity_info(
         impact_info: Some(impact_info.clone()),
         other_entity_type: CollisionEntityType::Unknown,
       });
-    } else if let Ok((entity, transform, impact_info)) = power_up_query.get(*collision_entity) {
+    } else if let Ok((entity, transform, impact_info, power_up)) = power_up_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: CollisionEntityType::PowerUp,
+        entity_type: CollisionEntityType::PowerUp(power_up.clone()),
         impact_info: Some(impact_info.clone()),
         other_entity_type: CollisionEntityType::Unknown,
       });
     }
   }
+  trace!(
+    "Collision between {:?} entities, {:?} of which could be identified",
+    colliding_entities.len(),
+    entity_list.len()
+  );
 
-  // Determine the other entity type for each entity
+  // Determine the "other" entity type for each entity
   let other_entity_types: Vec<_> = entity_list
     .iter()
     .map(|entity_info| {
@@ -164,6 +182,7 @@ fn handle_collisions(
   score_event: &mut EventWriter<ScoreEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
   power_up_collected_event: &mut EventWriter<PowerUpCollectedEvent>,
+  shield_damage_event: &mut EventWriter<ShieldDamageEvent>,
 ) {
   let damage_dealt = get_damage_dealt(&entity_list);
   for entity_info in entity_list {
@@ -180,9 +199,10 @@ fn handle_collisions(
       CollisionEntityType::Player => {
         player_collision(entity_info, commands, asset_server, explosion_event, score_event)
       }
-      CollisionEntityType::PowerUp => {
+      CollisionEntityType::PowerUp(_) => {
         power_up_collision(entity_info, commands, explosion_event, power_up_collected_event)
       }
+      CollisionEntityType::Shield => shield_collision(entity_info, damage_dealt, shield_damage_event),
       CollisionEntityType::Unknown => {
         error!("Collision logic bug detected when attempting to handle collision with unknown entity type")
       }
@@ -212,10 +232,10 @@ fn asteroid_collision(
   asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
+  if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
+    return;
+  }
   if let CollisionEntityType::Asteroid(asteroid) = &entity_info.entity_type {
-    if entity_info.other_entity_type == CollisionEntityType::PowerUp {
-      return;
-    }
     asteroid_destroyed_event.send(AsteroidDestroyedEvent {
       category: asteroid.category,
       origin: entity_info.transform.translation,
@@ -239,7 +259,7 @@ fn player_collision(
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Player) {
-    if entity_info.other_entity_type == CollisionEntityType::PowerUp {
+    if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
       return;
     }
     commands.entity(entity_info.entity).despawn();
@@ -269,7 +289,7 @@ fn projectile_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Projectile(_)) {
-    if entity_info.other_entity_type == CollisionEntityType::PowerUp {
+    if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
       return;
     }
     commands.entity(entity_info.entity).despawn();
@@ -293,7 +313,10 @@ fn enemy_collision(
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Enemy) {
-    if entity_info.other_entity_type == CollisionEntityType::PowerUp {
+    if matches!(
+      entity_info.other_entity_type,
+      CollisionEntityType::PowerUp(_) | CollisionEntityType::Shield
+    ) {
       return;
     }
     enemy_damage_event.send(EnemyDamageEvent {
@@ -309,20 +332,44 @@ fn enemy_collision(
   }
 }
 
+fn shield_collision(
+  entity_info: CollisionEntityInfo,
+  damage_dealt: u16,
+  shield_damage_event: &mut EventWriter<ShieldDamageEvent>,
+) {
+  if matches!(entity_info.entity_type, CollisionEntityType::Shield) {
+    if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
+      return;
+    }
+    shield_damage_event.send(ShieldDamageEvent {
+      damage: if damage_dealt == 0 { 1 } else { damage_dealt },
+    });
+  } else {
+    error!(
+      "Collision logic bug detected when handling shield collision: {:?}",
+      entity_info
+    );
+  }
+}
+
 fn power_up_collision(
   entity_info: CollisionEntityInfo,
   commands: &mut Commands,
   explosion_event: &mut EventWriter<ExplosionEvent>,
   power_up_collected_event: &mut EventWriter<PowerUpCollectedEvent>,
 ) {
-  if matches!(entity_info.entity_type, CollisionEntityType::PowerUp) {
-    if entity_info.other_entity_type != CollisionEntityType::Player {
-      debug!("Power up collision with {:?} ignored", entity_info.other_entity_type);
-      return;
-    }
+  if !matches!(
+    entity_info.other_entity_type,
+    CollisionEntityType::Player | CollisionEntityType::Shield
+  ) {
+    debug!("Power up collision with {:?} ignored", entity_info.other_entity_type);
+    return;
+  }
+  if let CollisionEntityType::PowerUp(power_up) = &entity_info.entity_type {
     commands.entity(entity_info.entity).despawn();
     power_up_collected_event.send(PowerUpCollectedEvent {
       entity: entity_info.entity,
+      power_up_type: power_up.power_up_type.clone(),
     });
     send_explosion_event_from_entity_info(&entity_info, explosion_event);
   } else {
