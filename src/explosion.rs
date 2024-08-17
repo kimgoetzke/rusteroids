@@ -16,6 +16,8 @@ impl Plugin for ExplosionPlugin {
 #[derive(Component)]
 struct Explosion;
 
+// TODO: Handle PowerUpCollectedEvent explosion in this file
+
 fn spawn_explosion_event(
   mut explosion_event: EventReader<ExplosionEvent>,
   mut commands: Commands,

@@ -187,7 +187,7 @@ fn current_wave_event(
   }
 }
 
-// TODO: Move or change size of message over time
+// TODO: Consider moving or changing size of message over time to make it more dynamic
 fn change_message_visibility_system(
   mut commands: Commands,
   mut query: Query<(Entity, &mut MessageUi), With<MessageUi>>,

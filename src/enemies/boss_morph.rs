@@ -180,7 +180,7 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut
 
 // TODO: Consider updating collider when morphing
 // TODO: Consider adding indicator or health bar to highlight this enemy clearly
-// TODO: Use a basic state machine, this is embarrassing
+// TODO: Use a basic state machine to control the behaviour
 fn boss_movement_system(
   mut boss_query: Query<
     (
