@@ -86,7 +86,7 @@ pub(crate) fn spawn_power_ups(
       ImpactInfo {
         impact_category: Category::S,
         death_category: Category::S,
-        substance: Substance::Undefined,
+        substance: Substance::Magic,
       },
       GravityScale(0.),
     ))

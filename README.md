@@ -21,7 +21,8 @@ will be millions of things that could have been done in a better and more idioma
 The in-game (non-UI) font is Bulky Pixels by John Bloor's [Smoking Drum ](http://www.smokingdrum.com) (domain no longer
 active but required by license).
 
-Audio files from [Pixabay](https://pixabay.com) under a CC0 license or created by myself.
+Audio files from [Pixabay](https://pixabay.com) under a CC0 license, Dustyroom's Casual Game Sound - One Shot SFX Pack
+under a CC0 license, or created by myself.
 
 ## How to develop
 
