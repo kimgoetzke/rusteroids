@@ -6,6 +6,7 @@ use crate::asteroids::Asteroid;
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared_events::{AsteroidSpawnedEvent, StaticIndicatorSpawnEvent, WaveEvent};
+use crate::shared_resources::Wave;
 
 const ASTEROID_START_COUNT: u16 = 1;
 
@@ -14,14 +15,10 @@ pub struct WavesPlugin;
 impl Plugin for WavesPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource(Wave(0))
       .add_systems(OnEnter(GameState::Starting), reset_waves_system)
       .add_systems(FixedUpdate, start_next_wave.run_if(in_state(GameState::Playing)));
   }
 }
-
-#[derive(Resource, Default)]
-struct Wave(pub u16);
 
 // TODO: Stop calling other functions directly from this system (which requires ensuring alternative is only executed once)
 fn start_next_wave(

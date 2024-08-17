@@ -24,6 +24,7 @@ impl Plugin for StaticUiPlugin {
         (
           current_wave_event,
           process_score_event,
+          process_wave_event,
           process_asteroid_spawn_event,
           process_asteroid_destroyed_event,
           change_message_visibility_system,
@@ -37,6 +38,9 @@ struct ScoreComponent;
 
 #[derive(Component)]
 struct AsteroidCountComponent;
+
+#[derive(Component)]
+struct WaveComponent;
 
 #[derive(Component)] // UI at the top of the screen
 struct StaticUi;
@@ -92,6 +96,19 @@ fn show_static_ui_system(mut commands: Commands) {
         },
         AsteroidCountComponent,
       ));
+      commands.spawn((
+        TextBundle {
+          text: Text::from_section(
+            "Wave: 0",
+            TextStyle {
+              font_size: 32.,
+              ..default()
+            },
+          ),
+          ..default()
+        },
+        WaveComponent,
+      ));
     });
 }
 
@@ -103,6 +120,7 @@ fn hide_static_ui_system(mut commands: Commands, query: Query<Entity, With<Stati
 
 const SCORE_LABEL: &'static str = "Score:";
 const ASTEROIDS_LABEL: &'static str = "Asteroids:";
+const WAVE_LABEL: &'static str = "Wave:";
 
 fn process_score_event(
   mut ui_event: EventReader<ScoreEvent>,
@@ -113,6 +131,17 @@ fn process_score_event(
     for mut text in score_text.iter_mut() {
       score.0 += event.score;
       text.sections[0].value = format!("{} {}", SCORE_LABEL, score.0);
+    }
+  }
+}
+
+fn process_wave_event(
+  mut wave_event: EventReader<WaveEvent>,
+  mut wave_text: Query<&mut Text, (With<WaveComponent>, Without<AsteroidCountComponent>)>,
+) {
+  for event in wave_event.read() {
+    for mut text in wave_text.iter_mut() {
+      text.sections[0].value = format!("{} {}", WAVE_LABEL, event.wave);
     }
   }
 }

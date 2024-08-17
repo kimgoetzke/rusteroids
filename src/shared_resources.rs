@@ -8,7 +8,8 @@ impl Plugin for SharedResourcesPlugin {
     app
       .register_type::<Score>()
       .insert_resource(Score(0))
-      .insert_resource(AsteroidCount(0));
+      .insert_resource(AsteroidCount(0))
+      .insert_resource(Wave(0));
   }
 }
 
@@ -18,4 +19,7 @@ pub(crate) struct Score(pub u16);
 
 #[derive(Resource, Default, Reflect)]
 #[reflect(Resource)]
-pub struct AsteroidCount(pub i16);
+pub(crate) struct AsteroidCount(pub i16);
+
+#[derive(Resource, Default)]
+pub(crate) struct Wave(pub u16);
