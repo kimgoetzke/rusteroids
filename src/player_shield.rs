@@ -63,6 +63,7 @@ fn spawn_or_upgrade_shield_event(
         get_effect_info(Category::S, &asset_server)
       } else {
         spawn_shield(&mut commands, &mut meshes, &mut materials, &player);
+        commands.entity(player).remove::<Collider>();
         get_effect_info(Category::L, &asset_server)
       };
       spawn_particles(&mut commands, transform.translation, effect_info);
@@ -79,8 +80,8 @@ fn spawn_shield(
   commands.entity(*player).with_children(|builder| {
     builder.spawn((
       MaterialMesh2dBundle {
-        mesh: Mesh2dHandle(meshes.add(Circle { radius: 14.0 })),
-        transform: Transform::from_xyz(0.0, 0.0, -100.0),
+        mesh: Mesh2dHandle(meshes.add(Circle { radius: 14. })),
+        transform: Transform::from_xyz(0., 0., 1.0),
         material: materials.add(ColorMaterial::from(BLUE.with_alpha(DEFAULT_MESH_TRANSPARENCY))),
         ..Default::default()
       },
@@ -115,7 +116,8 @@ fn upgrade_existing_shield(existing_shield_query: &mut Query<&mut ShieldInfo>) {
 fn damage_shield_event(
   mut commands: Commands,
   mut damage_events: EventReader<ShieldDamageEvent>,
-  mut shield_query: Query<(Entity, &GlobalTransform, &mut ShieldInfo, &Handle<ColorMaterial>)>,
+  mut shield_query: Query<(Entity, &GlobalTransform, &mut ShieldInfo, &Handle<ColorMaterial>), Without<Player>>,
+  player_query: Query<Entity, With<Player>>,
   mut materials: ResMut<Assets<ColorMaterial>>,
   asset_server: Res<AssetServer>,
 ) {
@@ -126,6 +128,9 @@ fn damage_shield_event(
         let effect_info = get_effect_info(Category::L, &asset_server);
         spawn_particles(&mut commands, transform.translation(), effect_info);
         commands.entity(entity).despawn();
+        commands
+          .entity(player_query.get_single().unwrap())
+          .insert(Collider::ball(10.));
         info!("Shield was destroyed");
       } else {
         let transparency = DEFAULT_MESH_TRANSPARENCY * (shield.strength as f32 / shield.max_strength as f32);

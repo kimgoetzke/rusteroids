@@ -56,10 +56,10 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     },
     Name::new("Player"),
     RigidBody::Dynamic,
-    Collider::ball(9.),
+    crate::shared::get_default_collider(),
     ActiveEvents::COLLISION_EVENTS,
     ImpactInfo {
-      impact_category: Category::XL, // TODO: Implement player damage system and then change this
+      impact_category: Category::XL,
       death_category: Category::XL,
       substance: Substance::Metal,
     },

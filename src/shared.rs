@@ -149,3 +149,7 @@ pub fn random_game_world_point_close_to_origin_without_player_collision(
     proposed_point
   }
 }
+
+pub fn get_default_collider() -> Collider {
+  Collider::ball(9.)
+}
