@@ -5,10 +5,12 @@ use crate::shared::{Category, ImpactInfo, PowerUpType, Shield, Substance, BLUE};
 use crate::shared_events::{PowerUpCollectedEvent, ShieldDamageEvent};
 use bevy::app::App;
 use bevy::asset::Assets;
+use bevy::audio::Volume;
 use bevy::core::Name;
 use bevy::log::info;
 use bevy::prelude::*;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use bevy_enoki::prelude::{OneShot, Particle2dEffect, ParticleSpawnerBundle, DEFAULT_MATERIAL};
 use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::prelude::ActiveEvents;
 
@@ -34,26 +36,36 @@ struct ShieldInfo {
   strength: i16,
 }
 
-// TODO: Add particle effect
+struct EffectInfo {
+  particles: Handle<Particle2dEffect>,
+  audio: Handle<AudioSource>,
+  audio_speed: f32,
+  audio_volume: Volume,
+}
+
 fn spawn_or_upgrade_shield_event(
   mut commands: Commands,
   mut power_up_collected_event: EventReader<PowerUpCollectedEvent>,
-  player_query: Query<Entity, With<Player>>,
+  player_query: Query<(Entity, &Transform), With<Player>>,
   mut existing_shield_query: Query<&mut ShieldInfo>,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<ColorMaterial>>,
+  asset_server: Res<AssetServer>,
 ) {
   for event in power_up_collected_event.read() {
-    if let Ok(player) = player_query.get_single().as_ref() {
+    if let Ok((player, transform)) = player_query.get_single() {
       if event.power_up_type != PowerUpType::Shield {
         return;
       }
       info!("Power up collected: {:?}", event.power_up_type);
-      if (existing_shield_query.iter().count() as i16) > 0 {
+      let effect_info = if (existing_shield_query.iter().count() as i16) > 0 {
         upgrade_existing_shield(&mut existing_shield_query);
+        get_effect_info(Category::S, &asset_server)
       } else {
-        spawn_shield(&mut commands, &mut meshes, &mut materials, player);
-      }
+        spawn_shield(&mut commands, &mut meshes, &mut materials, &player);
+        get_effect_info(Category::L, &asset_server)
+      };
+      spawn_particles(&mut commands, transform.translation, effect_info);
     }
   }
 }
@@ -100,24 +112,28 @@ fn upgrade_existing_shield(existing_shield_query: &mut Query<&mut ShieldInfo>) {
   }
 }
 
-// TODO: Add particle effects for damage and destruction
 fn damage_shield_event(
   mut commands: Commands,
   mut damage_events: EventReader<ShieldDamageEvent>,
-  mut shield_query: Query<(Entity, &mut ShieldInfo, &Handle<ColorMaterial>)>,
+  mut shield_query: Query<(Entity, &GlobalTransform, &mut ShieldInfo, &Handle<ColorMaterial>)>,
   mut materials: ResMut<Assets<ColorMaterial>>,
+  asset_server: Res<AssetServer>,
 ) {
   for event in damage_events.read() {
-    for (entity, mut shield, material_handle) in shield_query.iter_mut() {
+    for (entity, transform, mut shield, material_handle) in shield_query.iter_mut() {
       shield.strength -= event.damage as i16;
       if shield.strength <= 0 {
-        info!("Shield was destroyed");
+        let effect_info = get_effect_info(Category::L, &asset_server);
+        spawn_particles(&mut commands, transform.translation(), effect_info);
         commands.entity(entity).despawn();
+        info!("Shield was destroyed");
       } else {
         let transparency = DEFAULT_MESH_TRANSPARENCY * (shield.strength as f32 / shield.max_strength as f32);
         if let Some(material) = materials.get_mut(material_handle) {
           material.color.set_alpha(transparency);
         }
+        let effect_info = get_effect_info(Category::S, &asset_server);
+        spawn_particles(&mut commands, transform.translation(), effect_info);
         info!(
           "Shield received {:?} damage, remaining strength: {}/{}",
           event.damage, shield.strength, shield.max_strength
@@ -125,6 +141,47 @@ fn damage_shield_event(
       }
     }
   }
+}
+
+fn get_effect_info(category: Category, asset_server: &AssetServer) -> EffectInfo {
+  match category {
+    Category::XL | Category::L => EffectInfo {
+      particles: asset_server.load("particles/explosion_energy_l.ron"),
+      audio: asset_server.load("audio/explosion_energy.ogg"),
+      audio_speed: 0.7,
+      audio_volume: Volume::new(1.),
+    },
+    _ => EffectInfo {
+      particles: asset_server.load("particles/explosion_energy_s.ron"),
+      audio: asset_server.load("audio/explosion_energy.ogg"),
+      audio_speed: 1.5,
+      audio_volume: Volume::new(0.8),
+    },
+  }
+}
+
+fn spawn_particles(commands: &mut Commands, spawn_point: Vec3, effect: EffectInfo) {
+  commands.spawn((
+    ParticleSpawnerBundle {
+      effect: effect.particles,
+      material: DEFAULT_MATERIAL,
+      transform: Transform::from_translation(spawn_point),
+      ..Default::default()
+    },
+    OneShot::Despawn,
+    Name::new("Shield Particles"),
+    PIXEL_PERFECT_BLOOM_LAYER,
+    AudioBundle {
+      source: effect.audio,
+      settings: PlaybackSettings {
+        mode: bevy::audio::PlaybackMode::Remove,
+        speed: effect.audio_speed,
+        volume: effect.audio_volume,
+        spatial: true,
+        ..Default::default()
+      },
+    },
+  ));
 }
 
 fn despawn_shield_system(mut commands: Commands, shield_query: Query<Entity, With<ShieldInfo>>) {

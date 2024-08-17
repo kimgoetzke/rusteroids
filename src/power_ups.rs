@@ -40,6 +40,9 @@ pub(crate) fn spawn_power_ups(
   texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
   mut static_indicator_spawn_event: EventWriter<StaticIndicatorSpawnEvent>,
 ) {
+  if !event.shield_power_up {
+    return;
+  }
   let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
   let texture = asset_server.load("sprites/power_up_shield.png");
   let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);

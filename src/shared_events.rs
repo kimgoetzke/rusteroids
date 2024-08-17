@@ -32,8 +32,9 @@ pub(crate) struct WaveEvent {
   pub wave: u16,
   pub asteroid_count: u16,
   pub small_ufo_count: u16,
-  pub morph_boss: bool,
   pub large_ufo_count: u16,
+  pub morph_boss: bool,
+  pub shield_power_up: bool,
 }
 
 #[derive(Event)]

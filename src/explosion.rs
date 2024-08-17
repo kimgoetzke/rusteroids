@@ -16,7 +16,8 @@ impl Plugin for ExplosionPlugin {
 #[derive(Component)]
 struct Explosion;
 
-// TODO: Handle PowerUpCollectedEvent explosion in this file
+// TODO: Resolve category by substance so all impact particles/audio can be handled here
+// TODO: Handle PowerUpCollectedEvent and ShieldDamageEvent in this file
 
 fn spawn_explosion_event(
   mut explosion_event: EventReader<ExplosionEvent>,
@@ -34,7 +35,7 @@ fn spawn_explosion_event(
     let audio_handle = match explosion.substance {
       Substance::Rock => asset_server.load("audio/explosion_rock.ogg"),
       Substance::Metal => asset_server.load("audio/explosion_metal.ogg"),
-      Substance::Energy => asset_server.load("audio/explosion_magic.ogg"), // TODO: Add SFX for energy impact
+      Substance::Energy => asset_server.load("audio/explosion_energy.ogg"),
       Substance::Magic => asset_server.load("audio/explosion_magic.ogg"),
       Substance::Undefined => asset_server.load("audio/explosion_undefined.ogg"),
     };

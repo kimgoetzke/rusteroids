@@ -47,6 +47,7 @@ fn start_next_wave(
     small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
     large_ufo_count: if (wave.0 % 3) == 0 { 1u16 } else { 0u16 },
     morph_boss: wave.0 % 4 == 4,
+    shield_power_up: (wave.0 + 1) % 2 == 0,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
