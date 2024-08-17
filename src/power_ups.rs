@@ -1,13 +1,13 @@
 use crate::shared::random_game_world_point_away_from_player;
-use crate::shared_events::WaveEvent;
+use crate::shared_events::{StaticIndicatorSpawnEvent, WaveEvent};
 use bevy::app::{App, Plugin};
 use bevy::asset::{AssetServer, Assets};
 use bevy::core::Name;
 use bevy::log::info;
 use bevy::math::UVec2;
 use bevy::prelude::{
-  default, Commands, Component, Deref, DerefMut, Query, Res, ResMut, SpriteBundle, TextureAtlas, TextureAtlasLayout,
-  Time, Timer, TimerMode, Transform, Update, With,
+  default, Commands, Component, Deref, DerefMut, EventWriter, Query, Res, ResMut, SpriteBundle, TextureAtlas,
+  TextureAtlasLayout, Time, Timer, TimerMode, Transform, Update, With,
 };
 
 pub struct PowerUpPlugin;
@@ -20,11 +20,12 @@ impl Plugin for PowerUpPlugin {
 
 #[allow(dead_code)] // TODO: Remove once in use
 #[derive(Component)]
-struct PowerUp {
+pub(crate) struct PowerUp {
   power_up_type: PowerUpType,
 }
 
 #[allow(dead_code)] // TODO: Remove once in use
+#[derive(Debug, Clone)]
 enum PowerUpType {
   Shield,
 }
@@ -44,36 +45,45 @@ pub(crate) fn spawn_power_ups(
   commands: &mut Commands,
   asset_server: &Res<AssetServer>,
   texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
+  mut static_indicator_spawn_event: EventWriter<StaticIndicatorSpawnEvent>,
 ) {
   let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
   let texture = asset_server.load("sprites/power_up_shield.png");
   let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 1, None, None);
   let texture_atlas_layout = texture_atlas_layouts.add(layout);
   let power_up_type = PowerUpType::Shield;
-  commands.spawn((
-    SpriteBundle {
-      texture,
-      transform: Transform::from_translation(spawn_point),
-      ..default()
-    },
-    TextureAtlas {
-      layout: texture_atlas_layout,
-      index: 0,
-    },
-    Name::new(
-      "Power Up ".to_string()
-        + match power_up_type {
-          PowerUpType::Shield => "Shield",
-        },
-    ),
-    PowerUp { power_up_type },
-    AnimationState {
-      timer: AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
-      first: 0,
-      last: 3,
-    },
-  ));
-  info!("Spawn: Power up at {:?}", spawn_point);
+  let power_up_entity = commands
+    .spawn((
+      SpriteBundle {
+        texture,
+        transform: Transform::from_translation(spawn_point),
+        ..default()
+      },
+      TextureAtlas {
+        layout: texture_atlas_layout,
+        index: 0,
+      },
+      Name::new(
+        "Power Up: ".to_string()
+          + match power_up_type {
+            PowerUpType::Shield => "Shield",
+          },
+      ),
+      PowerUp {
+        power_up_type: power_up_type.clone(),
+      },
+      AnimationState {
+        timer: AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
+        first: 0,
+        last: 3,
+      },
+    ))
+    .id();
+  static_indicator_spawn_event.send(StaticIndicatorSpawnEvent {
+    target_entity: power_up_entity,
+    target_point: spawn_point,
+  });
+  info!("Spawn: {:?} power up at {:?}", power_up_type, spawn_point);
 }
 
 fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut AnimationState, &mut TextureAtlas), With<PowerUp>>) {

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::asteroids::Asteroid;
 use crate::game_state::GameState;
 use crate::player::Player;
-use crate::shared_events::{AsteroidSpawnedEvent, WaveEvent};
+use crate::shared_events::{AsteroidSpawnedEvent, StaticIndicatorSpawnEvent, WaveEvent};
 
 const ASTEROID_START_COUNT: u16 = 1;
 
@@ -33,6 +33,7 @@ fn start_next_wave(
   asteroid_spawn_event: EventWriter<AsteroidSpawnedEvent>,
   player_query: Query<&Transform, With<Player>>,
   mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+  static_indicator_spawn_event: EventWriter<StaticIndicatorSpawnEvent>,
 ) {
   if !asteroid_query.is_empty() {
     return;
@@ -45,7 +46,7 @@ fn start_next_wave(
     asteroid_count: wave.0 * 2 * ASTEROID_START_COUNT,
     small_ufo_count: (wave.0 as f32 * 0.45).round() as u16,
     large_ufo_count: if (wave.0 % 3) == 0 { 1u16 } else { 0u16 },
-    morph_boss: wave.0 == 4,
+    morph_boss: wave.0 % 4 == 4,
   };
   info!("Starting wave {}: {:?}", wave.0, event);
   commands.spawn(AudioBundle {
@@ -60,7 +61,13 @@ fn start_next_wave(
   crate::asteroids::spawn_asteroid_wave(&event, &mut commands, asteroid_spawn_event);
   crate::enemies::ufo::spawn_ufo_wave(&event, &mut commands, &asset_server);
   crate::enemies::boss_morph::spawn_once(&event, &mut commands, &asset_server, &mut texture_atlas_layouts);
-  crate::power_ups::spawn_power_ups(&event, &mut commands, &asset_server, &mut texture_atlas_layouts);
+  crate::power_ups::spawn_power_ups(
+    &event,
+    &mut commands,
+    &asset_server,
+    &mut texture_atlas_layouts,
+    static_indicator_spawn_event,
+  );
   wave_event.send(event);
 }
 

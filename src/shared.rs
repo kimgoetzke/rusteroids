@@ -72,6 +72,12 @@ pub(crate) enum Substance {
 }
 
 #[derive(Component)]
+pub(crate) struct StaticIndicator {
+  pub target_entity: Entity,
+  pub target_point: Vec3,
+}
+
+#[derive(Component)]
 pub(crate) struct WrapAroundEntity;
 
 impl fmt::Display for Category {
@@ -98,7 +104,7 @@ pub fn random_game_world_point_away_from_player(player_position: Vec3, distance:
   let proposed_point = random_game_world_point();
   if (player_position.x - proposed_point.x).abs() < distance && (player_position.y - proposed_point.y).abs() < distance
   {
-    info!(
+    debug!(
       "Proposed spawn point {} too close to player {}, retrying...",
       proposed_point, player_position
     );
