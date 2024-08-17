@@ -16,8 +16,15 @@ impl Plugin for ExplosionPlugin {
 #[derive(Component)]
 struct Explosion;
 
+pub struct EffectInfo {
+  pub particles: Handle<Particle2dEffect>,
+  pub audio: Handle<AudioSource>,
+  pub audio_speed: f32,
+  pub audio_volume: Volume,
+}
+
 // TODO: Resolve category by substance so all impact particles/audio can be handled here
-// TODO: Handle PowerUpCollectedEvent and ShieldDamageEvent in this file
+// TODO: Handle PowerUpCollectedEvent in this file
 
 fn spawn_explosion_event(
   mut explosion_event: EventReader<ExplosionEvent>,
@@ -25,39 +32,11 @@ fn spawn_explosion_event(
   asset_server: Res<AssetServer>,
 ) {
   for explosion in explosion_event.read() {
-    let effect = match explosion.category {
-      Category::XL => asset_server.load("particles/explosion_xl.ron"),
-      Category::L => asset_server.load("particles/explosion_l.ron"),
-      Category::M => asset_server.load("particles/explosion_m.ron"),
-      Category::S => asset_server.load("particles/explosion_s.ron"),
-    };
-
-    let audio_handle = match explosion.substance {
-      Substance::Rock => asset_server.load("audio/explosion_rock.ogg"),
-      Substance::Metal => asset_server.load("audio/explosion_metal.ogg"),
-      Substance::Energy => asset_server.load("audio/explosion_energy.ogg"),
-      Substance::Magic => asset_server.load("audio/explosion_magic.ogg"),
-      Substance::Undefined => asset_server.load("audio/explosion_undefined.ogg"),
-    };
+    let effect_info = get_effect_info(explosion, &asset_server);
     trace!("Explosion: {:?}", explosion);
-
-    let audio_volume = match explosion.category {
-      Category::XL => Volume::new(0.9),
-      Category::L => Volume::new(0.7),
-      Category::M => Volume::new(0.4),
-      Category::S => Volume::new(0.2),
-    };
-
-    let audio_speed = match explosion.category {
-      Category::XL => 0.7,
-      Category::L => 0.7,
-      Category::M => 1.0,
-      Category::S => 1.5,
-    };
-
     commands.spawn((
       ParticleSpawnerBundle {
-        effect,
+        effect: effect_info.particles,
         material: DEFAULT_MATERIAL,
         transform: Transform::from_translation(explosion.origin),
         ..default()
@@ -67,15 +46,60 @@ fn spawn_explosion_event(
       PIXEL_PERFECT_BLOOM_LAYER,
       Name::new("Explosion"),
       AudioBundle {
-        source: audio_handle,
+        source: effect_info.audio,
         settings: PlaybackSettings {
           mode: bevy::audio::PlaybackMode::Remove,
-          speed: audio_speed,
-          volume: audio_volume,
+          speed: effect_info.audio_speed,
+          volume: effect_info.audio_volume,
           spatial: true,
           ..Default::default()
         },
       },
     ));
+  }
+}
+
+fn get_effect_info(explosion: &ExplosionEvent, asset_server: &Res<AssetServer>) -> EffectInfo {
+  let particles = match (explosion.category, explosion.substance) {
+    (Category::XL | Category::L, Substance::Energy) => asset_server.load("particles/explosion_energy_l.ron"),
+    (Category::XL, _) => asset_server.load("particles/explosion_xl.ron"),
+    (Category::L, _) => asset_server.load("particles/explosion_l.ron"),
+    (Category::M, Substance::Energy) => asset_server.load("particles/explosion_energy_l.ron"),
+    (Category::M, _) => asset_server.load("particles/explosion_m.ron"),
+    (Category::S, Substance::Energy) => asset_server.load("particles/explosion_energy_s.ron"),
+    (Category::S, _) => asset_server.load("particles/explosion_s.ron"),
+  };
+
+  let audio = match explosion.substance {
+    Substance::Rock => asset_server.load("audio/explosion_rock.ogg"),
+    Substance::Metal => asset_server.load("audio/explosion_metal.ogg"),
+    Substance::Energy => asset_server.load("audio/explosion_energy.ogg"),
+    Substance::Magic => asset_server.load("audio/explosion_magic.ogg"),
+    Substance::Undefined => asset_server.load("audio/explosion_undefined.ogg"),
+  };
+
+  let audio_volume = match (explosion.category, explosion.substance) {
+    (Category::XL, Substance::Energy) => Volume::new(1.1),
+    (Category::XL, _) => Volume::new(0.9),
+    (Category::L, Substance::Energy) => Volume::new(0.9),
+    (Category::L, _) => Volume::new(0.7),
+    (Category::M, Substance::Energy) => Volume::new(0.8),
+    (Category::M, _) => Volume::new(0.4),
+    (Category::S, Substance::Energy) => Volume::new(0.8),
+    (Category::S, _) => Volume::new(0.2),
+  };
+
+  let audio_speed = match explosion.category {
+    Category::XL => 0.7,
+    Category::L => 0.7,
+    Category::M => 1.0,
+    Category::S => 1.5,
+  };
+
+  EffectInfo {
+    particles,
+    audio,
+    audio_speed,
+    audio_volume,
   }
 }
