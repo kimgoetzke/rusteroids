@@ -23,9 +23,6 @@ pub struct EffectInfo {
   pub audio_volume: Volume,
 }
 
-// TODO: Resolve category by substance so all impact particles/audio can be handled here
-// TODO: Handle PowerUpCollectedEvent in this file
-
 fn spawn_explosion_event(
   mut explosion_event: EventReader<ExplosionEvent>,
   mut commands: Commands,

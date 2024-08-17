@@ -20,7 +20,10 @@ impl Plugin for WavesPlugin {
   }
 }
 
-// TODO: Stop calling other functions directly from this system (which requires ensuring alternative is only executed once)
+// TODO: Stop calling other functions directly from this system
+// This requires ensuring alternative is only executed once which is not the case when using EventWriter as, for
+// example, the AsteroidSpawnedEvent will be triggered again before the asteroid is spawned. Once this is fixed,
+// I can remove the vast majority of the parameters from this function.
 fn start_next_wave(
   mut commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
