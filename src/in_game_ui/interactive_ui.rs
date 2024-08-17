@@ -10,24 +10,29 @@ use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, StaticI
 use crate::shared_resources::AsteroidCount;
 
 const SPAWN_INDICATOR_THRESHOLD: u16 = 5;
-const TRANSPARENCY: f32 = 0.3;
+const INDICATOR_TRANSPARENCY: f32 = 0.25;
 
 pub struct InteractiveUiPlugin;
 
 impl Plugin for InteractiveUiPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(
-      Update,
-      (
-        process_asteroid_count_change,
-        update_dynamic_indicators_system,
-        spawn_static_indicator_event,
-        update_static_indicators_system,
-      )
-        .run_if(in_state(GameState::Playing)),
-    );
+    app
+      .add_systems(OnEnter(GameState::Dead), despawn_all_indicators_system)
+      .add_systems(
+        Update,
+        (
+          process_asteroid_count_change,
+          update_dynamic_indicators_system,
+          spawn_static_indicator_event,
+          update_static_indicators_system,
+        )
+          .run_if(in_state(GameState::Playing)),
+      );
   }
 }
+
+#[derive(Component)]
+struct Indicator;
 
 #[derive(Component)]
 struct DynamicIndicator {
@@ -51,7 +56,7 @@ fn process_asteroid_count_change(
 
   // Despawn all indicators if there are too many asteroids
   if asteroid_count.0 > SPAWN_INDICATOR_THRESHOLD {
-    despawn_all_indicators(&mut commands, &indicator_query);
+    despawn_all_dynamic_indicators(&mut commands, &indicator_query);
     return;
   }
 
@@ -59,7 +64,7 @@ fn process_asteroid_count_change(
   let player_position = if let Ok(player_transform) = player_query.get_single() {
     player_transform.translation
   } else {
-    despawn_all_indicators(&mut commands, &indicator_query);
+    despawn_all_dynamic_indicators(&mut commands, &indicator_query);
     return;
   };
 
@@ -87,6 +92,7 @@ fn process_asteroid_count_change(
           DynamicIndicator {
             target_entity: asteroid_entity,
           },
+          Indicator,
           Name::new("Asteroid Indicator"),
         ))
         .id();
@@ -102,7 +108,10 @@ fn process_asteroid_count_change(
   }
 }
 
-fn despawn_all_indicators(commands: &mut Commands, asteroid_indicator_query: &Query<(Entity, &DynamicIndicator)>) {
+fn despawn_all_dynamic_indicators(
+  commands: &mut Commands,
+  asteroid_indicator_query: &Query<(Entity, &DynamicIndicator)>,
+) {
   for (indicator_entity, _) in asteroid_indicator_query.iter() {
     commands.entity(indicator_entity).despawn();
   }
@@ -145,11 +154,13 @@ fn spawn_static_indicator_event(
     let indicator_position = player_position + direction * 50.0;
     let mesh_bundle = get_mesh_bundle(&mut meshes, &mut materials, indicator_position, GREEN);
     commands.spawn((
+      mesh_bundle,
       StaticIndicator {
         target_entity: event.target_entity,
         target_point: event.target_point,
       },
-      mesh_bundle,
+      Indicator,
+      Name::new("Static Indicator"),
     ));
   }
 }
@@ -168,6 +179,12 @@ fn update_static_indicators_system(
   }
 }
 
+fn despawn_all_indicators_system(mut commands: Commands, indicator_query: Query<Entity, With<Indicator>>) {
+  for indicator_entity in indicator_query.iter() {
+    commands.entity(indicator_entity).despawn();
+  }
+}
+
 fn get_mesh_bundle(
   meshes: &mut ResMut<Assets<Mesh>>,
   materials: &mut ResMut<Assets<ColorMaterial>>,
@@ -177,7 +194,7 @@ fn get_mesh_bundle(
   MaterialMesh2dBundle {
     mesh: Mesh2dHandle(meshes.add(Triangle2d::new(Vec2::Y * 5., Vec2::new(-5., -5.), Vec2::new(5., -5.)))),
     transform: Transform::from_translation(indicator_position),
-    material: materials.add(ColorMaterial::from(colour.with_alpha(TRANSPARENCY))),
+    material: materials.add(ColorMaterial::from(colour.with_alpha(INDICATOR_TRANSPARENCY))),
     ..default()
   }
 }

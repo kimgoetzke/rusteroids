@@ -41,7 +41,7 @@ pub(crate) struct Asteroid {
   sides: f32,
   collider: Collider,
   additional_mass: f32,
-  pub(crate) score: u16,
+  pub score: u16,
 }
 
 impl PartialEq for Asteroid {

@@ -1,3 +1,4 @@
+use crate::game_state::GameState;
 use crate::shared::random_game_world_point_away_from_player;
 use crate::shared_events::{StaticIndicatorSpawnEvent, WaveEvent};
 use bevy::app::{App, Plugin};
@@ -6,15 +7,19 @@ use bevy::core::Name;
 use bevy::log::info;
 use bevy::math::UVec2;
 use bevy::prelude::{
-  default, Commands, Component, Deref, DerefMut, EventWriter, Query, Res, ResMut, SpriteBundle, TextureAtlas,
-  TextureAtlasLayout, Time, Timer, TimerMode, Transform, Update, With,
+  default, Commands, Component, Deref, DerefMut, Entity, EventWriter, OnEnter, Query, Res, ResMut, SpriteBundle,
+  TextureAtlas, TextureAtlasLayout, Time, Timer, TimerMode, Transform, Update, With,
 };
+use bevy_rapier2d::dynamics::{Ccd, GravityScale, RigidBody};
+use bevy_rapier2d::geometry::{ActiveEvents, Collider};
 
 pub struct PowerUpPlugin;
 
 impl Plugin for PowerUpPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, animate_sprite_system);
+    app
+      .add_systems(OnEnter(GameState::Starting), despawn_all_power_ups_system)
+      .add_systems(Update, animate_sprite_system);
   }
 }
 
@@ -77,6 +82,11 @@ pub(crate) fn spawn_power_ups(
         first: 0,
         last: 3,
       },
+      RigidBody::KinematicPositionBased,
+      Collider::ball(20.),
+      GravityScale(0.),
+      Ccd::enabled(),
+      ActiveEvents::COLLISION_EVENTS,
     ))
     .id();
   static_indicator_spawn_event.send(StaticIndicatorSpawnEvent {
@@ -96,5 +106,11 @@ fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut AnimationState,
         atlas.index + 1
       };
     }
+  }
+}
+
+fn despawn_all_power_ups_system(mut commands: Commands, power_ups_query: Query<Entity, With<PowerUp>>) {
+  for power_up in power_ups_query.iter() {
+    commands.entity(power_up).despawn();
   }
 }
