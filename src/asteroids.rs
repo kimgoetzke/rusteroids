@@ -10,9 +10,9 @@ use bevy_prototype_lyon::shapes::Polygon;
 use bevy_rapier2d::dynamics::AdditionalMassProperties;
 use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
-use rand::random;
 
 use crate::game_state::GameState;
+use crate::player::Player;
 use crate::shared::*;
 use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, ResetWaveEvent, WaveEvent};
 use crate::shared_resources::AsteroidCount;
@@ -120,6 +120,7 @@ fn spawn_smaller_asteroids_event(
   mut asteroid_event: EventReader<AsteroidDestroyedEvent>,
   mut commands: Commands,
   mut asteroid_spawned_event: EventWriter<AsteroidSpawnedEvent>,
+  player_query: Query<&Transform, With<Player>>,
 ) {
   for event in asteroid_event.read() {
     if let Some(closest_smaller_category) = match event.category {
@@ -130,9 +131,17 @@ fn spawn_smaller_asteroids_event(
     } {
       let spawn_count = random_u16_range(ASTEROID_SPAWN_EVENT_RANGE.start, ASTEROID_SPAWN_EVENT_RANGE.end);
       for _ in 0..spawn_count {
-        let x = event.origin.x + random::<f32>() * 20.;
-        let y = event.origin.y + random::<f32>() * 20.;
-        spawn_asteroid(&mut commands, closest_smaller_category, Vec3::new(x, y, 0.));
+        let spawn_point = if let Ok(player_transform) = player_query.get_single() {
+          random_game_world_point_close_to_origin_without_player_collision(
+            event.origin,
+            20.,
+            player_transform.translation,
+            15.,
+          )
+        } else {
+          random_game_world_point_close_to_origin_without_player_collision(event.origin, 20., Vec3::ZERO, 15.)
+        };
+        spawn_asteroid(&mut commands, closest_smaller_category, spawn_point);
         asteroid_spawned_event.send(AsteroidSpawnedEvent);
       }
     }

@@ -103,13 +103,34 @@ pub fn random_game_world_point() -> Vec3 {
 
 pub fn random_game_world_point_away_from_player(player_position: Vec3, distance: f32) -> Vec3 {
   let proposed_point = random_game_world_point();
-  if (player_position.x - proposed_point.x).abs() < distance && (player_position.y - proposed_point.y).abs() < distance
-  {
+  if (player_position - proposed_point).length() < distance {
     debug!(
       "Proposed spawn point {} too close to player {}, retrying...",
       proposed_point, player_position
     );
     random_game_world_point_away_from_player(player_position, distance)
+  } else {
+    proposed_point
+  }
+}
+
+pub fn random_game_world_point_close_to_origin_without_player_collision(
+  origin: Vec3,
+  proximity: f32,
+  player_position: Vec3,
+  distance: f32,
+) -> Vec3 {
+  let proposed_point = Vec3::new(
+    origin.x + random::<f32>() * proximity,
+    origin.y + random::<f32>() * proximity,
+    0.,
+  );
+  if (player_position - proposed_point).length() < distance {
+    debug!(
+      "Proposed spawn point {} too close to player {}, retrying...",
+      proposed_point, player_position
+    );
+    random_game_world_point_close_to_origin_without_player_collision(origin, proximity, player_position, distance)
   } else {
     proposed_point
   }
