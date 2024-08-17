@@ -1,5 +1,5 @@
 use crate::game_state::GameState;
-use crate::shared::random_game_world_point_away_from_player;
+use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, Substance};
 use crate::shared_events::{StaticIndicatorSpawnEvent, WaveEvent};
 use bevy::app::{App, Plugin};
 use bevy::asset::{AssetServer, Assets};
@@ -10,8 +10,8 @@ use bevy::prelude::{
   default, Commands, Component, Deref, DerefMut, Entity, EventWriter, OnEnter, Query, Res, ResMut, SpriteBundle,
   TextureAtlas, TextureAtlasLayout, Time, Timer, TimerMode, Transform, Update, With,
 };
-use bevy_rapier2d::dynamics::{Ccd, GravityScale, RigidBody};
-use bevy_rapier2d::geometry::{ActiveEvents, Collider};
+use bevy_rapier2d::dynamics::GravityScale;
+use bevy_rapier2d::geometry::Collider;
 
 pub struct PowerUpPlugin;
 
@@ -82,11 +82,13 @@ pub(crate) fn spawn_power_ups(
         first: 0,
         last: 3,
       },
-      RigidBody::KinematicPositionBased,
       Collider::ball(20.),
+      ImpactInfo {
+        impact_category: Category::S,
+        death_category: Category::S,
+        substance: Substance::Undefined,
+      },
       GravityScale(0.),
-      Ccd::enabled(),
-      ActiveEvents::COLLISION_EVENTS,
     ))
     .id();
   static_indicator_spawn_event.send(StaticIndicatorSpawnEvent {

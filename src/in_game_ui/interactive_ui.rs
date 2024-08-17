@@ -6,7 +6,9 @@ use crate::asteroids::Asteroid;
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::{StaticIndicator, GREEN, YELLOW};
-use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, StaticIndicatorSpawnEvent};
+use crate::shared_events::{
+  AsteroidDestroyedEvent, AsteroidSpawnedEvent, PowerUpCollectedEvent, StaticIndicatorSpawnEvent,
+};
 use crate::shared_resources::AsteroidCount;
 
 const SPAWN_INDICATOR_THRESHOLD: u16 = 5;
@@ -25,6 +27,7 @@ impl Plugin for InteractiveUiPlugin {
           update_dynamic_indicators_system,
           spawn_static_indicator_event,
           update_static_indicators_system,
+          despawn_static_indicator_event,
         )
           .run_if(in_state(GameState::Playing)),
       );
@@ -142,14 +145,14 @@ fn spawn_static_indicator_event(
   mut materials: ResMut<Assets<ColorMaterial>>,
   player_query: Query<&Transform, With<Player>>,
 ) {
-  let player_position = if let Ok(player_transform) = player_query.get_single() {
-    player_transform.translation
-  } else {
-    warn!("Player not found for static indicator spawn event");
-    return;
-  };
-
   for event in static_indicator_spawn_event.read() {
+    let player_position = if let Ok(player_transform) = player_query.get_single() {
+      player_transform.translation
+    } else {
+      warn!("Player not found for static indicator spawn event");
+      return;
+    };
+
     let direction = (event.target_point - player_position).normalize();
     let indicator_position = player_position + direction * 50.0;
     let mesh_bundle = get_mesh_bundle(&mut meshes, &mut materials, indicator_position, GREEN);
@@ -175,6 +178,21 @@ fn update_static_indicators_system(
       let direction = (indicator.target_point - player_position).normalize();
       indicator_transform.translation = player_position + direction * 50.0;
       indicator_transform.rotation = Quat::from_rotation_arc(Vec3::Y, direction);
+    }
+  }
+}
+
+fn despawn_static_indicator_event(
+  mut commands: Commands,
+  mut power_up_event: EventReader<PowerUpCollectedEvent>,
+  indicator_query: Query<(Entity, &StaticIndicator)>,
+) {
+  for event in power_up_event.read() {
+    if let Some((indicator_entity, _)) = indicator_query
+      .iter()
+      .find(|(_, indicator)| indicator.target_entity == event.entity)
+    {
+      commands.entity(indicator_entity).despawn();
     }
   }
 }

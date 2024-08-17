@@ -32,9 +32,10 @@ fn spawn_explosion_event(
     let audio_handle = match explosion.substance {
       Substance::Rock => asset_server.load("audio/explosion_rock.ogg"),
       Substance::Metal => asset_server.load("audio/explosion_metal.ogg"),
+      Substance::Magic => asset_server.load("audio/explosion_magic.ogg"),
       Substance::Undefined => asset_server.load("audio/explosion_undefined.ogg"),
     };
-    debug!("Explosion: {:?}", explosion);
+    trace!("Explosion: {:?}", explosion);
 
     let audio_volume = match explosion.category {
       Category::XL => Volume::new(0.9),

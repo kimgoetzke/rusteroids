@@ -15,7 +15,8 @@ impl Plugin for SharedEventsPlugin {
       .add_event::<ProjectileSpawnEvent>()
       .add_event::<AsteroidSpawnedEvent>()
       .add_event::<AsteroidDestroyedEvent>()
-      .add_event::<StaticIndicatorSpawnEvent>();
+      .add_event::<StaticIndicatorSpawnEvent>()
+      .add_event::<PowerUpCollectedEvent>();
   }
 }
 
@@ -71,4 +72,9 @@ pub(crate) struct EnemyDamageEvent {
 pub(crate) struct StaticIndicatorSpawnEvent {
   pub target_entity: Entity,
   pub target_point: Vec3,
+}
+
+#[derive(Event)]
+pub(crate) struct PowerUpCollectedEvent {
+  pub(crate) entity: Entity,
 }

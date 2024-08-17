@@ -49,7 +49,7 @@ pub(crate) struct ProjectileInfo {
   pub sprite: Sprite,
 }
 
-#[derive(Component, Copy, Clone)]
+#[derive(Component, Copy, Clone, Debug)]
 pub(crate) struct ImpactInfo {
   pub impact_category: Category,
   pub death_category: Category,
@@ -68,6 +68,7 @@ pub(crate) enum Category {
 pub(crate) enum Substance {
   Rock,
   Metal,
+  Magic,
   Undefined,
 }
 
