@@ -52,10 +52,10 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
-// TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
+// TODO: Consider adding other power ups, esp. ship upgrades (weapons, maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
 // TODO: Add another/stronger/smarter enemies
-// TODO: Set exclusion layers for collisions (enemy, asteroids vs power ups)
+// TODO: Set exclusion layers for collisions (enemy, asteroids vs power ups, and player projectiles)
 
 fn main() {
   let mut app = App::new();
