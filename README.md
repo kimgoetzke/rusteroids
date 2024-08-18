@@ -4,6 +4,8 @@ This is a crappy asteroids-like game written in Rust, using Bevy engine and Rapi
 learn Rust in a playful way. Please excuse the awful code; this the first time I'm looking at Rust (and Bevy), so there
 will be millions of things that could have been done in a better and more idiomatic way.
 
+[<img src="assets/ignore/itcho_io_button.png">](https://captainhindsight.itch.io/rusteroids)
+
 ## Demo
 
 ![Demo GIF](assets/ignore/demo.gif)
