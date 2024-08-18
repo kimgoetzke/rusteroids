@@ -55,6 +55,7 @@ const WINDOW_HEIGHT: f32 = 720.;
 // TODO: Consider adding power ups, e.g. shield, better weapons, better ship (maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
 // TODO: Add another/stronger/smarter enemies
+// TODO: Set exclusion layers for collisions (enemy, asteroids vs power ups)
 
 fn main() {
   let mut app = App::new();
