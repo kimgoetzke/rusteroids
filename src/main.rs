@@ -1,3 +1,4 @@
+use bevy::asset::AssetMetaCheck;
 use bevy::audio::{AudioPlugin, SpatialScale};
 #[cfg(feature = "dev")]
 use bevy::input::common_conditions::input_toggle_active;
@@ -60,6 +61,11 @@ fn main() {
   app
     .add_plugins(
       DefaultPlugins
+        .set(AssetPlugin {
+          // This is a workaround for https://github.com/bevyengine/bevy/issues/10157
+          meta_check: AssetMetaCheck::Never,
+          ..default()
+        })
         .set(ImagePlugin::default_nearest())
         .set(WindowPlugin {
           primary_window: Some(Window {
