@@ -59,6 +59,7 @@ pub(crate) struct WeaponSystem {
 #[derive(Copy, Clone)]
 pub(crate) struct Weapon {
   pub origin_offset: Vec3,
+  pub direction: Vec3,
 }
 
 impl WeaponSystem {
@@ -68,6 +69,7 @@ impl WeaponSystem {
       shooting_cooldown: cooldown,
       primary: vec![Weapon {
         origin_offset: Vec3::new(0., y_offset, 0.),
+        direction: Vec3::Y,
       }],
     }
   }

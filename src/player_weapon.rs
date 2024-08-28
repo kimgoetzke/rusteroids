@@ -6,7 +6,7 @@ use bevy::app::App;
 use bevy::log::info;
 use bevy::prelude::*;
 
-const MAX_LEVEL: u8 = 3;
+const MAX_LEVEL: u8 = 6;
 
 pub struct PlayerWeaponPlugin;
 
@@ -24,6 +24,7 @@ impl WeaponSystem {
     self.level = 1;
     self.primary = vec![Weapon {
       origin_offset: Vec3::new(0., 20., 0.),
+      direction: Vec3::Y,
     }];
     self
   }
@@ -34,7 +35,10 @@ impl WeaponSystem {
     match self.level {
       2 => self.level_2(),
       3 => self.level_3(),
-      _ => self.level_3(),
+      4 => self.level_4(),
+      5 => self.level_5(),
+      6 => self.level_6(),
+      _ => self.level_6(),
     }
   }
 
@@ -42,9 +46,11 @@ impl WeaponSystem {
     self.primary = vec![
       Weapon {
         origin_offset: Vec3::new(5., 20., 0.),
+        direction: Vec3::Y,
       },
       Weapon {
         origin_offset: Vec3::new(-5., 20., 0.),
+        direction: Vec3::Y,
       },
     ];
     self
@@ -53,13 +59,94 @@ impl WeaponSystem {
   fn level_3(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(6., 20., 0.),
+        origin_offset: Vec3::new(5., 20., 0.),
+        direction: Vec3::new(0.4, 1., 0.).normalize(),
       },
       Weapon {
         origin_offset: Vec3::new(0., 20., 0.),
+        direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(-6., 20., 0.),
+        origin_offset: Vec3::new(-5., 20., 0.),
+        direction: Vec3::new(-0.4, 1., 0.).normalize(),
+      },
+    ];
+    self
+  }
+
+  fn level_4(&mut self) -> &mut Self {
+    self.primary = vec![
+      Weapon {
+        origin_offset: Vec3::new(20., 0., 0.),
+        direction: Vec3::X,
+      },
+      Weapon {
+        origin_offset: Vec3::new(5., 20., 0.),
+        direction: Vec3::Y,
+      },
+      Weapon {
+        origin_offset: Vec3::new(-5., 20., 0.),
+        direction: Vec3::Y,
+      },
+      Weapon {
+        origin_offset: Vec3::new(-20., 0., 0.),
+        direction: Vec3::NEG_X,
+      },
+    ];
+    self
+  }
+
+  fn level_5(&mut self) -> &mut Self {
+    self.primary = vec![
+      Weapon {
+        origin_offset: Vec3::new(0., 20., 0.),
+        direction: Vec3::Y,
+      },
+      Weapon {
+        origin_offset: Vec3::new(5., 20., 0.),
+        direction: Vec3::new(0.4, 1., 0.).normalize(),
+      },
+      Weapon {
+        origin_offset: Vec3::new(-5., 20., 0.),
+        direction: Vec3::new(-0.4, 1., 0.).normalize(),
+      },
+      Weapon {
+        origin_offset: Vec3::new(-20., 0., 0.),
+        direction: Vec3::NEG_X,
+      },
+      Weapon {
+        origin_offset: Vec3::new(20., 0., 0.),
+        direction: Vec3::X,
+      },
+    ];
+    self
+  }
+
+  fn level_6(&mut self) -> &mut Self {
+    self.primary = vec![
+      Weapon {
+        origin_offset: Vec3::new(0., 20., 0.),
+        direction: Vec3::Y,
+      },
+      Weapon {
+        origin_offset: Vec3::new(5., 20., 0.),
+        direction: Vec3::new(0.4, 1., 0.).normalize(),
+      },
+      Weapon {
+        origin_offset: Vec3::new(-5., 20., 0.),
+        direction: Vec3::new(-0.4, 1., 0.).normalize(),
+      },
+      Weapon {
+        origin_offset: Vec3::new(20., 0., 0.),
+        direction: Vec3::X,
+      },
+      Weapon {
+        origin_offset: Vec3::new(-20., 0., 0.),
+        direction: Vec3::NEG_X,
+      },
+      Weapon {
+        origin_offset: Vec3::new(0., -20., 0.),
+        direction: Vec3::NEG_Y,
       },
     ];
     self

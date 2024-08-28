@@ -145,7 +145,6 @@ fn player_shooting_system(
   for (player_transform, mut weapons) in query.iter_mut() {
     // Spawn a projectile if the player is shooting
     if keyboard_input.pressed(KeyCode::Space) && weapons.shooting_cooldown <= 0. {
-      let player_forward = player_transform.rotation * Vec3::Y;
       let info = ProjectileInfo {
         damage: DAMAGE,
         speed: 750.,
@@ -160,11 +159,15 @@ fn player_shooting_system(
       };
       weapons.shooting_cooldown = info.cooldown;
       for weapon in &weapons.primary {
+        let spawn_position = player_transform.translation + (player_transform.rotation * weapon.origin_offset);
+        let direction = player_transform.rotation * weapon.direction;
+        let rotation = Quat::from_rotation_arc(Vec3::Y, direction);
+
         projective_spawn_event.send(ProjectileSpawnEvent {
           projectile_info: info.clone(),
-          origin_rotation: player_transform.rotation,
-          origin_forward: player_forward,
-          spawn_position: player_transform.translation + (player_transform.rotation * weapon.origin_offset),
+          origin_rotation: rotation,
+          origin_forward: direction,
+          spawn_position,
         });
       }
     }
