@@ -124,6 +124,17 @@ pub(crate) enum PowerUpType {
 #[derive(Component)]
 pub(crate) struct Shield;
 
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
+pub(crate) struct CollisionDamage {
+  pub damage: u16,
+}
+
+impl CollisionDamage {
+  pub fn new(damage: u16) -> Self {
+    CollisionDamage { damage }
+  }
+}
+
 impl fmt::Display for Category {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}", self)

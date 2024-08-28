@@ -8,7 +8,7 @@ use crate::enemies::Enemy;
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::projectile::Projectile;
-use crate::shared::{Category, ImpactInfo, PowerUp, Shield, Substance};
+use crate::shared::{Category, CollisionDamage, ImpactInfo, PowerUp, Shield, Substance};
 use crate::shared_events::{AsteroidDestroyedEvent, ExplosionEvent, ScoreEvent, ShieldDamageEvent};
 use crate::shared_events::{EnemyDamageEvent, PowerUpCollectedEvent};
 
@@ -26,7 +26,7 @@ enum CollisionEntityType {
   Shield,
   Projectile(Projectile),
   Asteroid(Asteroid),
-  Enemy,
+  Enemy(CollisionDamage),
   PowerUp(PowerUp),
   Unknown,
 }
@@ -48,7 +48,7 @@ fn collision_system(
   asteroid_query: Query<(Entity, &Transform, &ImpactInfo, &Asteroid), With<Asteroid>>,
   player_query: Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: Query<(Entity, &Transform, &Projectile), With<Projectile>>,
-  enemy_query: Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
+  enemy_query: Query<(Entity, &Transform, &ImpactInfo, &CollisionDamage), With<Enemy>>,
   power_up_query: Query<(Entity, &Transform, &ImpactInfo, &PowerUp), With<PowerUp>>,
   shield_query: Query<(Entity, &Transform, &ImpactInfo), With<Shield>>,
   mut asteroid_destroyed_event: EventWriter<AsteroidDestroyedEvent>,
@@ -89,7 +89,7 @@ fn get_collision_entity_info(
   asteroid_query: &Query<(Entity, &Transform, &ImpactInfo, &Asteroid), With<Asteroid>>,
   player_query: &Query<(Entity, &Transform, &ImpactInfo), With<Player>>,
   projectile_query: &Query<(Entity, &Transform, &Projectile), With<Projectile>>,
-  enemy_query: &Query<(Entity, &Transform, &ImpactInfo), With<Enemy>>,
+  enemy_query: &Query<(Entity, &Transform, &ImpactInfo, &CollisionDamage), With<Enemy>>,
   power_up_query: &Query<(Entity, &Transform, &ImpactInfo, &PowerUp), With<PowerUp>>,
   shield_query: &Query<(Entity, &Transform, &ImpactInfo), With<Shield>>,
 ) -> Vec<CollisionEntityInfo> {
@@ -112,11 +112,11 @@ fn get_collision_entity_info(
         impact_info: None,
         other_entity_type: CollisionEntityType::Unknown,
       });
-    } else if let Ok((entity, transform, impact_info)) = enemy_query.get(*collision_entity) {
+    } else if let Ok((entity, transform, impact_info, collision_dmg)) = enemy_query.get(*collision_entity) {
       entity_list.push(CollisionEntityInfo {
         entity,
         transform: transform.clone(),
-        entity_type: CollisionEntityType::Enemy,
+        entity_type: CollisionEntityType::Enemy(collision_dmg.clone()),
         impact_info: Some(impact_info.clone()),
         other_entity_type: CollisionEntityType::Unknown,
       });
@@ -195,7 +195,7 @@ fn handle_collisions(
         score_event,
       ),
       CollisionEntityType::Projectile(_) => projectile_collision(entity_info, commands, explosion_event),
-      CollisionEntityType::Enemy => enemy_collision(entity_info, damage_dealt, explosion_event, enemy_damage_event),
+      CollisionEntityType::Enemy(_) => enemy_collision(entity_info, damage_dealt, explosion_event, enemy_damage_event),
       CollisionEntityType::Player => {
         player_collision(entity_info, commands, asset_server, explosion_event, score_event)
       }
@@ -211,18 +211,14 @@ fn handle_collisions(
 }
 
 fn get_damage_dealt(entity_list: &Vec<CollisionEntityInfo>) -> u16 {
-  if let Some(projectile_info) = entity_list
+  entity_list
     .iter()
-    .find(|entity_info| matches!(entity_info.entity_type, CollisionEntityType::Projectile(_)))
-  {
-    if let CollisionEntityType::Projectile(projectile) = &projectile_info.entity_type {
-      projectile.damage
-    } else {
-      0
-    }
-  } else {
-    0
-  }
+    .find_map(|entity_info| match &entity_info.entity_type {
+      CollisionEntityType::Projectile(projectile) => Some(projectile.damage),
+      CollisionEntityType::Enemy(collision_damage) => Some(collision_damage.damage),
+      _ => None,
+    })
+    .unwrap_or(1)
 }
 
 fn asteroid_collision(
@@ -309,10 +305,7 @@ fn enemy_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
-  if matches!(entity_info.entity_type, CollisionEntityType::Enemy) {
-    if matches!(entity_info.other_entity_type, CollisionEntityType::Shield) {
-      return;
-    }
+  if matches!(entity_info.entity_type, CollisionEntityType::Enemy(_)) {
     enemy_damage_event.send(EnemyDamageEvent {
       entity: entity_info.entity,
       damage: damage_dealt,

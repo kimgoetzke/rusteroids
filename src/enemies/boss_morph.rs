@@ -2,8 +2,8 @@ use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::{
-  get_default_enemy_collision_groups, random_game_world_point_away_from_player, Category, ImpactInfo, Substance,
-  WrapAroundEntity,
+  get_default_enemy_collision_groups, random_game_world_point_away_from_player, Category, CollisionDamage, ImpactInfo,
+  Substance, WrapAroundEntity,
 };
 use crate::shared_events::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
@@ -167,7 +167,8 @@ fn spawn_morph_boss(
       },
       MorphBoss::new(),
     ))
-    .insert(get_default_enemy_collision_groups());
+    .insert(get_default_enemy_collision_groups())
+    .insert(CollisionDamage::new(15));
 }
 
 fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut TextureAtlas)>) {

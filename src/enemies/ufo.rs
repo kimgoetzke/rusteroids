@@ -8,7 +8,7 @@ use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::{
   get_default_enemy_collision_groups, get_default_enemy_projectile_collision_groups, random_f32_range,
-  random_game_world_point_away_from_player, Category, ImpactInfo, ProjectileInfo, Substance, RED,
+  random_game_world_point_away_from_player, Category, CollisionDamage, ImpactInfo, ProjectileInfo, Substance, RED,
 };
 use crate::shared_events::{ProjectileSpawnEvent, WaveEvent};
 
@@ -89,6 +89,7 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       shooting_cooldown: SMALL_UFO_SHOOTING_COOLDOWN,
       size: UfoSize::Small,
     },
+    CollisionDamage::new(DAMAGE),
   ));
 }
 
@@ -125,6 +126,7 @@ fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       shooting_cooldown: LARGE_UFO_SHOOTING_COOLDOWN,
       size: UfoSize::Large,
     },
+    CollisionDamage::new(DAMAGE),
   ));
 }
 
