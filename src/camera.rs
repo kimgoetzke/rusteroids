@@ -76,6 +76,7 @@ fn setup_camera_system(mut commands: Commands, mut images: ResMut<Assets<Image>>
     RenderLayers::from_layers(&[0, 1]),
     BloomSettings::SCREEN_BLUR,
     Name::new("Camera: Pixel Perfect"),
+    SpatialListener::new(10.),
   ));
 
   // Spawn the canvas

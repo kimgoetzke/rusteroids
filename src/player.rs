@@ -79,7 +79,6 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
       },
     },
-    SpatialListener::new(10.), // TODO: Consider moving listener to camera
   ));
 }
 
