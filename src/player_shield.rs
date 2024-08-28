@@ -103,7 +103,7 @@ fn upgrade_existing_shield(existing_shield_query: &mut Query<&mut ShieldInfo>) {
     if shield.strength + DEFAULT_MAX_STRENGTH > shield.max_strength {
       shield.max_strength += DEFAULT_MAX_STRENGTH;
     }
-    shield.strength += DEFAULT_MAX_STRENGTH;
+    shield.strength = shield.max_strength;
     info!("Existing shield upgraded: {:?}", shield);
   }
 }

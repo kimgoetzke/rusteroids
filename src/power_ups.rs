@@ -45,7 +45,7 @@ pub(crate) fn spawn_power_ups(
   }
   let spawn_point = random_game_world_point_away_from_player(event.player_position, 300.);
   let texture = asset_server.load("sprites/power_up_shield.png");
-  let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 9, 1, None, None);
+  let layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 8, 1, None, None);
   let texture_atlas_layout = texture_atlas_layouts.add(layout);
   let power_up_type = PowerUpType::Shield;
   let power_up_entity = commands
@@ -71,7 +71,7 @@ pub(crate) fn spawn_power_ups(
       AnimationState {
         timer: AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
         first: 0,
-        last: 3,
+        last: 7,
       },
       Collider::ball(20.),
       ImpactInfo {
