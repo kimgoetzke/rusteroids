@@ -42,7 +42,7 @@ fn create_world_system(
           MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(adjusted_tile_size, adjusted_tile_size))),
             transform: Transform::from_xyz(x + half_margin, y + half_margin, -999.),
-            material: materials.add(VERY_DARK_2.with_alpha(0.5)),
+            material: materials.add(VERY_DARK_2.with_alpha(0.25)),
             ..default()
           },
           Name::new(description.clone()),
@@ -54,7 +54,7 @@ fn create_world_system(
               TextStyle {
                 font: asset_server.load(DEFAULT_FONT),
                 font_size: 20.,
-                color: VERY_DARK_1.with_alpha(0.3),
+                color: VERY_DARK_1.with_alpha(0.1),
                 ..default()
               },
             )

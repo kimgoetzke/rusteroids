@@ -26,7 +26,7 @@ use crate::player::PlayerPlugin;
 use crate::player_shield::PlayerShieldPlugin;
 use crate::power_ups::PowerUpPlugin;
 use crate::projectile::ProjectilePlugin;
-use crate::shared::VERY_DARK_1;
+use crate::shared::VERY_DARK_2;
 use crate::shared_events::SharedEventsPlugin;
 use crate::shared_resources::SharedResourcesPlugin;
 use crate::waves::WavesPlugin;
@@ -106,7 +106,7 @@ fn main() {
     .add_plugins(InGameUiPlugin)
     .insert_state(GameState::Starting)
     .insert_resource(Msaa::Off)
-    .insert_resource(ClearColor(VERY_DARK_1));
+    .insert_resource(ClearColor(VERY_DARK_2));
 
   #[cfg(feature = "dev")]
   app
