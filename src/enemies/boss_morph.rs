@@ -1,7 +1,10 @@
 use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
 use crate::player::Player;
-use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, Substance, WrapAroundEntity};
+use crate::shared::{
+  get_default_enemy_collision_groups, random_game_world_point_away_from_player, Category, ImpactInfo, Substance,
+  WrapAroundEntity,
+};
 use crate::shared_events::WaveEvent;
 use bevy::app::{App, FixedUpdate, Plugin};
 use bevy::asset::AssetServer;
@@ -9,8 +12,8 @@ use bevy::audio::Volume;
 use bevy::core::Name;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::*;
-use bevy_rapier2d::dynamics::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
 use bevy_rapier2d::geometry::{ActiveEvents, Collider};
+use bevy_rapier2d::prelude::{AdditionalMassProperties, Ccd, GravityScale, RigidBody, Velocity};
 use consts::PI;
 use std::f32::consts;
 
@@ -120,49 +123,51 @@ fn spawn_morph_boss(
   let texture = asset_server.load("sprites/boss_morph.png");
   let layout = TextureAtlasLayout::from_grid(UVec2::splat(64), 25, 1, None, None);
   let texture_atlas_layout = texture_atlas_layouts.add(layout);
-  commands.spawn((
-    SpriteBundle {
-      texture,
-      transform: Transform::from_translation(spawn_point),
-      ..default()
-    },
-    TextureAtlas {
-      layout: texture_atlas_layout,
-      index: 0,
-    },
-    AudioBundle {
-      source: asset_server.load("audio/spaceship_loop_odd.ogg"),
-      settings: PlaybackSettings {
-        mode: bevy::audio::PlaybackMode::Loop,
-        volume: Volume::new(0.7),
-        spatial: true,
-        ..Default::default()
+  commands
+    .spawn((
+      SpriteBundle {
+        texture,
+        transform: Transform::from_translation(spawn_point),
+        ..default()
       },
-    },
-    Name::new("Morph Boss"),
-    RigidBody::Dynamic,
-    Collider::triangle(Vec2::new(25., 0.), Vec2::new(-25., 15.), Vec2::new(-25., -15.)),
-    ActiveEvents::COLLISION_EVENTS,
-    ImpactInfo {
-      impact_category: Category::S,
-      death_category: Category::XL,
-      substance: Substance::Metal,
-    },
-    GravityScale(0.),
-    Velocity {
-      linvel: Vec2::new(0., 0.),
-      angvel: DEFAULT_ANGULAR_VELOCITY,
-    },
-    AdditionalMassProperties::Mass(40.),
-    Ccd::enabled(),
-    WrapAroundEntity,
-    Enemy {
-      health_points: HEALTH,
-      movement_speed: SPEED,
-      score_points: SCORE,
-    },
-    MorphBoss::new(),
-  ));
+      TextureAtlas {
+        layout: texture_atlas_layout,
+        index: 0,
+      },
+      AudioBundle {
+        source: asset_server.load("audio/spaceship_loop_odd.ogg"),
+        settings: PlaybackSettings {
+          mode: bevy::audio::PlaybackMode::Loop,
+          volume: Volume::new(0.7),
+          spatial: true,
+          ..Default::default()
+        },
+      },
+      Name::new("Morph Boss"),
+      RigidBody::Dynamic,
+      Collider::triangle(Vec2::new(25., 0.), Vec2::new(-25., 15.), Vec2::new(-25., -15.)),
+      ActiveEvents::COLLISION_EVENTS,
+      ImpactInfo {
+        impact_category: Category::S,
+        death_category: Category::XL,
+        substance: Substance::Metal,
+      },
+      GravityScale(0.),
+      Velocity {
+        linvel: Vec2::new(0., 0.),
+        angvel: DEFAULT_ANGULAR_VELOCITY,
+      },
+      AdditionalMassProperties::Mass(40.),
+      Ccd::enabled(),
+      WrapAroundEntity,
+      Enemy {
+        health_points: HEALTH,
+        movement_speed: SPEED,
+        score_points: SCORE,
+      },
+      MorphBoss::new(),
+    ))
+    .insert(get_default_enemy_collision_groups());
 }
 
 fn animate_sprite_system(time: Res<Time>, mut query: Query<(&mut MorphBoss, &mut TextureAtlas)>) {

@@ -1,7 +1,7 @@
 use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
 use crate::game_state::GameState;
 use crate::player::Player;
-use crate::shared::{Category, ImpactInfo, PowerUpType, Shield, Substance, BLUE};
+use crate::shared::{get_player_collision_groups, Category, ImpactInfo, PowerUpType, Shield, Substance, BLUE};
 use crate::shared_events::{ExplosionEvent, PowerUpCollectedEvent, ShieldDamageEvent};
 use bevy::app::App;
 use bevy::asset::Assets;
@@ -81,6 +81,7 @@ fn spawn_shield(
         ..Default::default()
       },
       Collider::ball(14.),
+      get_player_collision_groups(),
       ActiveEvents::COLLISION_EVENTS,
       ImpactInfo {
         impact_category: Category::M,

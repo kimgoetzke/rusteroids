@@ -69,6 +69,7 @@ fn spawn_projectile(
     ActiveEvents::COLLISION_EVENTS,
     GravityScale(0.),
     AdditionalMassProperties::Mass(100.),
+    projectile.collision_groups,
     Velocity {
       linvel: Vec2::new(origin_forward.x, origin_forward.y) * projectile.speed,
       angvel: 0.,

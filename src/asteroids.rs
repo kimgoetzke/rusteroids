@@ -206,6 +206,7 @@ fn spawn_asteroid(commands: &mut Commands, category: Category, spawn_point: Vec3
       ),
       angvel: random_f32_range(-MAX_ROTATIONAL_SPEED, MAX_ROTATIONAL_SPEED),
     },
+    get_asteroid_collision_groups(),
     Ccd::enabled(),
     asteroid,
     WrapAroundEntity,

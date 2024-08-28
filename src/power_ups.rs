@@ -1,5 +1,8 @@
 use crate::game_state::GameState;
-use crate::shared::{random_game_world_point_away_from_player, Category, ImpactInfo, PowerUp, PowerUpType, Substance};
+use crate::shared::{
+  get_power_up_collision_groups, random_game_world_point_away_from_player, Category, ImpactInfo, PowerUp, PowerUpType,
+  Substance,
+};
 use crate::shared_events::{StaticIndicatorSpawnEvent, WaveEvent};
 use bevy::app::{App, Plugin};
 use bevy::asset::{AssetServer, Assets};
@@ -104,6 +107,7 @@ fn spawn_power_up(
         substance: Substance::Magic,
       },
       GravityScale(0.),
+      get_power_up_collision_groups(),
     ))
     .id();
   static_indicator_spawn_event.send(StaticIndicatorSpawnEvent {

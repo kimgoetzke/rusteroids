@@ -289,9 +289,6 @@ fn projectile_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Projectile(_)) {
-    if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
-      return;
-    }
     commands.entity(entity_info.entity).despawn();
     explosion_event.send(ExplosionEvent {
       origin: entity_info.transform.translation,
@@ -313,10 +310,7 @@ fn enemy_collision(
   enemy_damage_event: &mut EventWriter<EnemyDamageEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Enemy) {
-    if matches!(
-      entity_info.other_entity_type,
-      CollisionEntityType::PowerUp(_) | CollisionEntityType::Shield
-    ) {
+    if matches!(entity_info.other_entity_type, CollisionEntityType::Shield) {
       return;
     }
     enemy_damage_event.send(EnemyDamageEvent {
@@ -338,9 +332,6 @@ fn shield_collision(
   shield_damage_event: &mut EventWriter<ShieldDamageEvent>,
 ) {
   if matches!(entity_info.entity_type, CollisionEntityType::Shield) {
-    if matches!(entity_info.other_entity_type, CollisionEntityType::PowerUp(_)) {
-      return;
-    }
     shield_damage_event.send(ShieldDamageEvent {
       damage: if damage_dealt == 0 { 1 } else { damage_dealt },
     });
@@ -358,13 +349,6 @@ fn power_up_collision(
   explosion_event: &mut EventWriter<ExplosionEvent>,
   power_up_collected_event: &mut EventWriter<PowerUpCollectedEvent>,
 ) {
-  if !matches!(
-    entity_info.other_entity_type,
-    CollisionEntityType::Player | CollisionEntityType::Shield
-  ) {
-    debug!("Power up collision with {:?} ignored", entity_info.other_entity_type);
-    return;
-  }
   if let CollisionEntityType::PowerUp(power_up) = &entity_info.entity_type {
     commands.entity(entity_info.entity).despawn();
     power_up_collected_event.send(PowerUpCollectedEvent {

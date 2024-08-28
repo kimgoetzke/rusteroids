@@ -3,7 +3,8 @@ use std::fmt;
 use crate::game_world::WORLD_SIZE;
 use bevy::color::Color;
 use bevy::prelude::*;
-use bevy_rapier2d::geometry::Collider;
+use bevy_rapier2d::geometry::{Collider, Group};
+use bevy_rapier2d::prelude::CollisionGroups;
 use rand::random;
 
 #[allow(dead_code)]
@@ -46,6 +47,7 @@ pub(crate) struct ProjectileInfo {
   pub max_life_time: f32,
   pub cooldown: f32,
   pub collider: Collider,
+  pub collision_groups: CollisionGroups,
   pub sprite: Sprite,
 }
 
@@ -179,4 +181,45 @@ pub fn random_game_world_point_close_to_origin_without_player_collision(
 
 pub fn get_default_collider() -> Collider {
   Collider::ball(9.)
+}
+
+// Groups:
+// - GROUP_1: Player
+// - GROUP_2: Friendly projectiles
+// - GROUP_3: Power ups
+// - GROUP_4: Asteroids
+// - GROUP_5: Enemies
+// - GROUP_6: Enemies projectiles
+
+pub fn get_player_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(
+    Group::GROUP_1,
+    Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6,
+  )
+}
+
+pub fn get_player_projectile_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(Group::GROUP_2, Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6)
+}
+
+pub fn get_power_up_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(Group::GROUP_3, Group::GROUP_1)
+}
+
+pub fn get_default_enemy_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(
+    Group::GROUP_5,
+    Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5,
+  )
+}
+
+pub fn get_default_enemy_projectile_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(Group::GROUP_6, Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4)
+}
+
+pub fn get_asteroid_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(
+    Group::GROUP_4,
+    Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6,
+  )
 }

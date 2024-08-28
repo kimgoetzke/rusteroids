@@ -7,7 +7,8 @@ use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::{
-  random_f32_range, random_game_world_point_away_from_player, Category, ImpactInfo, ProjectileInfo, Substance, RED,
+  get_default_enemy_collision_groups, get_default_enemy_projectile_collision_groups, random_f32_range,
+  random_game_world_point_away_from_player, Category, ImpactInfo, ProjectileInfo, Substance, RED,
 };
 use crate::shared_events::{ProjectileSpawnEvent, WaveEvent};
 
@@ -77,6 +78,7 @@ fn spawn_small_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       angvel: 1.,
     },
     AdditionalMassProperties::Mass(4.),
+    get_default_enemy_collision_groups(),
     Ccd::enabled(),
     Enemy {
       health_points: SMALL_UFO_HEALTH,
@@ -112,6 +114,7 @@ fn spawn_large_ufo(commands: &mut &mut Commands, asset_server: &Res<AssetServer>
       angvel: 0.6,
     },
     AdditionalMassProperties::Mass(14.),
+    get_default_enemy_collision_groups(),
     Ccd::enabled(),
     Enemy {
       health_points: LARGE_UFO_HEALTH,
@@ -171,6 +174,7 @@ fn small_ufo_shooting(
       max_life_time: 3.5,
       cooldown: SMALL_UFO_SHOOTING_COOLDOWN,
       collider: Collider::cuboid(1.25, 1.25),
+      collision_groups: get_default_enemy_projectile_collision_groups(),
       sprite: Sprite {
         color: RED,
         custom_size: Some(Vec2::new(2.5, 2.5)),
@@ -199,6 +203,7 @@ fn large_ufo_shooting(
       max_life_time: 4.,
       cooldown: LARGE_UFO_SHOOTING_COOLDOWN,
       collider: Collider::cuboid(1.25, 1.25),
+      collision_groups: get_default_enemy_projectile_collision_groups(),
       sprite: Sprite {
         color: RED,
         custom_size: Some(Vec2::new(2.5, 2.5)),

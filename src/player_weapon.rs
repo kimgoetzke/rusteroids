@@ -23,7 +23,7 @@ impl WeaponSystem {
   pub fn reset(&mut self) -> &mut Self {
     self.level = 1;
     self.primary = vec![Weapon {
-      origin_offset: Vec3::new(0., 20., 0.),
+      origin_offset: Vec3::new(0., 10., 0.),
       direction: Vec3::Y,
     }];
     self
@@ -45,11 +45,11 @@ impl WeaponSystem {
   fn level_2(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(5., 20., 0.),
+        origin_offset: Vec3::new(5., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(-5., 20., 0.),
+        origin_offset: Vec3::new(-5., 10., 0.),
         direction: Vec3::Y,
       },
     ];
@@ -59,15 +59,15 @@ impl WeaponSystem {
   fn level_3(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(5., 20., 0.),
+        origin_offset: Vec3::new(5., 10., 0.),
         direction: Vec3::new(0.4, 1., 0.).normalize(),
       },
       Weapon {
-        origin_offset: Vec3::new(0., 20., 0.),
+        origin_offset: Vec3::new(0., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(-5., 20., 0.),
+        origin_offset: Vec3::new(-5., 10., 0.),
         direction: Vec3::new(-0.4, 1., 0.).normalize(),
       },
     ];
@@ -77,19 +77,19 @@ impl WeaponSystem {
   fn level_4(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(20., 0., 0.),
+        origin_offset: Vec3::new(10., 0., 0.),
         direction: Vec3::X,
       },
       Weapon {
-        origin_offset: Vec3::new(5., 20., 0.),
+        origin_offset: Vec3::new(5., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(-5., 20., 0.),
+        origin_offset: Vec3::new(-5., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(-20., 0., 0.),
+        origin_offset: Vec3::new(-10., 0., 0.),
         direction: Vec3::NEG_X,
       },
     ];
@@ -99,19 +99,19 @@ impl WeaponSystem {
   fn level_5(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(0., 20., 0.),
+        origin_offset: Vec3::new(0., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(5., 20., 0.),
+        origin_offset: Vec3::new(5., 10., 0.),
         direction: Vec3::new(0.4, 1., 0.).normalize(),
       },
       Weapon {
-        origin_offset: Vec3::new(-5., 20., 0.),
+        origin_offset: Vec3::new(-5., 10., 0.),
         direction: Vec3::new(-0.4, 1., 0.).normalize(),
       },
       Weapon {
-        origin_offset: Vec3::new(-20., 0., 0.),
+        origin_offset: Vec3::new(-10., 0., 0.),
         direction: Vec3::NEG_X,
       },
       Weapon {
@@ -125,27 +125,27 @@ impl WeaponSystem {
   fn level_6(&mut self) -> &mut Self {
     self.primary = vec![
       Weapon {
-        origin_offset: Vec3::new(0., 20., 0.),
+        origin_offset: Vec3::new(0., 10., 0.),
         direction: Vec3::Y,
       },
       Weapon {
-        origin_offset: Vec3::new(5., 20., 0.),
+        origin_offset: Vec3::new(5., 10., 0.),
         direction: Vec3::new(0.4, 1., 0.).normalize(),
       },
       Weapon {
-        origin_offset: Vec3::new(-5., 20., 0.),
+        origin_offset: Vec3::new(-5., 10., 0.),
         direction: Vec3::new(-0.4, 1., 0.).normalize(),
       },
       Weapon {
-        origin_offset: Vec3::new(20., 0., 0.),
+        origin_offset: Vec3::new(10., 0., 0.),
         direction: Vec3::X,
       },
       Weapon {
-        origin_offset: Vec3::new(-20., 0., 0.),
+        origin_offset: Vec3::new(-10., 0., 0.),
         direction: Vec3::NEG_X,
       },
       Weapon {
-        origin_offset: Vec3::new(0., -20., 0.),
+        origin_offset: Vec3::new(0., -10., 0.),
         direction: Vec3::NEG_Y,
       },
     ];

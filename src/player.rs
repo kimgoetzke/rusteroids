@@ -1,6 +1,6 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
-use crate::shared::{Category, ImpactInfo, ProjectileInfo, Substance, WeaponSystem, PURPLE};
+use crate::shared::{get_player_collision_groups, get_player_projectile_collision_groups, Category, ImpactInfo, ProjectileInfo, Substance, WeaponSystem, PURPLE};
 use crate::shared_events::{NextWaveEvent, PowerUpCollectedEvent, ProjectileSpawnEvent, ResetLoadoutEvent};
 use bevy::audio::Volume;
 use bevy::prelude::*;
@@ -68,6 +68,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
       angvel: 0.,
     },
     AdditionalMassProperties::Mass(2.),
+    get_player_collision_groups(),
     Ccd::enabled(),
     AudioBundle {
       source: audio_handle,
@@ -151,6 +152,7 @@ fn player_shooting_system(
         max_life_time: 0.4,
         cooldown: 0.1,
         collider: Collider::cuboid(0.5, 2.5),
+        collision_groups: get_player_projectile_collision_groups(),
         sprite: Sprite {
           color: PURPLE,
           custom_size: Some(Vec2::new(1., 5.)),
