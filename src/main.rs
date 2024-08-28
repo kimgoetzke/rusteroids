@@ -24,6 +24,7 @@ use crate::game_world::GameWorldPlugin;
 use crate::in_game_ui::InGameUiPlugin;
 use crate::player::PlayerPlugin;
 use crate::player_shield::PlayerShieldPlugin;
+use crate::player_weapon::PlayerWeaponPlugin;
 use crate::power_ups::PowerUpPlugin;
 use crate::projectile::ProjectilePlugin;
 use crate::shared::VERY_DARK_2;
@@ -42,6 +43,7 @@ mod game_world;
 mod in_game_ui;
 mod player;
 mod player_shield;
+mod player_weapon;
 mod power_ups;
 mod projectile;
 mod shared;
@@ -52,7 +54,7 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
-// TODO: Consider adding other power ups, esp. ship upgrades (weapons, maneuverability, speed), etc.
+// TODO: Consider adding other power ups, esp. ship upgrades (more weapons, maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
 // TODO: Add another/stronger/smarter enemies
 // TODO: Set exclusion layers for collisions (enemy, asteroids vs power ups, and player projectiles)
@@ -95,6 +97,7 @@ fn main() {
       BackgroundStarsPlugin,
       PlayerPlugin,
       PlayerShieldPlugin,
+      PlayerWeaponPlugin,
       ProjectilePlugin,
       AsteroidPlugin,
       GameStatePlugin,

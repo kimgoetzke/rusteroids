@@ -49,6 +49,30 @@ pub(crate) struct ProjectileInfo {
   pub sprite: Sprite,
 }
 
+#[derive(Component, Clone)]
+pub(crate) struct WeaponSystem {
+  pub level: u8,
+  pub shooting_cooldown: f32,
+  pub primary: Vec<Weapon>,
+}
+
+#[derive(Copy, Clone)]
+pub(crate) struct Weapon {
+  pub origin_offset: Vec3,
+}
+
+impl WeaponSystem {
+  pub fn new(cooldown: f32, y_offset: f32) -> Self {
+    WeaponSystem {
+      level: 1,
+      shooting_cooldown: cooldown,
+      primary: vec![Weapon {
+        origin_offset: Vec3::new(0., y_offset, 0.),
+      }],
+    }
+  }
+}
+
 #[derive(Component, Copy, Clone, Debug)]
 pub(crate) struct ImpactInfo {
   pub impact_category: Category,
@@ -90,6 +114,7 @@ pub(crate) struct PowerUp {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum PowerUpType {
   Shield,
+  Weapon,
 }
 
 #[derive(Component)]

@@ -14,7 +14,7 @@ use bevy_rapier2d::prelude::{Ccd, GravityScale, RigidBody, Velocity};
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::*;
-use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, ResetWaveEvent, WaveEvent};
+use crate::shared_events::{AsteroidDestroyedEvent, AsteroidSpawnedEvent, NextWaveEvent, WaveEvent};
 use crate::shared_resources::AsteroidCount;
 
 const ASTEROID_SPAWN_EVENT_RANGE: Range<u16> = 2..4;
@@ -29,7 +29,7 @@ impl Plugin for AsteroidPlugin {
       .add_systems(OnEnter(GameState::Starting), reset_asteroids_system)
       .add_systems(
         Update,
-        (spawn_smaller_asteroids_event, reset_asteroid_event).run_if(in_state(GameState::Playing)),
+        (spawn_smaller_asteroids_event, next_wave_event).run_if(in_state(GameState::Playing)),
       );
   }
 }
@@ -159,8 +159,8 @@ fn reset_asteroids_system(
   asteroid_count.0 = 0;
 }
 
-fn reset_asteroid_event(
-  mut reset_events: EventReader<ResetWaveEvent>,
+fn next_wave_event(
+  mut reset_events: EventReader<NextWaveEvent>,
   commands: Commands,
   asteroid_query: Query<Entity, With<Asteroid>>,
   asteroid_count: ResMut<AsteroidCount>,

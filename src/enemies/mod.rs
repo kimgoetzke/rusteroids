@@ -2,7 +2,7 @@ use crate::enemies::boss_morph::MorphBossPlugin;
 use crate::enemies::ufo::UfoPlugin;
 use crate::game_state::GameState;
 use crate::shared::ImpactInfo;
-use crate::shared_events::{EnemyDamageEvent, ExplosionEvent, ResetWaveEvent, ScoreEvent};
+use crate::shared_events::{EnemyDamageEvent, ExplosionEvent, NextWaveEvent, ScoreEvent};
 use bevy::app::{App, Plugin, Update};
 use bevy::core::Name;
 use bevy::log::{debug, info};
@@ -25,7 +25,7 @@ impl Plugin for EnemyPlugin {
       .add_systems(OnEnter(GameState::Starting), reset_enemies_system)
       .add_systems(
         Update,
-        (enemy_damage_system, reset_enemies_event).run_if(in_state(GameState::Playing)),
+        (enemy_damage_system, next_wave_event).run_if(in_state(GameState::Playing)),
       );
   }
 }
@@ -81,8 +81,8 @@ fn reset_enemies_system(mut commands: Commands, query: Query<Entity, With<Enemy>
   }
 }
 
-fn reset_enemies_event(
-  mut reset_events: EventReader<ResetWaveEvent>,
+fn next_wave_event(
+  mut reset_events: EventReader<NextWaveEvent>,
   commands: Commands,
   query: Query<Entity, With<Enemy>>,
 ) {

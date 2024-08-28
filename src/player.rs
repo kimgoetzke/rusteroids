@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
-use crate::shared::{Category, ImpactInfo, ProjectileInfo, Substance, PURPLE};
-use crate::shared_events::{ProjectileSpawnEvent, ResetWaveEvent};
+use crate::shared::{Category, ImpactInfo, ProjectileInfo, Substance, WeaponSystem, PURPLE};
+use crate::shared_events::{NextWaveEvent, PowerUpCollectedEvent, ProjectileSpawnEvent, ResetLoadoutEvent};
 use bevy::audio::Volume;
 use bevy::prelude::*;
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerBundle, DEFAULT_MATERIAL};
@@ -34,7 +34,6 @@ impl Plugin for PlayerPlugin {
 pub struct Player {
   movement_speed: f32,
   rotation_speed: f32,
-  shooting_cooldown: f32,
 }
 
 #[derive(Component)]
@@ -52,8 +51,8 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     Player {
       movement_speed: MOVEMENT_SPEED,
       rotation_speed: 5.,
-      shooting_cooldown: SHOOTING_COOLDOWN,
     },
+    WeaponSystem::new(SHOOTING_COOLDOWN, 20.),
     Name::new("Player"),
     RigidBody::Dynamic,
     crate::shared::get_default_collider(),
@@ -139,13 +138,13 @@ fn player_movement_system(
 
 fn player_shooting_system(
   time: Res<Time>,
-  mut query: Query<(&mut Player, &Transform)>,
+  mut query: Query<(&Transform, &mut WeaponSystem), With<Player>>,
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut projective_spawn_event: EventWriter<ProjectileSpawnEvent>,
 ) {
-  for (mut player, player_transform) in query.iter_mut() {
+  for (player_transform, mut weapons) in query.iter_mut() {
     // Spawn a projectile if the player is shooting
-    if keyboard_input.pressed(KeyCode::Space) && player.shooting_cooldown <= 0. {
+    if keyboard_input.pressed(KeyCode::Space) && weapons.shooting_cooldown <= 0. {
       let player_forward = player_transform.rotation * Vec3::Y;
       let info = ProjectileInfo {
         damage: DAMAGE,
@@ -159,26 +158,44 @@ fn player_shooting_system(
           ..default()
         },
       };
-      player.shooting_cooldown = info.cooldown;
-      projective_spawn_event.send(ProjectileSpawnEvent {
-        projectile_info: info,
-        origin_rotation: player_transform.rotation,
-        origin_forward: player_forward,
-        spawn_position: player_transform.translation + player_forward * 20.,
-      });
+      weapons.shooting_cooldown = info.cooldown;
+      for weapon in &weapons.primary {
+        projective_spawn_event.send(ProjectileSpawnEvent {
+          projectile_info: info.clone(),
+          origin_rotation: player_transform.rotation,
+          origin_forward: player_forward,
+          spawn_position: player_transform.translation + (player_transform.rotation * weapon.origin_offset),
+        });
+      }
     }
 
     // Update the shooting cooldown
-    if player.shooting_cooldown > 0. {
-      player.shooting_cooldown -= time.delta_seconds();
+    if weapons.shooting_cooldown > 0. {
+      weapons.shooting_cooldown -= time.delta_seconds();
     }
   }
 }
 
-fn other_controls_system(keyboard_input: Res<ButtonInput<KeyCode>>, mut reset_wave_event: EventWriter<ResetWaveEvent>) {
+fn other_controls_system(
+  keyboard_input: Res<ButtonInput<KeyCode>>,
+  mut reset_wave_event: EventWriter<NextWaveEvent>,
+  mut reset_loadout_event: EventWriter<ResetLoadoutEvent>,
+  mut power_up_collected_event: EventWriter<PowerUpCollectedEvent>,
+) {
   if keyboard_input.just_pressed(KeyCode::F9) {
-    info!("[F9] Despawning asteroids of current wave");
-    reset_wave_event.send(ResetWaveEvent {});
+    info!("[F9] Despawn asteroids of current wave");
+    reset_wave_event.send(NextWaveEvent {});
+  }
+  if keyboard_input.just_pressed(KeyCode::F10) {
+    info!("[F10] Reset player loadout");
+    reset_loadout_event.send(ResetLoadoutEvent {});
+  }
+  if keyboard_input.just_pressed(KeyCode::F11) {
+    info!("[F10] Upgrade player weapons");
+    power_up_collected_event.send(PowerUpCollectedEvent {
+      entity: Entity::from_raw(999),
+      power_up_type: crate::shared::PowerUpType::Weapon,
+    });
   }
 }
 
