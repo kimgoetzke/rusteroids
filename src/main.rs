@@ -54,6 +54,7 @@ mod waves;
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 720.;
 
+// TODO: Change player sprite when upgrading weapon system
 // TODO: Consider adding other power ups, esp. ship upgrades (more weapons, maneuverability, speed), etc.
 // TODO: Consider adding multiplayer
 // TODO: Add another/stronger/smarter enemies

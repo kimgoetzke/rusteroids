@@ -1,6 +1,9 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
-use crate::shared::{get_player_collision_groups, get_player_projectile_collision_groups, Category, ImpactInfo, ProjectileInfo, Substance, WeaponSystem, PURPLE};
+use crate::shared::{
+  get_player_collision_groups, get_player_projectile_collision_groups, Category, ImpactInfo, ProjectileInfo, Substance,
+  WeaponSystem, PURPLE,
+};
 use crate::shared_events::{NextWaveEvent, PowerUpCollectedEvent, ProjectileSpawnEvent, ResetLoadoutEvent};
 use bevy::audio::Volume;
 use bevy::prelude::*;
@@ -143,9 +146,9 @@ fn player_shooting_system(
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut projective_spawn_event: EventWriter<ProjectileSpawnEvent>,
 ) {
-  for (player_transform, mut weapons) in query.iter_mut() {
+  for (player_transform, mut weapon_system) in query.iter_mut() {
     // Spawn a projectile if the player is shooting
-    if keyboard_input.pressed(KeyCode::Space) && weapons.shooting_cooldown <= 0. {
+    if keyboard_input.pressed(KeyCode::Space) && weapon_system.shooting_cooldown <= 0. {
       let info = ProjectileInfo {
         damage: DAMAGE,
         speed: 750.,
@@ -159,8 +162,8 @@ fn player_shooting_system(
           ..default()
         },
       };
-      weapons.shooting_cooldown = info.cooldown;
-      for weapon in &weapons.primary {
+      weapon_system.shooting_cooldown = info.cooldown;
+      for weapon in &weapon_system.primary {
         let spawn_position = player_transform.translation + (player_transform.rotation * weapon.origin_offset);
         let direction = player_transform.rotation * weapon.direction;
         let rotation = Quat::from_rotation_arc(Vec3::Y, direction);
@@ -175,8 +178,8 @@ fn player_shooting_system(
     }
 
     // Update the shooting cooldown
-    if weapons.shooting_cooldown > 0. {
-      weapons.shooting_cooldown -= time.delta_seconds();
+    if weapon_system.shooting_cooldown > 0. {
+      weapon_system.shooting_cooldown -= time.delta_seconds();
     }
   }
 }
@@ -192,15 +195,15 @@ fn other_controls_system(
     reset_wave_event.send(NextWaveEvent {});
   }
   if keyboard_input.just_pressed(KeyCode::F10) {
-    info!("[F10] Reset player loadout");
-    reset_loadout_event.send(ResetLoadoutEvent {});
-  }
-  if keyboard_input.just_pressed(KeyCode::F11) {
     info!("[F10] Upgrade player weapons");
     power_up_collected_event.send(PowerUpCollectedEvent {
-      entity: Entity::from_raw(999),
+      entity: Entity::from_raw(791234),
       power_up_type: crate::shared::PowerUpType::Weapon,
     });
+  }
+  if keyboard_input.just_pressed(KeyCode::F11) {
+    info!("[F11] Reset player loadout");
+    reset_loadout_event.send(ResetLoadoutEvent {});
   }
 }
 
