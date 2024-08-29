@@ -129,7 +129,7 @@ fn damage_shield_event(
         });
         commands.entity(entity).despawn();
         commands.entity(player).insert(Collider::ball(10.));
-        info!("Shield was destroyed");
+        info!("Shield received {:?} damage and was destroyed", event.damage);
       } else {
         let transparency = DEFAULT_MESH_TRANSPARENCY * (shield.strength as f32 / shield.max_strength as f32);
         if let Some(material) = materials.get_mut(material_handle) {

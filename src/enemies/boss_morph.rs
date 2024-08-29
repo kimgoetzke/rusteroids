@@ -2,7 +2,7 @@ use crate::enemies::{move_toward_target, Enemy};
 use crate::game_state::GameState;
 use crate::player::Player;
 use crate::shared::{
-  get_default_enemy_collision_groups, random_game_world_point_away_from_player, Category, CollisionDamage, ImpactInfo,
+  default_enemy_collision_groups, random_game_world_point_away_from_player, Category, CollisionDamage, ImpactInfo,
   Substance, WrapAroundEntity,
 };
 use crate::shared_events::WaveEvent;
@@ -167,7 +167,7 @@ fn spawn_morph_boss(
       },
       MorphBoss::new(),
     ))
-    .insert(get_default_enemy_collision_groups())
+    .insert(default_enemy_collision_groups())
     .insert(CollisionDamage::new(15));
 }
 

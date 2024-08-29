@@ -1,8 +1,8 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
 use crate::shared::{
-  get_player_collision_groups, get_player_projectile_collision_groups, Category, ImpactInfo, ProjectileInfo, Substance,
-  WeaponSystem, PURPLE,
+  get_player_collision_groups, player_projectile_collision_groups, Category, EntityType, ImpactInfo,
+  ProjectileInfo, Substance, WeaponSystem, PURPLE,
 };
 use crate::shared_events::{NextWaveEvent, PowerUpCollectedEvent, ProjectileSpawnEvent, ResetLoadoutEvent};
 use bevy::audio::Volume;
@@ -58,7 +58,7 @@ fn spawn_player_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     WeaponSystem::new(SHOOTING_COOLDOWN, 20.),
     Name::new("Player"),
     RigidBody::Dynamic,
-    crate::shared::get_default_collider(),
+    Collider::ball(9.),
     ActiveEvents::COLLISION_EVENTS,
     ImpactInfo {
       impact_category: Category::XL,
@@ -155,12 +155,13 @@ fn player_shooting_system(
         max_life_time: 0.4,
         cooldown: 0.1,
         collider: Collider::cuboid(0.5, 2.5),
-        collision_groups: get_player_projectile_collision_groups(),
+        collision_groups: player_projectile_collision_groups(),
         sprite: Sprite {
           color: PURPLE,
           custom_size: Some(Vec2::new(1., 5.)),
           ..default()
         },
+        by: EntityType::Player,
       };
       weapon_system.shooting_cooldown = info.cooldown;
       for weapon in &weapon_system.primary {

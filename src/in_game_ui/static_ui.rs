@@ -153,9 +153,7 @@ fn process_asteroid_destroyed_event(
 ) {
   for _ in events.read() {
     for mut text in asteroid_count_texts.iter_mut() {
-      if asteroid_count.0 > 0 {
-        asteroid_count.0 -= 1;
-      }
+      asteroid_count.0 -= 1;
       text.sections[0].value = format!("{} {}", ASTEROIDS_LABEL, asteroid_count.0);
     }
   }

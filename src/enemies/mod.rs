@@ -64,11 +64,14 @@ fn enemy_damage_system(
       } else {
         if event.damage > 0 {
           debug!(
-            "Enemy {:?} received {} damage and has {} health left",
-            name, event.damage, enemy.health_points
+            "Enemy {:?} received {} damage from \"{:?}\" and has {} health left",
+            name, event.damage, event.by, enemy.health_points
           );
         } else {
-          debug!("Enemy {:?} received no damage from this collision", name);
+          debug!(
+            "Enemy {:?} received no damage from this collision with {:?}",
+            name, event.by
+          );
         }
       }
     }

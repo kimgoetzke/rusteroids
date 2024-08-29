@@ -1,6 +1,8 @@
 use std::fmt;
 
+use crate::asteroids::Asteroid;
 use crate::game_world::WORLD_SIZE;
+use crate::projectile::Projectile;
 use bevy::color::Color;
 use bevy::prelude::*;
 use bevy_rapier2d::geometry::{Collider, Group};
@@ -40,7 +42,7 @@ pub const VERY_DARK_2: Color = Color::srgb(0.06, 0.07, 0.09);
 
 pub const DEFAULT_FONT: &str = "fonts/bulkypix.ttf";
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub(crate) struct ProjectileInfo {
   pub damage: u16,
   pub speed: f32,
@@ -49,6 +51,43 @@ pub(crate) struct ProjectileInfo {
   pub collider: Collider,
   pub collision_groups: CollisionGroups,
   pub sprite: Sprite,
+  pub by: EntityType,
+}
+
+#[derive(Component, Clone, Debug)]
+pub(crate) enum EntityType {
+  Player,
+  Shield,
+  Projectile,
+  Asteroid,
+  Enemy,
+  PowerUp,
+  Unknown,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum CollisionEntityType {
+  Player,
+  Shield,
+  Projectile(Projectile),
+  Asteroid(Asteroid),
+  Enemy(CollisionDamage),
+  PowerUp(PowerUp),
+  Unknown,
+}
+
+impl From<CollisionEntityType> for EntityType {
+  fn from(cet: CollisionEntityType) -> Self {
+    match cet {
+      CollisionEntityType::Player => EntityType::Player,
+      CollisionEntityType::Shield => EntityType::Shield,
+      CollisionEntityType::Projectile(_) => EntityType::Projectile,
+      CollisionEntityType::Asteroid(_) => EntityType::Asteroid,
+      CollisionEntityType::Enemy(_) => EntityType::Enemy,
+      CollisionEntityType::PowerUp(_) => EntityType::PowerUp,
+      CollisionEntityType::Unknown => EntityType::Unknown,
+    }
+  }
 }
 
 #[derive(Component, Clone)]
@@ -190,47 +229,48 @@ pub fn random_game_world_point_close_to_origin_without_player_collision(
   }
 }
 
-pub fn get_default_collider() -> Collider {
-  Collider::ball(9.)
-}
-
-// Groups:
-// - GROUP_1: Player
-// - GROUP_2: Friendly projectiles
-// - GROUP_3: Power ups
-// - GROUP_4: Asteroids
-// - GROUP_5: Enemies
-// - GROUP_6: Enemies projectiles
+const PLAYER_GROUP: Group = Group::GROUP_1;
+const FRIENDLY_PROJECTILES_GROUP: Group = Group::GROUP_2;
+const POWER_UP_GROUP: Group = Group::GROUP_3;
+const ASTEROID_GROUP: Group = Group::GROUP_4;
+const ENEMY_GROUP: Group = Group::GROUP_5;
+const ENEMY_PROJECTILES_GROUP: Group = Group::GROUP_6;
 
 pub fn get_player_collision_groups() -> CollisionGroups {
   CollisionGroups::new(
-    Group::GROUP_1,
-    Group::GROUP_3 | Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6,
+    PLAYER_GROUP,
+    POWER_UP_GROUP | ASTEROID_GROUP | ENEMY_GROUP | ENEMY_PROJECTILES_GROUP,
   )
 }
 
-pub fn get_player_projectile_collision_groups() -> CollisionGroups {
-  CollisionGroups::new(Group::GROUP_2, Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6)
-}
-
-pub fn get_power_up_collision_groups() -> CollisionGroups {
-  CollisionGroups::new(Group::GROUP_3, Group::GROUP_1)
-}
-
-pub fn get_default_enemy_collision_groups() -> CollisionGroups {
+pub fn player_projectile_collision_groups() -> CollisionGroups {
   CollisionGroups::new(
-    Group::GROUP_5,
-    Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5,
+    FRIENDLY_PROJECTILES_GROUP,
+    ASTEROID_GROUP | ENEMY_GROUP | ENEMY_PROJECTILES_GROUP,
   )
 }
 
-pub fn get_default_enemy_projectile_collision_groups() -> CollisionGroups {
-  CollisionGroups::new(Group::GROUP_6, Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4)
+pub fn power_up_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(POWER_UP_GROUP, PLAYER_GROUP)
 }
 
-pub fn get_asteroid_collision_groups() -> CollisionGroups {
+pub fn default_enemy_collision_groups() -> CollisionGroups {
   CollisionGroups::new(
-    Group::GROUP_4,
-    Group::GROUP_1 | Group::GROUP_2 | Group::GROUP_4 | Group::GROUP_5 | Group::GROUP_6,
+    ENEMY_GROUP,
+    PLAYER_GROUP | FRIENDLY_PROJECTILES_GROUP | ASTEROID_GROUP | ENEMY_GROUP,
+  )
+}
+
+pub fn enemy_projectile_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(
+    ENEMY_PROJECTILES_GROUP,
+    Group::GROUP_1 | FRIENDLY_PROJECTILES_GROUP | ASTEROID_GROUP,
+  )
+}
+
+pub fn asteroid_collision_groups() -> CollisionGroups {
+  CollisionGroups::new(
+    ASTEROID_GROUP,
+    PLAYER_GROUP | FRIENDLY_PROJECTILES_GROUP | ASTEROID_GROUP | ENEMY_GROUP | ENEMY_PROJECTILES_GROUP,
   )
 }

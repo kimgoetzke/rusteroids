@@ -5,7 +5,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::camera::PIXEL_PERFECT_BLOOM_LAYER;
 use crate::game_state::GameState;
-use crate::shared::ProjectileInfo;
+use crate::shared::{Category, ImpactInfo, ProjectileInfo, Substance};
 use crate::shared_events::ProjectileSpawnEvent;
 
 pub struct ProjectilePlugin;
@@ -28,6 +28,7 @@ pub(crate) struct Projectile {
   pub max_life_time: f32,
 }
 
+// TODO: Fix bug where enemies die from asteroids
 fn process_projectile_spawn_event(
   mut projectile_spawn_event: EventReader<ProjectileSpawnEvent>,
   mut commands: Commands,
@@ -53,43 +54,56 @@ fn spawn_projectile(
   origin_forward: Vec3,
   spawn_position: Vec3,
 ) {
-  commands.spawn((
-    SpriteBundle {
-      sprite: projectile.sprite.clone(),
-      transform: Transform {
-        translation: spawn_position,
-        rotation: origin_rotation,
+  let entity = commands
+    .spawn((
+      SpriteBundle {
+        sprite: projectile.sprite.clone(),
+        transform: Transform {
+          translation: spawn_position,
+          rotation: origin_rotation,
+          ..default()
+        },
         ..default()
       },
-      ..default()
-    },
-    Name::new("Projectile"),
-    RigidBody::Dynamic,
-    projectile.collider.clone(),
-    ActiveEvents::COLLISION_EVENTS,
-    GravityScale(0.),
-    AdditionalMassProperties::Mass(100.),
-    projectile.collision_groups,
-    Velocity {
-      linvel: Vec2::new(origin_forward.x, origin_forward.y) * projectile.speed,
-      angvel: 0.,
-    },
-    Projectile {
-      damage: projectile.damage,
-      life_time: 0.,
-      max_life_time: projectile.max_life_time,
-    },
-    PIXEL_PERFECT_BLOOM_LAYER,
-    AudioBundle {
-      source: asset_server.load("audio/shoot_laser_default.ogg"),
-      settings: PlaybackSettings {
-        mode: bevy::audio::PlaybackMode::Remove,
-        volume: Volume::new(0.4),
-        spatial: true,
-        ..Default::default()
+      Name::new("Projectile"),
+      RigidBody::Dynamic,
+      projectile.collider.clone(),
+      ActiveEvents::COLLISION_EVENTS,
+      ImpactInfo {
+        impact_category: Category::S,
+        death_category: Category::S,
+        substance: Substance::Undefined,
       },
-    },
-  ));
+      GravityScale(0.),
+      AdditionalMassProperties::Mass(100.),
+      projectile.collision_groups,
+      Velocity {
+        linvel: Vec2::new(origin_forward.x, origin_forward.y) * projectile.speed,
+        angvel: 0.,
+      },
+      Projectile {
+        damage: projectile.damage,
+        life_time: 0.,
+        max_life_time: projectile.max_life_time,
+      },
+      PIXEL_PERFECT_BLOOM_LAYER,
+      AudioBundle {
+        source: asset_server.load("audio/shoot_laser_default.ogg"),
+        settings: PlaybackSettings {
+          mode: bevy::audio::PlaybackMode::Remove,
+          volume: Volume::new(0.4),
+          spatial: true,
+          ..Default::default()
+        },
+      },
+    ))
+    .id();
+  trace!(
+    "Spawn: Projectile (id: {}, damage: {:?}, by: {:?})",
+    entity,
+    projectile.damage,
+    projectile.by
+  );
 }
 
 fn projectile_life_time_system(mut commands: Commands, time: Res<Time>, mut query: Query<(Entity, &mut Projectile)>) {

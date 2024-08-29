@@ -1,4 +1,4 @@
-use crate::shared::{Category, PowerUpType, ProjectileInfo, Substance};
+use crate::shared::{Category, EntityType, PowerUpType, ProjectileInfo, Substance};
 use bevy::app::{App, Plugin};
 use bevy::math::{Quat, Vec3};
 use bevy::prelude::{Entity, Event};
@@ -58,7 +58,7 @@ pub(crate) struct ExplosionEvent {
   pub substance: Substance,
 }
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub(crate) struct ProjectileSpawnEvent {
   pub projectile_info: ProjectileInfo,
   pub origin_rotation: Quat,
@@ -88,6 +88,7 @@ pub(crate) struct AsteroidDestroyedEvent {
 pub(crate) struct EnemyDamageEvent {
   pub entity: Entity,
   pub damage: u16,
+  pub by: EntityType,
 }
 
 #[derive(Event)]
