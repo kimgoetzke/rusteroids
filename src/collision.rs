@@ -1,8 +1,3 @@
-use bevy::app::{App, Plugin};
-use bevy::audio::Volume;
-use bevy::prelude::*;
-use bevy_rapier2d::pipeline::CollisionEvent;
-
 use crate::asteroids::Asteroid;
 use crate::enemies::Enemy;
 use crate::game_state::GameState;
@@ -11,6 +6,10 @@ use crate::projectile::Projectile;
 use crate::shared::{CollisionDamage, CollisionEntityType, EntityType, ImpactInfo, PowerUp, Shield};
 use crate::shared_events::{AsteroidDestroyedEvent, ExplosionEvent, ScoreEvent, ShieldDamageEvent};
 use crate::shared_events::{EnemyDamageEvent, PowerUpCollectedEvent};
+use bevy::app::{App, Plugin};
+use bevy::audio::Volume;
+use bevy::prelude::*;
+use bevy_rapier2d::pipeline::CollisionEvent;
 
 pub struct CollisionPlugin;
 
@@ -202,9 +201,7 @@ fn handle_collisions(
       }
       CollisionEntityType::PowerUp(_) => power_up_collision(entity_info, commands, explosion_event, power_up_event),
       CollisionEntityType::Shield => shield_collision(entity_info, shield_damage_event),
-      CollisionEntityType::Unknown => {
-        error!("Collision logic bug detected when attempting to handle collision with unknown entity type")
-      }
+      CollisionEntityType::Unknown => log_error(&entity_info, "handle_collisions"),
     }
   }
 }
@@ -216,9 +213,6 @@ fn asteroid_collision(
   asteroid_destroyed_event: &mut EventWriter<AsteroidDestroyedEvent>,
   score_event: &mut EventWriter<ScoreEvent>,
 ) {
-  if matches!(entity_info.other_cet, CollisionEntityType::PowerUp(_)) {
-    return;
-  }
   if let CollisionEntityType::Asteroid(asteroid) = &entity_info.cet {
     asteroid_destroyed_event.send(AsteroidDestroyedEvent {
       category: asteroid.category,
@@ -228,10 +222,7 @@ fn asteroid_collision(
     score_event.send(ScoreEvent { score: asteroid.score });
     commands.entity(entity_info.entity).despawn();
   } else {
-    error!(
-      "Collision logic bug detected when handling asteroid collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "asteroid_collision");
   }
 }
 
@@ -260,10 +251,7 @@ fn player_collision(
     send_explosion_event_from_entity_info(&entity_info, explosion_event);
     info!("Player destroyed by \"{:?}\"", EntityType::from(entity_info.other_cet));
   } else {
-    error!(
-      "Collision logic bug detected when handling player collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "player_collision");
   }
 }
 
@@ -276,10 +264,7 @@ fn projectile_collision(
     commands.entity(entity_info.entity).despawn();
     send_explosion_event_from_entity_info(&entity_info, explosion_event);
   } else {
-    error!(
-      "Collision logic bug detected when handling projectile collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "projectile_collision");
   }
 }
 
@@ -296,10 +281,7 @@ fn enemy_collision(
     });
     send_explosion_event_from_entity_info(&entity_info, explosion_event);
   } else {
-    error!(
-      "Collision logic bug detected when handling enemy collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "enemy_collision");
   }
 }
 
@@ -309,10 +291,7 @@ fn shield_collision(entity_info: CollisionEntityInfo, shield_damage_event: &mut 
       damage: entity_info.damage_dealt,
     });
   } else {
-    error!(
-      "Collision logic bug detected when handling shield collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "shield_collision");
   }
 }
 
@@ -330,10 +309,7 @@ fn power_up_collision(
     });
     send_explosion_event_from_entity_info(&entity_info, explosion_event);
   } else {
-    error!(
-      "Collision logic bug detected when handling power up collision: {:?}",
-      entity_info
-    );
+    log_error(&entity_info, "power_up_collision");
   }
 }
 
@@ -348,9 +324,10 @@ fn send_explosion_event_from_entity_info(
       substance: info.substance,
     });
   } else {
-    error!(
-      "Collision logic bug detected due to missing explosion info on {:?}",
-      entity_info.cet
-    );
+    log_error(&entity_info, "send_explosion_event_from_entity_info");
   }
+}
+
+fn log_error(entity_info: &CollisionEntityInfo, function_name: &str) {
+  error!("Collision logic bug detected in {:?}: {:?}", function_name, entity_info);
 }
