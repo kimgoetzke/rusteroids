@@ -1,8 +1,8 @@
 use crate::game_state::GameState;
 use crate::game_world::WORLD_SIZE;
 use crate::shared::{
-  get_player_collision_groups, player_projectile_collision_groups, Category, EntityType, ImpactInfo,
-  ProjectileInfo, Substance, WeaponSystem, PURPLE,
+  get_player_collision_groups, player_projectile_collision_groups, Category, EntityType, ImpactInfo, ProjectileInfo,
+  Substance, WeaponSystem, PURPLE,
 };
 use crate::shared_events::{NextWaveEvent, PowerUpCollectedEvent, ProjectileSpawnEvent, ResetLoadoutEvent};
 use bevy::audio::Volume;
@@ -96,9 +96,9 @@ fn player_movement_system(
     let mut is_moving = false;
 
     // Update rotation
-    let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) {
+    let rotation_factor = if keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft) {
       1.
-    } else if keyboard_input.pressed(KeyCode::KeyD) {
+    } else if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
       -1.
     } else {
       0.
@@ -106,7 +106,7 @@ fn player_movement_system(
     velocity.angvel = rotation_factor * player.rotation_speed;
 
     // Set acceleration and spawn particles if moving
-    if keyboard_input.pressed(KeyCode::KeyW) {
+    if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
       is_moving = true;
       let direction = transform.rotation * Vec3::Y;
       let acceleration = Vec2::new(direction.x, direction.y) * player.movement_speed;
