@@ -60,7 +60,7 @@ fn enemy_damage_system(
           category: impact_info.death_category,
           substance: impact_info.substance,
         });
-        info!("Enemy {:?} was destroyed", name);
+        info!("Enemy {:?} received {} damage and was destroyed", name, event.damage);
       } else {
         if event.damage > 0 {
           debug!(

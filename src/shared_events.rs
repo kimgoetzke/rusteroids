@@ -67,16 +67,14 @@ pub(crate) struct ProjectileSpawnEvent {
 }
 
 /**
- * Spawns asteroids e.g. at the beginning of a new wave. The event is triggered by the wave system. Not to be confused
- * with {@link AsteroidDestroyedEvent} which may trigger the spawning of smaller asteroids when a larger one is destroyed.
+ * Spawns asteroids either at the beginning of a new wave or as a consequence of a {@link AsteroidDestroyedEvent}.
  */
 #[derive(Event)]
 pub(crate) struct AsteroidSpawnedEvent;
 
 /**
- * An event that's triggered upon the destruction of an asteroid which may spawn smaller asteroids. Not to be confused
- * with {@link AsteroidSpawnedEvent} which is triggered by the wave system to spawn asteroids at the beginning of a new
- * wave.
+ * An event that's triggered upon the destruction of an asteroid which may spawn smaller asteroids and therefore a
+ * {@link AsteroidSpawnedEvent}.
  */
 #[derive(Event)]
 pub(crate) struct AsteroidDestroyedEvent {

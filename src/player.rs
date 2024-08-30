@@ -198,7 +198,7 @@ fn other_controls_system(
   if keyboard_input.just_pressed(KeyCode::F10) {
     info!("[F10] Upgrade player weapons");
     power_up_collected_event.send(PowerUpCollectedEvent {
-      entity: Entity::from_raw(791234),
+      entity: Entity::from_raw(791234), // Will be despawned immediately when event is read
       power_up_type: crate::shared::PowerUpType::Weapon,
     });
   }
