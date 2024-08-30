@@ -13,10 +13,12 @@ will be millions of things that could have been done in a better and more idioma
 ## Features
 
 - Infinite wave system with increasing difficulty
+- Power-ups that upgrade weapons and shield
 - Single-button menu to exit the game :-)
-- Basic audio
+- Some basic SFX
 - Collision system powered by `bevy_rapier2d`
 - Particles powered by `bevy_enoki`
+- Parallax background effect
 
 ## Attribution
 
