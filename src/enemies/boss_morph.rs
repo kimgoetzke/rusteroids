@@ -18,7 +18,7 @@ use consts::PI;
 use std::f32::consts;
 
 const SPEED: f32 = 75.;
-const HEALTH: i16 = 120;
+const HEALTH: i16 = 200;
 const SCORE: u16 = 500;
 const ROTATION_SPEED: f32 = 0.06;
 const ROTATING_THRESHOLD: f32 = 225.; // Distance from player to start rotating towards it
