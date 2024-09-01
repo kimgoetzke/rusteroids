@@ -19,16 +19,16 @@ impl Plugin for StaticUiPlugin {
         (hide_static_ui_system, hide_message_ui_system),
       )
       .add_systems(OnEnter(GameState::Paused), hide_message_ui_system)
+      .add_systems(Update, (current_wave_event, change_message_visibility_system))
       .add_systems(
         Update,
         (
-          current_wave_event,
           process_score_event,
-          process_wave_event,
           process_asteroid_spawn_event,
           process_asteroid_destroyed_event,
-          change_message_visibility_system,
-        ),
+          process_wave_event,
+        )
+          .chain(),
       );
   }
 }
@@ -151,9 +151,10 @@ fn process_asteroid_destroyed_event(
   mut asteroid_count: ResMut<AsteroidCount>,
   mut asteroid_count_texts: Query<&mut Text, (With<AsteroidCountComponent>, Without<ScoreComponent>)>,
 ) {
-  for _ in events.read() {
+  let event_count = events.read().count();
+  if event_count > 0 {
     for mut text in asteroid_count_texts.iter_mut() {
-      asteroid_count.0 -= 1;
+      asteroid_count.0 -= (event_count as i16).max(0);
       text.sections[0].value = format!("{} {}", ASTEROIDS_LABEL, asteroid_count.0);
     }
   }
@@ -164,9 +165,10 @@ fn process_asteroid_spawn_event(
   mut asteroid_count: ResMut<AsteroidCount>,
   mut asteroid_count_texts: Query<&mut Text, (With<AsteroidCountComponent>, Without<ScoreComponent>)>,
 ) {
-  for _ in events.read() {
+  let event_count = events.read().count();
+  if event_count > 0 {
     for mut text in asteroid_count_texts.iter_mut() {
-      asteroid_count.0 += 1;
+      asteroid_count.0 += event_count as i16;
       text.sections[0].value = format!("{} {}", ASTEROIDS_LABEL, asteroid_count.0);
     }
   }
